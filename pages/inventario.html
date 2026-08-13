@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#5A2E1B">
+    <meta
+      name="description"
+      content="Inventario, logística, proveedores, recetas, mermas, lotes y trazabilidad de Cafe Fusiones."
+    >
+    <title>Inventario y Logística | Cafe Fusiones</title>
+
+    <link rel="manifest" href="../manifest.webmanifest">
+    <link rel="icon" href="../assets/img/cafe-fusiones-mark.svg" type="image/svg+xml">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    >
+
+    <!-- Base -->
+    <link rel="stylesheet" href="../css/base/reset.css">
+    <link rel="stylesheet" href="../css/base/variables.css">
+    <link rel="stylesheet" href="../css/base/typography.css">
+
+    <!-- Layout -->
+    <link rel="stylesheet" href="../css/layout/app-shell.css">
+    <link rel="stylesheet" href="../css/layout/sidebar.css">
+    <link rel="stylesheet" href="../css/layout/topbar.css">
+
+    <!-- Componentes -->
+    <link rel="stylesheet" href="../css/components/buttons.css">
+    <link rel="stylesheet" href="../css/components/cards.css">
+    <link rel="stylesheet" href="../css/components/forms.css">
+    <link rel="stylesheet" href="../css/components/tables.css">
+    <link rel="stylesheet" href="../css/components/modals.css">
+
+    <!-- Inventario -->
+    <link rel="stylesheet" href="../css/pages/inventario.css">
+    <link rel="stylesheet" href="../css/base/theme-min.css">
+
+    <!--
+      Controlador único del módulo.
+      El JS administrará las vistas internas mediante ?tab=
+    -->
+    <script type="module" src="../js/pages/inventario.js"></script>
+  </head>
+
+  <body class="app-page inventory-page" data-page="inventario">
+    <div class="app-shell">
+      <aside
+        class="sidebar"
+        id="sidebar"
+        aria-label="Navegacion principal"
+      ></aside>
+
+      <div class="workspace">
+        <header class="topbar" id="topbar"></header>
+
+        <main
+          class="content inventory-content"
+          id="view"
+          tabindex="-1"
+          aria-live="polite"
+        >
+          <!--
+            ================================================================
+            INVENTARIO Y LOGISTICA - ARQUITECTURA PROPUESTA
+            ================================================================
+
+            El contenido final se renderiza desde:
+              js/pages/inventario.js
+
+            Navegación interna:
+              inventario.html?tab=resumen
+              inventario.html?tab=stock
+              inventario.html?tab=kardex
+              inventario.html?tab=lotes
+              inventario.html?tab=compras
+              inventario.html?tab=proveedores
+              inventario.html?tab=recetas
+              inventario.html?tab=mermas
+              inventario.html?tab=produccion
+              inventario.html?tab=trazabilidad
+
+            ----------------------------------------------------------------
+            1. RESUMEN
+            ----------------------------------------------------------------
+            Dashboard operativo corto, no saturado:
+              - Valor de inventario
+              - Insumos con stock crítico
+              - Lotes por vencer
+              - Costo de mermas del mes
+              - Alertas prioritarias
+              - Sugerencias de compra
+              - Últimos movimientos
+
+            ----------------------------------------------------------------
+            2. STOCK
+            ----------------------------------------------------------------
+            Catálogo de insumos y productos controlables:
+              - Insumo / producto
+              - Categoría
+              - Stock disponible
+              - Stock comprometido
+              - Stock mínimo
+              - Unidad
+              - Ubicación
+              - Costo promedio
+              - Estado
+
+            Tipos:
+              - Materia prima
+              - Insumo
+              - Producto de despacho directo
+              - Producto retail
+              - Preparación base
+              - Producto terminado controlable
+
+            Ejemplos:
+              Café tostado
+              Leche
+              Leche de avena
+              Queso
+              Pollo
+              Gaseosa
+              Agua mineral
+              Cerveza
+              Bolsa de Café Fusiones
+
+            ----------------------------------------------------------------
+            3. KARDEX / MOVIMIENTOS
+            ----------------------------------------------------------------
+            Trazabilidad de movimientos:
+              - Entrada por compra
+              - Salida por receta
+              - Salida por despacho directo
+              - Ajuste positivo
+              - Ajuste negativo
+              - Merma
+              - Devolución a stock
+              - Producción / transformación
+              - Transferencia entre ubicaciones
+
+            Cada movimiento conserva:
+              fecha, origen, documento, responsable, cantidad y costo.
+
+            ----------------------------------------------------------------
+            4. LOTES Y VENCIMIENTOS
+            ----------------------------------------------------------------
+            Control requerido por el TDR:
+              - Código de lote
+              - Insumo
+              - Proveedor
+              - Fecha de recepción
+              - Fecha de vencimiento
+              - Cantidad inicial
+              - Cantidad disponible
+              - Ubicación
+              - FIFO / FEFO
+              - Estado
+              - Certificado/documentación si existe
+
+            ----------------------------------------------------------------
+            5. COMPRAS
+            ----------------------------------------------------------------
+            Flujo:
+              Sugerencia -> Solicitud -> Orden -> Recepción -> Inventario
+
+            Contempla:
+              - Compra formal con comprobante
+              - Compra informal sin documentación tributaria
+              - Compra directa a productor
+              - Compra recurrente
+              - Compra de emergencia
+
+            No se elimina la trazabilidad cuando el proveedor no tiene
+            documento: se registra la procedencia y responsable.
+
+            ----------------------------------------------------------------
+            6. PROVEEDORES
+            ----------------------------------------------------------------
+            Dos perfiles principales:
+
+            A) FORMAL
+              - Persona natural con negocio / Empresa
+              - RUC
+              - Razón social
+              - Nombre comercial
+              - Contacto
+              - Teléfono / correo
+              - Dirección
+              - Condición de pago
+              - Tipo de comprobante
+              - Cuenta bancaria opcional
+              - Productos que suministra
+              - Estado
+
+            B) INFORMAL / PRODUCTOR SIN DOCUMENTACIÓN
+              - Nombre completo o nombre conocido
+              - DNI si dispone (opcional)
+              - Sin documento (permitido)
+              - Comunidad / zona / procedencia
+              - Teléfono si dispone
+              - Productos que suministra
+              - Forma de pago
+              - Responsable que registró la compra
+              - Observación / sustento interno
+              - Evidencia opcional
+              - Estado
+
+            Esto permite registrar productores locales sin inventar
+            documentación que no tienen.
+
+            ----------------------------------------------------------------
+            7. RECETAS / BOM Y COSTEO
+            ----------------------------------------------------------------
+            Cada producto preparado puede tener:
+              - Producto de carta
+              - Rendimiento de receta
+              - Ingredientes
+              - Cantidad por ingrediente
+              - Unidad
+              - Merma técnica esperada
+              - Costo unitario
+              - Costo total
+              - Costo por porción
+              - Precio de venta
+              - Margen estimado
+              - Estación: Barra / Cocina
+              - Tiempo objetivo
+              - Versiones de receta
+              - Estado: activa / borrador / archivada
+
+            Ejemplo:
+              Cappuccino
+                Café: 18 g
+                Leche: 180 ml
+
+              Si el cliente cambia a leche de avena:
+                se consume la variante correspondiente,
+                no la leche regular.
+
+            Las recetas conectan:
+              Carta -> Venta -> KDS -> Inventario -> Costos -> Reportes
+
+            ----------------------------------------------------------------
+            8. MERMAS
+            ----------------------------------------------------------------
+            Tres familias operativas:
+
+            A) Merma de insumo
+              vencimiento, deterioro, derrame, rotura, etc.
+
+            B) Merma de preparación
+              error de preparación, rendimiento menor,
+              cambio de cliente con producto ya iniciado, etc.
+
+            C) Merma de producto terminado
+              producto listo descartado, devolución,
+              cambio solicitado, caída, calidad, etc.
+
+            Motivos:
+              - Vencimiento
+              - Deterioro
+              - Error de preparación
+              - Cambio solicitado por cliente
+              - Error de pedido
+              - Caída / derrame
+              - Sobreproducción
+              - Control de calidad
+              - Devolución
+              - Otro
+
+            Debe conservar:
+              pedido/mesa, receta, lote, usuario, estación,
+              cantidad, costo estimado y observación.
+
+            ----------------------------------------------------------------
+            9. PRODUCCION Y RENDIMIENTOS
+            ----------------------------------------------------------------
+            Para preparaciones base y transformación:
+              - Preparación
+              - Lote de producción
+              - Cantidad esperada
+              - Cantidad real
+              - Rendimiento %
+              - Diferencia
+              - Insumos consumidos
+              - Responsable
+              - Inicio / fin
+              - Observaciones
+
+            Ejemplos:
+              - Salsa
+              - Crema
+              - Preparaciones base
+              - Café tostado
+              - Café molido / empacado
+
+            ----------------------------------------------------------------
+            10. TRAZABILIDAD / FARM-TO-CUP
+            ----------------------------------------------------------------
+            Pantalla específica de Café Fusiones:
+
+              Productor / proveedor
+                ->
+              Recepción / lote
+                ->
+              Transformación / tostado
+                ->
+              Molienda / empaque
+                ->
+              Inventario
+                ->
+              Receta / preparación
+                ->
+              Pedido / venta
+
+            Debe poder consultarse desde ambos sentidos:
+              lote -> ventas relacionadas
+              venta -> lote(s) consumidos
+
+            ================================================================
+          -->
+
+          <section class="panel inventory-loading">
+            <div class="inventory-loading__icon" aria-hidden="true">📦</div>
+            <div>
+              <strong>Cargando inventario y logística...</strong>
+              <p>
+                Preparando stock, proveedores, recetas, lotes, mermas y
+                trazabilidad de Café Fusiones.
+              </p>
+            </div>
+          </section>
+        </main>
+      </div>
+
+      <nav
+        class="bottom-nav"
+        id="bottom-nav"
+        aria-label="Navegacion movil"
+      ></nav>
+
+      <div
+        class="toast-root"
+        id="toast-root"
+        aria-live="polite"
+        aria-atomic="true"
+      ></div>
+    </div>
+
+    <noscript>
+      <div class="panel">
+        Esta pantalla necesita JavaScript habilitado para operar Inventario.
+      </div>
+    </noscript>
+  </body>
+</html>

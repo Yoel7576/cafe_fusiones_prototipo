@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#5A2E1B">
+
+    <meta
+      name="description"
+      content="Configuración general, sucursales, categorías, usuarios y operación de Cafe Fusiones."
+    >
+
+    <title>Configuración | Cafe Fusiones</title>
+
+    <link rel="manifest" href="../manifest.webmanifest">
+    <link rel="icon" href="../assets/img/cafe-fusiones-mark.svg" type="image/svg+xml">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    >
+
+    <!-- Base -->
+    <link rel="stylesheet" href="../css/base/reset.css">
+    <link rel="stylesheet" href="../css/base/variables.css">
+    <link rel="stylesheet" href="../css/base/typography.css">
+
+    <!-- Layout -->
+    <link rel="stylesheet" href="../css/layout/app-shell.css">
+    <link rel="stylesheet" href="../css/layout/sidebar.css">
+    <link rel="stylesheet" href="../css/layout/topbar.css">
+
+    <!-- Componentes -->
+    <link rel="stylesheet" href="../css/components/buttons.css">
+    <link rel="stylesheet" href="../css/components/cards.css">
+    <link rel="stylesheet" href="../css/components/forms.css">
+    <link rel="stylesheet" href="../css/components/tables.css">
+    <link rel="stylesheet" href="../css/components/modals.css">
+
+    <!-- Tema general -->
+    <link rel="stylesheet" href="../css/base/theme-min.css">
+
+    <!-- Página: debe cargar al final para que sus ajustes específicos prevalezcan -->
+    <link rel="stylesheet" href="../css/pages/configuracion.css">
+
+    <!-- Controlador -->
+    <script type="module" src="../js/pages/configuracion.js"></script>
+  </head>
+
+  <body class="app-page settings-page" data-page="configuracion">
+    <div class="app-shell">
+
+      <aside
+        class="sidebar"
+        id="sidebar"
+        aria-label="Navegación principal"
+      ></aside>
+
+      <div class="workspace">
+
+        <header
+          class="topbar"
+          id="topbar"
+        ></header>
+
+        <main
+          class="content settings-content"
+          id="view"
+          tabindex="-1"
+          aria-live="polite"
+        >
+          <!--
+            ================================================================
+            CONFIGURACIÓN - ARQUITECTURA
+            ================================================================
+
+            Esta pantalla NO busca mostrar todos los campos al mismo tiempo.
+
+            Patrón UX:
+              1. Resumen primero.
+              2. Sección concreta después.
+              3. Formularios únicamente al crear/editar.
+              4. Opciones avanzadas bajo acción secundaria.
+              5. Evitar duplicar configuraciones entre módulos.
+
+            Navegación interna:
+
+              configuracion.html?tab=general
+              configuracion.html?tab=sucursales
+              configuracion.html?tab=categorias
+              configuracion.html?tab=usuarios
+              configuracion.html?tab=operacion
+
+            ----------------------------------------------------------------
+            1. GENERAL
+            ----------------------------------------------------------------
+
+            Mostrar únicamente datos esenciales del negocio:
+
+              - Nombre comercial
+              - Razón social
+              - RUC
+              - Dirección principal
+              - Moneda
+              - IGV
+              - Idioma
+
+            La intención es que esta vista sea breve.
+
+            Acciones:
+              - Editar datos del negocio
+              - Ver sucursal principal
+              - Ver estado operativo del sistema
+
+            ----------------------------------------------------------------
+            2. SUCURSALES
+            ----------------------------------------------------------------
+
+            Las sucursales son visibles porque afectan:
+
+              Ventas
+              Mesas
+              KDS
+              Caja
+              Inventario
+              Compras
+              Reservas
+              Reportes
+
+            Vista principal:
+              - Nombre
+              - Código
+              - Ciudad
+              - Dirección
+              - Principal
+              - Estado
+
+            Acciones:
+              - Nueva sucursal
+              - Editar
+              - Activar / desactivar
+              - Definir como principal
+
+            No mostrar inicialmente configuración técnica adicional.
+
+            Una sucursal NO debe eliminarse si ya tiene operaciones.
+            En ese caso se desactiva.
+
+            ----------------------------------------------------------------
+            3. CATEGORÍAS
+            ----------------------------------------------------------------
+
+            Las categorías son DINÁMICAS.
+
+            No se crean categorías comerciales por defecto.
+
+            Configuración administra el catálogo y los demás módulos
+            solamente lo consumen.
+
+            Ámbitos iniciales:
+
+              - Carta / productos
+              - Inventario / insumos
+              - Clientes
+              - Proveedores
+              - Gastos
+
+            Vista:
+              Selector de ámbito
+              +
+              lista de categorías existentes
+
+            Cada categoría muestra:
+              - Nombre
+              - Orden
+              - Sucursales donde aplica
+              - Estado
+
+            Acciones:
+              - Nueva categoría
+              - Editar
+              - Activar / desactivar
+              - Reordenar
+
+            Evitar mostrar IDs, timestamps u otros campos técnicos al usuario.
+
+            ----------------------------------------------------------------
+            4. USUARIOS Y PERMISOS
+            ----------------------------------------------------------------
+
+            Vista simple de personas con acceso al ERP.
+
+            Mostrar:
+              - Nombre
+              - Rol
+              - Sucursal(es)
+              - Último acceso
+              - Estado
+
+            Acciones:
+              - Nuevo usuario
+              - Editar
+              - Activar / desactivar
+              - Gestionar permisos
+
+            Los permisos detallados se muestran únicamente al seleccionar
+            "Gestionar permisos".
+
+            Roles esperados en la operación pueden incluir:
+
+              Administrador
+              Atención / Salón
+              Caja
+              Barra
+              Cocina
+              Almacén
+              Administrativo
+
+            Los roles NO deben limitar futuras configuraciones.
+
+            ----------------------------------------------------------------
+            5. OPERACIÓN
+            ----------------------------------------------------------------
+
+            Aquí se agrupan configuraciones que afectan el funcionamiento
+            diario, evitando crear muchas pestañas pequeñas.
+
+            Subbloques:
+
+              Mesas
+                - mapa por sucursal
+                - capacidad
+                - estado operativo
+
+              Estaciones
+                - Barra
+                - Cocina
+                - otras configurables
+                - relación con productos
+
+              Impresión / comprobantes
+                - impresora por estación
+                - impresión de comandas
+                - comprobantes
+
+              Sistema
+                - KDS activo
+                - fidelización activa
+                - parámetros generales
+
+            La pantalla principal muestra un resumen por bloque.
+
+            La edición se abre solamente cuando el usuario entra a cada uno.
+
+            ----------------------------------------------------------------
+            RELACIÓN CON EL ESTADO CENTRAL
+            ----------------------------------------------------------------
+
+            Sucursales:
+              state.branches
+
+            Sucursal activa:
+              state.settings.activeBranchId
+
+            Categorías:
+              state.categories
+
+            Usuarios:
+              state.users
+
+            Estaciones:
+              state.stations
+
+            Mesas:
+              state.tables
+
+            Configuración general:
+              state.settings
+
+            ----------------------------------------------------------------
+            REGLAS UX
+            ----------------------------------------------------------------
+
+            - No más de 4 indicadores por pantalla.
+            - No llenar la pantalla de inputs.
+            - Formularios solo en modal / drawer contextual.
+            - No pedir información técnica innecesaria.
+            - Mostrar nombres entendibles, no claves internas.
+            - Acciones peligrosas requieren confirmación.
+            - Desactivar antes que eliminar información con historial.
+            - Cambiar de sucursal no debe borrar información.
+            - Categorías nunca se crean automáticamente.
+
+            ================================================================
+          -->
+
+          <section class="panel settings-loading">
+            <div class="settings-loading__icon" aria-hidden="true">⚙</div>
+
+            <div>
+              <strong>Cargando configuración...</strong>
+              <p>
+                Preparando sucursales, categorías, usuarios y operación.
+              </p>
+            </div>
+          </section>
+
+        </main>
+
+      </div>
+
+      <nav
+        class="bottom-nav"
+        id="bottom-nav"
+        aria-label="Navegación móvil"
+      ></nav>
+
+      <div
+        class="toast-root"
+        id="toast-root"
+        aria-live="polite"
+        aria-atomic="true"
+      ></div>
+
+    </div>
+
+    <noscript>
+      <div class="panel">
+        Esta pantalla necesita JavaScript habilitado para administrar la configuración.
+      </div>
+    </noscript>
+
+  </body>
+</html>

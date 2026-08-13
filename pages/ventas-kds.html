@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#5A2E1B">
+    <meta
+      name="description"
+      content="KDS de Cafe Fusiones para Barra, Cocina y despacho directo de pedidos."
+    >
+    <title>Producción KDS | Cafe Fusiones</title>
+
+    <link rel="manifest" href="../manifest.webmanifest">
+    <link rel="icon" href="../assets/img/cafe-fusiones-mark.svg" type="image/svg+xml">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    >
+
+    <!-- Base -->
+    <link rel="stylesheet" href="../css/base/reset.css">
+    <link rel="stylesheet" href="../css/base/variables.css">
+    <link rel="stylesheet" href="../css/base/typography.css">
+
+    <!-- Layout -->
+    <link rel="stylesheet" href="../css/layout/app-shell.css">
+    <link rel="stylesheet" href="../css/layout/sidebar.css">
+    <link rel="stylesheet" href="../css/layout/topbar.css">
+
+    <!-- Componentes -->
+    <link rel="stylesheet" href="../css/components/buttons.css">
+    <link rel="stylesheet" href="../css/components/cards.css">
+    <link rel="stylesheet" href="../css/components/forms.css">
+    <link rel="stylesheet" href="../css/components/tables.css">
+    <link rel="stylesheet" href="../css/components/modals.css">
+
+    <!-- Ventas comparte estados y lenguaje visual -->
+    <link rel="stylesheet" href="../css/pages/ventas.css">
+
+    <!-- Estilos exclusivos del KDS -->
+    <link rel="stylesheet" href="../css/pages/ventas-kds.css">
+
+    <link rel="stylesheet" href="../css/base/theme-min.css">
+
+    <!-- Lógica del KDS -->
+    <script type="module" src="../js/pages/ventas-kds.js"></script>
+  </head>
+
+  <body class="app-page kds-page" data-page="ventas">
+    <div class="app-shell">
+      <aside
+        class="sidebar"
+        id="sidebar"
+        aria-label="Navegacion principal"
+      ></aside>
+
+      <div class="workspace">
+        <header class="topbar" id="topbar"></header>
+
+        <main class="content kds-content" id="view" tabindex="-1">
+          <!--
+            La pantalla se renderiza desde js/pages/ventas-kds.js.
+
+            Modos previstos:
+              ventas-kds.html?station=Todas
+              ventas-kds.html?station=Barra
+              ventas-kds.html?station=Cocina
+
+            Flujo de productos con preparación:
+              Nuevo -> En preparación -> Listo -> Entregado
+
+            Flujo de despacho directo:
+              Pendiente de entrega -> Entregado
+
+            Casos especiales:
+              - Cambio antes de iniciar: se actualiza sin merma.
+              - Cambio durante preparación: requiere aprobación y puede
+                generar "Merma de preparación".
+              - Cambio cuando ya está listo: puede generar
+                "Merma de producto terminado".
+              - Producto directo ya entregado: puede volver a stock si
+                sigue vendible, o generar merma si ya no puede venderse.
+
+            Vista esperada:
+              1. Cabecera de estación
+              2. Filtros rápidos
+              3. KPI operativos compactos
+              4. Columnas:
+                   Nuevos
+                   En preparación
+                   Listos
+              5. Bloque separado:
+                   Despacho directo
+              6. Modal de cambio solicitado
+          -->
+
+          <section class="panel kds-loading" aria-live="polite">
+            <div class="kds-loading__icon" aria-hidden="true">☕</div>
+            <div>
+              <strong>Cargando producción...</strong>
+              <p>
+                Preparando pedidos de Barra, Cocina y despacho directo.
+              </p>
+            </div>
+          </section>
+        </main>
+      </div>
+
+      <nav
+        class="bottom-nav"
+        id="bottom-nav"
+        aria-label="Navegacion movil"
+      ></nav>
+
+      <div
+        class="toast-root"
+        id="toast-root"
+        aria-live="polite"
+        aria-atomic="true"
+      ></div>
+    </div>
+
+    <noscript>
+      <div class="panel">
+        Esta pantalla necesita JavaScript habilitado para operar el KDS.
+      </div>
+    </noscript>
+  </body>
+</html>

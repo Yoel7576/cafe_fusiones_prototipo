@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#5A2E1B">
+    <meta
+      name="description"
+      content="Toma de pedido para mozos de Cafe Fusiones: carta, personalizacion, cliente y envio a produccion."
+    >
+    <title>Tomar pedido | Cafe Fusiones</title>
+
+    <link rel="manifest" href="../manifest.webmanifest">
+    <link rel="icon" href="../assets/img/cafe-fusiones-mark.svg" type="image/svg+xml">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    >
+
+    <!-- Base del proyecto -->
+    <link rel="stylesheet" href="../css/base/reset.css">
+    <link rel="stylesheet" href="../css/base/variables.css">
+    <link rel="stylesheet" href="../css/base/typography.css">
+
+    <!-- Layout -->
+    <link rel="stylesheet" href="../css/layout/app-shell.css">
+    <link rel="stylesheet" href="../css/layout/sidebar.css">
+    <link rel="stylesheet" href="../css/layout/topbar.css">
+
+    <!-- Componentes -->
+    <link rel="stylesheet" href="../css/components/buttons.css">
+    <link rel="stylesheet" href="../css/components/cards.css">
+    <link rel="stylesheet" href="../css/components/forms.css">
+    <link rel="stylesheet" href="../css/components/tables.css">
+    <link rel="stylesheet" href="../css/components/modals.css">
+
+    <!-- Ventas comparte lenguaje visual con el salon/KDS -->
+    <link rel="stylesheet" href="../css/pages/ventas.css">
+
+    <!-- Estilos exclusivos de esta pantalla; sera el siguiente archivo -->
+    <link rel="stylesheet" href="../css/pages/ventas-pedido.css">
+
+    <link rel="stylesheet" href="../css/base/theme-min.css">
+
+    <!-- Logica exclusiva de toma de pedido; sera el siguiente JS -->
+    <script type="module" src="../js/pages/ventas-pedido.js"></script>
+  </head>
+
+  <body class="app-page order-entry-page" data-page="ventas">
+    <div class="app-shell">
+      <aside
+        class="sidebar"
+        id="sidebar"
+        aria-label="Navegacion principal"
+      ></aside>
+
+      <div class="workspace">
+        <header class="topbar" id="topbar"></header>
+
+        <main class="content order-entry-content" id="view" tabindex="-1">
+          <!--
+            El contenido se renderiza desde js/pages/ventas-pedido.js.
+
+            Estructura prevista:
+            --------------------------------------------------------------
+            1. Cabecera contextual
+               - Volver al Salon
+               - Mesa/canal
+               - Personas
+               - Cliente asociado
+               - Estado del pedido
+
+            2. POS para tablet en tres zonas
+               - Izquierda: categorias
+               - Centro: buscador + productos reales de Cafe Fusiones
+               - Derecha: ticket fijo
+
+            3. Modales progresivos
+               - Personalizacion de cafe
+               - Opciones veganas/vegetarianas
+               - Observaciones
+               - Asociar cliente
+               - Confirmar envio a produccion
+
+            4. Acciones
+               - Guardar borrador
+               - Enviar a produccion
+               - Solicitar cuenta / Enviar a Caja
+
+            El cobro final NO ocurre en esta pantalla.
+            Caja se encarga de:
+               - medio(s) de pago
+               - efectivo/vuelto
+               - division de cuenta
+               - propina/descuento autorizado
+               - canje de recompensa
+               - boleta/factura
+               - cierre de la venta
+          -->
+          <section class="panel order-entry-loading" aria-live="polite">
+            <div>
+              <strong>Cargando toma de pedido...</strong>
+              <p>
+                Preparando carta, mesa, cliente y ticket de Cafe Fusiones.
+              </p>
+            </div>
+          </section>
+        </main>
+      </div>
+
+      <nav
+        class="bottom-nav"
+        id="bottom-nav"
+        aria-label="Navegacion movil"
+      ></nav>
+
+      <div
+        class="toast-root"
+        id="toast-root"
+        aria-live="polite"
+        aria-atomic="true"
+      ></div>
+    </div>
+
+    <noscript>
+      <div class="panel">
+        Esta pantalla necesita JavaScript habilitado para operar el pedido.
+      </div>
+    </noscript>
+  </body>
+</html>

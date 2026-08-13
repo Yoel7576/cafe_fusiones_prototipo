@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#5A2E1B">
+    <meta
+      name="description"
+      content="Clientes, fidelización, reservas y marketing de Cafe Fusiones."
+    >
+    <title>Clientes y Fidelización | Cafe Fusiones</title>
+
+    <link rel="manifest" href="../manifest.webmanifest">
+    <link rel="icon" href="../assets/img/cafe-fusiones-mark.svg" type="image/svg+xml">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    >
+
+    <!-- Base -->
+    <link rel="stylesheet" href="../css/base/reset.css">
+    <link rel="stylesheet" href="../css/base/variables.css">
+    <link rel="stylesheet" href="../css/base/typography.css">
+
+    <!-- Layout -->
+    <link rel="stylesheet" href="../css/layout/app-shell.css">
+    <link rel="stylesheet" href="../css/layout/sidebar.css">
+    <link rel="stylesheet" href="../css/layout/topbar.css">
+
+    <!-- Componentes -->
+    <link rel="stylesheet" href="../css/components/buttons.css">
+    <link rel="stylesheet" href="../css/components/cards.css">
+    <link rel="stylesheet" href="../css/components/forms.css">
+    <link rel="stylesheet" href="../css/components/tables.css">
+    <link rel="stylesheet" href="../css/components/modals.css">
+
+    <!-- Clientes -->
+    <link rel="stylesheet" href="../css/pages/clientes.css">
+    <link rel="stylesheet" href="../css/base/theme-min.css">
+
+    <!-- Controlador único del módulo -->
+    <script type="module" src="../js/pages/clientes.js"></script>
+  </head>
+
+  <body class="app-page clients-page" data-page="clientes">
+    <div class="app-shell">
+      <aside
+        class="sidebar"
+        id="sidebar"
+        aria-label="Navegacion principal"
+      ></aside>
+
+      <div class="workspace">
+        <header class="topbar" id="topbar"></header>
+
+        <main
+          class="content clients-content"
+          id="view"
+          tabindex="-1"
+          aria-live="polite"
+        >
+          <!--
+            ================================================================
+            CLIENTES Y FIDELIZACION - ARQUITECTURA
+            ================================================================
+
+            El contenido final se renderiza desde:
+              js/pages/clientes.js
+
+            Navegación interna prevista:
+              clientes.html?tab=clientes
+              clientes.html?tab=fidelizacion
+              clientes.html?tab=reservas
+              clientes.html?tab=marketing
+
+            ----------------------------------------------------------------
+            1. CLIENTES
+            ----------------------------------------------------------------
+            Vista operativa principal:
+              - Buscar por nombre / DNI / teléfono
+              - Segmento: Local / Turista
+              - Nivel de fidelización
+              - Puntos
+              - Visitas
+              - Última visita
+              - Gasto acumulado
+              - Ticket promedio
+              - Estado
+
+            Acciones:
+              - Nuevo cliente
+              - Ver ficha 360
+              - Editar
+              - Ver compras
+              - Ver puntos / recompensas
+              - Crear reserva
+
+            Alta rápida desde ventas:
+              - Nombre
+              - Teléfono
+              - Local / Turista
+              - DNI opcional
+              - Correo opcional
+
+            ----------------------------------------------------------------
+            2. FIDELIZACION
+            ----------------------------------------------------------------
+            Reglas configurables:
+              - Niveles: Bronze / Silver / Gold
+              - Acumulación de puntos
+              - Canje de recompensas
+              - Historial de puntos
+              - Recompensas activas
+              - Beneficios por nivel
+              - Promociones personalizadas
+
+            IMPORTANTE:
+              El TDR solicita niveles, puntos y redención, pero no define
+              una regla exacta. En el prototipo las reglas serán configurables.
+
+            Flujo:
+              Venta cerrada
+                ->
+              Cliente identificado
+                ->
+              Suma puntos
+                ->
+              Puede subir de nivel
+                ->
+              Caja puede canjear recompensa
+
+            ----------------------------------------------------------------
+            3. RESERVAS
+            ----------------------------------------------------------------
+            Gestión:
+              - Cliente
+              - Fecha
+              - Hora
+              - Número de personas
+              - Mesa preferida
+              - Canal: llamada / presencial / web / WhatsApp
+              - Estado
+              - Observaciones
+
+            Estados:
+              - Pendiente
+              - Confirmada
+              - Llegó
+              - Atendida
+              - Cancelada
+              - No asistió
+
+            Integración con Ventas:
+              Reserva confirmada
+                ->
+              Mesa = Reservada
+
+              Cliente llega
+                ->
+              Reserva = Llegó
+                ->
+              Mesa = Ocupada
+                ->
+              Cliente queda asociado al pedido
+
+            ----------------------------------------------------------------
+            4. MARKETING
+            ----------------------------------------------------------------
+            Marketing operativo dentro del módulo Clientes:
+
+              Segmentos:
+                - Clientes Gold
+                - Turistas
+                - Locales frecuentes
+                - Inactivos 30 / 60 / 90 días
+                - Cumpleaños
+                - Alto ticket promedio
+                - Clientes nuevos
+
+              Campañas:
+                - Nombre
+                - Canal
+                - Segmento
+                - Estado
+                - Fecha
+                - Alcance
+                - Leads
+                - Conversiones
+
+              Automatizaciones previstas:
+                - Cumpleaños
+                - Post-compra
+                - Recompensa disponible
+                - Cliente inactivo
+                - Lanzamiento
+                - Campaña especial
+
+            Reportes profundos de marketing se mostrarán luego
+            en el módulo Reportes.
+
+            ----------------------------------------------------------------
+            FICHA 360 DEL CLIENTE
+            ----------------------------------------------------------------
+            Se abrirá como vista/modal contextual desde Clientes.
+
+            Datos:
+              - Perfil
+              - Segmento
+              - Nivel
+              - Puntos
+              - Visitas
+              - Gasto acumulado
+              - Ticket promedio
+              - Última visita
+
+            Sub-secciones:
+              Resumen
+              Compras
+              Puntos y recompensas
+              Reservas
+              Actividad
+
+            Preferencias opcionales:
+              - Leche vegetal
+              - Sin azúcar
+              - Vegetariano
+              - Vegano
+              - Observaciones
+
+            ----------------------------------------------------------------
+            INTEGRACION GENERAL
+            ----------------------------------------------------------------
+
+            Ventas
+              ->
+            Identificar cliente
+              ->
+            Pedido
+              ->
+            Caja
+              ->
+            Canje / pago
+              ->
+            Venta cerrada
+              ->
+            Puntos / nivel
+              ->
+            Historial cliente
+              ->
+            Reportes / Marketing
+
+            ================================================================
+          -->
+
+          <section class="panel clients-loading">
+            <div class="clients-loading__icon" aria-hidden="true">👥</div>
+            <div>
+              <strong>Cargando clientes y fidelización...</strong>
+              <p>
+                Preparando clientes, puntos, niveles, reservas y campañas.
+              </p>
+            </div>
+          </section>
+        </main>
+      </div>
+
+      <nav
+        class="bottom-nav"
+        id="bottom-nav"
+        aria-label="Navegacion movil"
+      ></nav>
+
+      <div
+        class="toast-root"
+        id="toast-root"
+        aria-live="polite"
+        aria-atomic="true"
+      ></div>
+    </div>
+
+    <noscript>
+      <div class="panel">
+        Esta pantalla necesita JavaScript habilitado para operar Clientes.
+      </div>
+    </noscript>
+  </body>
+</html>

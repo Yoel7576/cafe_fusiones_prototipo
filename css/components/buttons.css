@@ -1,0 +1,135 @@
+/* Cafe Fusiones - components/buttons.css (generado desde styles.css, sin cambios visuales) */
+
+.button,
+  .icon-button,
+  .profile-button,
+  .nav-button,
+  .chip,
+  .segmented button {
+    min-height: 44px;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    transition: transform .18s var(--ease), border-color .18s var(--ease), background .18s var(--ease), color .18s var(--ease), box-shadow .18s var(--ease);
+  }
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 0 18px;
+    font-weight: 800;
+  }
+.button svg,
+  .icon-button svg,
+  .nav-button svg,
+  .field__control svg,
+  .search-box svg,
+  .profile-button svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex: 0 0 auto;
+  }
+.button:hover,
+  .icon-button:hover,
+  .profile-button:hover,
+  .nav-button:hover,
+  .chip:hover,
+  .segmented button:hover {
+    transform: translateY(-1px);
+  }
+.button--primary {
+    color: #fff;
+    background: var(--red);
+    box-shadow: 0 10px 24px rgba(184, 30, 45, .2);
+  }
+.button--primary:hover {
+    background: var(--red-dark);
+  }
+.button--secondary {
+    color: var(--brown);
+    background: var(--cream-2);
+    border-color: var(--line);
+  }
+.button--ghost {
+    color: var(--brown);
+    background: rgba(90, 46, 27, .08);
+  }
+.button--block {
+    width: 100%;
+  }
+.button--xl {
+    min-height: 64px;
+    padding: 0 28px;
+    font-size: 1.05rem;
+  }
+.icon-button {
+    width: 44px;
+    display: inline-grid;
+    place-items: center;
+    color: var(--brown);
+    background: var(--panel);
+    border-color: var(--line);
+  }
+.icon-button:focus-visible,
+  .button:focus-visible,
+  .nav-button:focus-visible,
+  .profile-button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 3px solid rgba(212, 160, 23, .45);
+    outline-offset: 2px;
+  }
+.segmented,
+  .chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+.segmented {
+    margin-bottom: 16px;
+  }
+.segmented button,
+  .chip {
+    min-height: 38px;
+    padding: 0 12px;
+    border-color: var(--line);
+    background: var(--panel);
+    color: var(--brown);
+    font-weight: 800;
+  }
+.segmented button.is-active,
+  .chip.is-active {
+    color: #fff;
+    background: var(--brown);
+    border-color: var(--brown);
+  }
+.mini-button {
+    min-height: 32px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 0 10px;
+    color: var(--brown);
+    background: var(--cream-2);
+    font-size: .78rem;
+    font-weight: 900;
+  }
+.mini-button:hover {
+    border-color: var(--gold);
+  }
+.segmented--compact {
+    margin-bottom: 12px;
+  }
+.mini-button--danger {
+  color: var(--red);
+  border-color: #f3c2c6;
+  background: #fff1f2;
+}
+.mini-button {
+  margin-left: 8px;
+}

@@ -1,0 +1,133 @@
+/* Cafe Fusiones - components/forms.css (generado desde styles.css, sin cambios visuales) */
+
+.select-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+.select-row label {
+    display: grid;
+    gap: 7px;
+    color: var(--muted);
+    font-size: .78rem;
+    font-weight: 800;
+  }
+.select-row select,
+  .textarea {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: #fff;
+  }
+.select-row select {
+    min-height: 42px;
+    padding: 0 10px;
+  }
+.textarea {
+    min-height: 74px;
+    resize: vertical;
+    padding: 10px;
+  }
+.filter-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.filter-row label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-size: .82rem;
+  font-weight: 800;
+}
+.filter-row select,
+.admin-row--edit input,
+.admin-row--edit select {
+  min-height: 42px;
+  width: 100%;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--ink);
+}
+@media (max-width: 720px) {
+  .filter-row,
+  .admin-row--edit {grid-template-columns: 1fr;}
+}
+.filter-row {
+  margin-bottom: 20px;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  align-items: end;
+  margin-top: 12px;
+}
+.form-grid label {
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+.form-grid input,
+.form-grid select,
+.form-grid textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  transition: border-color 0.2s var(--ease);
+}
+.form-grid input:focus-visible,
+.form-grid select:focus-visible,
+.form-grid textarea:focus-visible {
+  border-color: var(--gold);
+  outline: 3px solid rgba(212, 160, 23, .2);
+}
+.form-grid .span-2 {
+  grid-column: 1 / -1; 
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  align-items: end;
+}
+.form-grid label {
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+  font-size: .86rem;
+  font-weight: 800;
+}
+.form-grid input,
+.form-grid select,
+.form-grid textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+.form-grid textarea {
+  min-height: 86px;
+  resize: vertical;
+}
+.form-grid .span-2 {
+  grid-column: 1 / -1;
+}
+.form-grid--compact {
+  gap: 12px;
+  margin-top: 10px;
+}

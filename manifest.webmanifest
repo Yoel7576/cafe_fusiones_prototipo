@@ -1,0 +1,12 @@
+{
+  "name": "Cafe Fusiones Sistema",
+  "short_name": "Cafe Fusiones",
+  "description": "Sistema integrado para ventas, cocina, inventario, clientes y reportes.",
+  "start_url": "./pages/login.html",
+  "display": "standalone",
+  "background_color": "#F5EFE6",
+  "theme_color": "#5A2E1B",
+  "icons": [
+    { "src": "./assets/img/cafe-fusiones-mark.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

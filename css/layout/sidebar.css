@@ -1,0 +1,102 @@
+/* Cafe Fusiones - layout/sidebar.css (generado desde styles.css, sin cambios visuales) */
+
+.sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    padding: 24px 18px;
+    border-right: 1px solid rgba(231, 217, 203, .82);
+    background: var(--brown);
+    color: #fff;
+  }
+.bottom-nav {
+    display: none;
+  }
+.brand-lockup {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px;
+    border-radius: var(--radius);
+  }
+.brand-lockup img {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+  }
+.brand-lockup strong,
+  .brand-lockup small {
+    display: block;
+  }
+.brand-lockup small {
+    color: rgba(255, 255, 255, .68);
+  }
+.side-nav {
+    display: grid;
+    gap: 8px;
+  }
+.nav-button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 12px;
+    color: rgba(255, 255, 255, .78);
+    background: transparent;
+    text-align: left;
+    font-weight: 800;
+  }
+.nav-button[aria-current="page"] {
+    color: #fff;
+    background: rgba(255, 255, 255, .12);
+    border-color: rgba(255, 255, 255, .12);
+  }
+.sidebar-note {
+    margin-top: auto;
+    display: grid;
+    gap: 5px;
+    padding: 16px;
+    border-radius: var(--radius);
+    background: rgba(255, 255, 255, .1);
+  }
+.sidebar-note span {
+    color: rgba(255, 255, 255, .72);
+    font-size: .84rem;
+  }
+@media (max-width: 920px) {
+  .sidebar {display: none;}
+  .bottom-nav {position: fixed;
+    right: 10px;
+    bottom: 10px;
+    left: 10px;
+    z-index: 60;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 4px;
+    padding: 6px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: rgba(255, 253, 248, .94);
+    box-shadow: var(--shadow-md);
+    backdrop-filter: blur(18px);}
+  .bottom-nav .nav-button {min-height: 56px;
+    justify-content: center;
+    gap: 5px;
+    padding: 6px 3px;
+    color: var(--muted);
+    flex-direction: column;
+    font-size: .68rem;
+    text-align: center;}
+  .bottom-nav .nav-button[aria-current="page"] {color: var(--red);
+    background: rgba(184, 30, 45, .08);
+    border-color: transparent;}
+  .bottom-nav .nav-button svg {width: 20px;
+    height: 20px;}
+}
+
+/* --- V3: acciones de cuenta al fondo del menu lateral --- */
+.side-actions { margin-top: auto; display: grid; gap: 6px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.16); }
+.side-actions .nav-button { font-weight: 700; }

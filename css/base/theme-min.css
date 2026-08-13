@@ -1,0 +1,83 @@
+/* Cafe Fusiones - Capa minimalista (blanco + negro, tipografia Inter).
+   Se carga la ULTIMA en cada pagina para ajustar el look sin tocar el resto del CSS.
+   Regla del jefe: fondo blanco, bloques en gris muy sutil, texto negro fuera del menu
+   lateral; solo se conservan colores en Ingresos (azul) y Egresos (rojo). */
+
+:root {
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/* --- Fondos blancos --- */
+.app-page,
+.app-shell,
+.workspace,
+.content { background: #ffffff; }
+
+.topbar {
+  background: #ffffff;
+  border-bottom: 1px solid #ececee;
+  backdrop-filter: none;
+}
+
+/* --- Bloques destacados con gris muy sutil --- */
+.content .panel,
+.content .metric-card,
+.content .table-wrap,
+.content .order-card,
+.content .product-card,
+.content .customer-card,
+.content .report-card {
+  background: #ffffff;
+  border-color: #e6e6e8;
+  box-shadow: 0 1px 3px rgba(17, 17, 17, .05);
+}
+.content .panel--flat { background: #fbfbfc; box-shadow: none; }
+.data-table th { background: #f5f5f6; }
+.modal,
+.modal__header { background: #ffffff; backdrop-filter: none; }
+
+/* --- Texto negro fuera del menu lateral (jerarquia por grosor, no por color) --- */
+.content { color: #111111; }
+.content h1, .content h2, .content h3,
+.panel__header h2, .panel__header h3, .modal__header h2,
+.metric-card strong, .home-cta h2, .login-card__copy h2,
+.table-tile strong, .price, .timeline-item time, .topbar h1,
+.product-card h3, .order-card h3, .customer-card h3, .trace-card h3,
+.cierre-line strong { color: #111111; }
+
+.muted, .metric-card p, .panel__muted, .bar-row, .content small { color: #4a4a4a; }
+.eyebrow { color: #4a4a4a; }
+
+/* --- Etiquetas de estado: neutras; solo alertas del sistema en rojo --- */
+.content .status,
+.content .trend, .content .trend--warn, .content .trend--danger {
+  background: #eef0f2;
+  color: #111111;
+}
+.content .status--danger,
+.content .status--low { background: #fdecea; color: #c62828; }
+
+/* --- Botones secundarios / segmentos en blanco-gris minimalista --- */
+.content .button--secondary,
+.content .mini-button,
+.content .segmented button,
+.content .chip {
+  background: #ffffff;
+  border-color: #d9d9dd;
+  color: #111111;
+}
+.content .segmented button.is-active,
+.content .chip.is-active { background: #111111; border-color: #111111; color: #ffffff; }
+.content .mini-button--danger { background: #fff5f4; border-color: #f2c9c4; color: #c62828; }
+
+/* --- Excepciones del sistema: Ingresos (azul) y Egresos (rojo) --- */
+.txt-income { color: #1f6feb !important; }
+.txt-expense { color: #c62828 !important; }
+.metric-card--income strong { color: #1f6feb !important; }
+.metric-card--expense strong { color: #c62828 !important; }
+
+/* --- Tipografia Inter: jerarquia por grosor --- */
+body { font-family: var(--font-sans); }
+h1, h2, h3 { font-weight: 800; letter-spacing: -.01em; }
+.content, .modal { font-feature-settings: "cv11", "ss01"; }

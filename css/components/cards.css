@@ -1,0 +1,303 @@
+/* Cafe Fusiones - components/cards.css (generado desde styles.css, sin cambios visuales) */
+
+.eyebrow {
+    color: var(--gold);
+    font-size: .72rem;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+.metric-card,
+  .panel,
+  .table-wrap,
+  .order-card,
+  .product-card,
+  .customer-card,
+  .report-card,
+  .module-card {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--panel);
+    box-shadow: var(--shadow-sm);
+  }
+.metric-card {
+    min-height: 132px;
+    display: grid;
+    gap: 10px;
+    padding: 18px;
+  }
+.metric-card__top,
+  .panel__header,
+  .order-card__header,
+  .table-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+.metric-card strong {
+    color: var(--brown);
+    font-size: 1.9rem;
+    line-height: 1;
+  }
+.metric-card p,
+  .panel__muted,
+  .muted {
+    color: var(--muted);
+    font-size: .88rem;
+  }
+.trend {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 0 9px;
+    border-radius: 999px;
+    color: var(--green);
+    background: var(--green-soft);
+    font-size: .78rem;
+    font-weight: 900;
+  }
+.trend--warn {
+    color: var(--warn);
+    background: var(--warn-soft);
+  }
+.trend--danger {
+    color: var(--red);
+    background: var(--danger-soft);
+  }
+.panel {
+    padding: 18px;
+  }
+.panel--flat {
+    box-shadow: none;
+  }
+.panel__header {
+    margin-bottom: 16px;
+  }
+.panel__header h2,
+  .panel__header h3 {
+    color: var(--brown);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+  }
+.chart-bars {
+    display: grid;
+    gap: 12px;
+  }
+.bar-row {
+    display: grid;
+    grid-template-columns: 120px minmax(0, 1fr) 56px;
+    gap: 10px;
+    align-items: center;
+    color: var(--muted);
+    font-size: .84rem;
+    font-weight: 700;
+  }
+.bar-track {
+    height: 10px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: #efe3d8;
+  }
+.bar-fill {
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--red), var(--gold));
+  }
+.module-card {
+    min-height: 146px;
+    display: grid;
+    align-content: space-between;
+    gap: 18px;
+    padding: 18px;
+  }
+.module-card svg {
+    width: 34px;
+    height: 34px;
+    color: var(--red);
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+.module-card__copy {
+    display: grid;
+    gap: 6px;
+    text-align: left;
+  }
+.module-card__title {
+    display: block;
+    font-family: var(--font-sans);
+    color: var(--brown);
+    font-size: 1rem;
+    font-weight: 900;
+  }
+.module-card__text {
+    display: block;
+    color: var(--muted);
+    font-size: .86rem;
+  }
+.price {
+    color: var(--red);
+    font-weight: 900;
+  }
+.alert-list {
+    display: grid;
+    gap: 10px;
+  }
+.alert-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+    padding: 12px;
+    border-radius: var(--radius);
+    background: #fff7ea;
+  }
+.alert-row__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--warn);
+  }
+.alert-row.is-danger {
+    background: #fff0f1;
+  }
+.alert-row.is-danger .alert-row__dot {
+    background: var(--red);
+  }
+.donut {
+    width: 148px;
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    margin: 14px auto 0;
+    border-radius: 50%;
+    background: conic-gradient(var(--red) 0 43%, var(--gold) 43% 68%, var(--green) 68% 84%, var(--blue) 84% 100%);
+  }
+.donut span {
+    width: 88px;
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--panel);
+    color: var(--brown);
+    font-weight: 900;
+  }
+.timeline {
+    display: grid;
+    gap: 12px;
+  }
+.timeline-item {
+    display: grid;
+    grid-template-columns: 88px minmax(0, 1fr);
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+  }
+.timeline-item:last-child {
+    border-bottom: 0;
+  }
+.timeline-item time {
+    color: var(--red);
+    font-weight: 900;
+    font-size: .82rem;
+  }
+.trace-list {
+    display: grid;
+    gap: 12px;
+  }
+.trace-card {
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: #fff;
+  }
+.trace-card h3 {
+    color: var(--brown);
+    font-family: var(--font-sans);
+    font-size: .96rem;
+  }
+.trace-card ol {
+    margin: 10px 0 0;
+    padding-left: 22px;
+    color: var(--muted);
+    font-size: .86rem;
+  }
+.empty-state {
+    min-height: 180px;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    border: 1px dashed var(--line);
+    border-radius: var(--radius);
+    color: var(--muted);
+    text-align: center;
+  }
+@media (max-width: 720px) {
+  .bar-row {grid-template-columns: 92px minmax(0, 1fr) 42px;}
+}
+.panel__header--wrap {
+  flex-wrap: wrap;
+}
+.donut {
+  width: min(190px, 72vw);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  margin: 0 auto;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(61, 33, 21, .08);
+}
+.donut span {
+  width: 104px;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--panel);
+  color: var(--brown);
+  font-weight: 900;
+}
+.donut-legend,
+.traceability-list {
+  display: grid;
+  gap: 10px;
+}
+.donut-legend span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: .84rem;
+  font-weight: 800;
+}
+.donut-legend i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+.trace-card {
+  display: grid;
+  gap: 8px;
+}
+.text-center {
+  text-align: center;
+}
+.panel {
+  overflow-wrap: anywhere;
+}
+.sale-section-divider {
+  height: 0;
+  margin: 20px 0 4px;
+  border-top: 1px dashed var(--line);
+}
+
+/* --- MODULAR: tarjeta de pedido compartida (Operaciones y Ventas) --- */
+.order-list { display: grid; gap: 12px; }
+.order-card { display: grid; gap: 10px; padding: 14px; }
+.order-card ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: .84rem; }
+.order-actions { display: flex; flex-wrap: wrap; gap: 8px; }

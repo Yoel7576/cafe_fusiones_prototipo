@@ -1,0 +1,154 @@
+/* Cafe Fusiones - components/tables.css (generado desde styles.css, sin cambios visuales) */
+
+.table-wrap {
+    overflow: hidden;
+  }
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 680px;
+  }
+.data-table th,
+  .data-table td {
+    padding: 13px 14px;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: middle;
+    font-size: .88rem;
+  }
+.data-table th {
+    color: var(--brown);
+    background: #fbf2e8;
+    font-size: .76rem;
+    text-transform: uppercase;
+  }
+.data-table tr:last-child td {
+    border-bottom: 0;
+  }
+.status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 26px;
+    padding: 0 9px;
+    border-radius: 999px;
+    color: var(--brown);
+    background: var(--cream);
+    font-size: .74rem;
+    font-weight: 900;
+    white-space: nowrap;
+  }
+.status--ok {
+    color: var(--green);
+    background: var(--green-soft);
+  }
+.status--busy,
+  .status--prep {
+    color: var(--warn);
+    background: var(--warn-soft);
+  }
+.status--danger,
+  .status--low {
+    color: var(--red);
+    background: var(--danger-soft);
+  }
+.status--info {
+    color: var(--blue);
+    background: var(--blue-soft);
+  }
+.table-map {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(124px, 1fr));
+    gap: 12px;
+  }
+.table-tile {
+    min-height: 116px;
+    display: grid;
+    gap: 8px;
+    align-content: center;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--panel);
+    text-align: center;
+  }
+.table-tile strong {
+    color: var(--brown);
+    font-size: 1.15rem;
+  }
+.table-tile.is-free {
+    border-color: rgba(47, 107, 79, .28);
+  }
+.table-tile.is-busy {
+    border-color: rgba(166, 95, 22, .34);
+    background: #fffaf2;
+  }
+.table-tile.is-ready {
+    border-color: rgba(61, 111, 142, .34);
+    background: #f5fbff;
+  }
+.table-tile.is-selected {
+    border-color: var(--red);
+    box-shadow: 0 0 0 3px rgba(184, 30, 45, .14);
+  }
+.table-map--modal {
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    margin-top: 12px;
+  }
+@media (max-width: 720px) {
+  .table-toolbar,
+  .panel__header,
+  .metric-card__top {align-items: flex-start;
+    flex-direction: column;}
+  .table-wrap {overflow-x: auto;}
+}
+.data-table th, 
+.data-table td {
+  padding: 18px 20px !important; 
+  line-height: 1.6;
+}
+.table-wrap {
+  margin-top: 24px;
+  border-radius: var(--radius);
+}
+.data-table th,
+.data-table td {
+  padding: 18px 20px !important;
+  line-height: 1.6;
+}
+.table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+}
+.table-wrap .data-table {
+  min-width: 760px;
+}
+.data-table th,
+.data-table td {
+  white-space: nowrap;
+}
+.data-table td:nth-child(2),
+.data-table th:nth-child(2) {
+  white-space: normal;
+  min-width: 220px;
+}
+.table-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.table-actions .mini-button {
+  margin-left: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.table-actions .mini-button svg {
+  width: 15px;
+  height: 15px;
+}

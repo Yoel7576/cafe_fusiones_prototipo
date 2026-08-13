@@ -1,0 +1,62 @@
+/* Cafe Fusiones - layout/app-shell.css (generado desde styles.css, sin cambios visuales) */
+
+.app-shell {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: var(--sidebar) minmax(0, 1fr);
+    background:
+      linear-gradient(180deg, rgba(245, 239, 230, .9), rgba(245, 239, 230, .98)),
+      var(--cream);
+  }
+.workspace {
+    min-width: 0;
+    display: grid;
+    grid-template-rows: var(--topbar) minmax(0, 1fr);
+  }
+[hidden] {
+    display: none !important;
+  }
+.content {
+    min-width: 0;
+    padding: 28px;
+  }
+.view-stack {
+    display: grid;
+    gap: 22px;
+  }
+.grid {
+    display: grid;
+    gap: 18px;
+  }
+.grid--2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+.grid--3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+.grid--4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+.split {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(320px, .6fr);
+    gap: 18px;
+    align-items: start;
+  }
+@media (max-width: 1180px) {
+  .grid--4 {grid-template-columns: repeat(2, minmax(0, 1fr));}
+  .split,
+  .hero-panel,
+  .home-cta,
+  .sale-modal__body {grid-template-columns: 1fr;}
+}
+@media (max-width: 920px) {
+  .app-shell {grid-template-columns: 1fr;}
+  .workspace {grid-template-rows: auto minmax(0, 1fr);}
+  .content {padding: 16px 14px 92px;}
+}
+.view-stack > .panel,
+.view-stack > .grid,
+.report-layout {
+  width: 100%;
+}

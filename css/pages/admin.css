@@ -1,0 +1,123 @@
+/* Cafe Fusiones - pages/admin.css (generado desde styles.css, sin cambios visuales) */
+
+.admin-list {
+    display: grid;
+    gap: 10px;
+  }
+.admin-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 12px;
+    align-items: center;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: #fff;
+  }
+.admin-row select,
+  .admin-form input,
+  .admin-form select {
+    min-height: 42px;
+    width: 100%;
+    padding: 0 10px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: #fff;
+  }
+.admin-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+  }
+.admin-form .button {
+    grid-column: 1 / -1;
+  }
+.admin-map {
+    display: grid;
+    gap: 14px;
+  }
+.admin-map h3 {
+    margin-bottom: 8px;
+    color: var(--brown);
+    font-family: var(--font-sans);
+    font-size: .94rem;
+  }
+.admin-row--edit {
+  grid-template-columns: minmax(160px, 1fr) minmax(130px, .7fr) minmax(120px, .6fr) auto;
+}
+.admin-traceability .panel,
+.reports-grid .panel {
+  min-width: 0;
+}
+.category-panel {
+  align-content: start;
+  min-height: auto;
+}
+.category-form {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(170px, auto);
+  gap: 14px;
+  align-items: end;
+  margin-bottom: 18px;
+}
+.category-form label {
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+  font-size: .86rem;
+  font-weight: 800;
+}
+.category-form input {
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-weight: 800;
+}
+.category-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  gap: 10px;
+}
+.category-pill {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border: 1px solid #eadbcc;
+  border-radius: var(--radius);
+  background: #fff8ef;
+  color: var(--brown);
+  font-size: .78rem;
+  font-weight: 900;
+  line-height: 1.2;
+  text-align: center;
+}
+@media (max-width: 720px) {
+  .category-form {grid-template-columns: 1fr;}
+  .category-form .button {width: 100%;}
+  .category-list {grid-template-columns: repeat(2, minmax(0, 1fr));}
+}
+
+/* --- MODULAR: alta de nuevo usuario en filas apiladas (mejora del jefe) --- */
+.admin-user-form { display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 22px; padding-top: 22px; border-top: 1px solid var(--line); }
+.admin-user-form h3 { color: var(--brown); font-family: var(--font-sans); font-size: 1rem; }
+.admin-user-form label { display: grid; gap: 8px; color: var(--muted); font-size: .86rem; font-weight: 800; }
+.admin-user-form input, .admin-user-form select { width: 100%; min-height: 44px; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; color: var(--ink); font-family: var(--font-sans); }
+.admin-user-form .button { justify-self: start; }
+@media (max-width: 720px) { .admin-user-form .button { width: 100%; } }
+
+/* --- V3: gestion de platos + recetas --- */
+.check-inline { display: flex; flex-direction: row; align-items: center; gap: 10px; font-weight: 600; }
+.check-inline input { width: 18px; height: 18px; flex: 0 0 auto; accent-color: #111; }
+.recipe-add { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 14px 0; }
+.recipe-add select { flex: 1 1 200px; min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; color: var(--ink); }
+.recipe-add input { width: 110px; min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; color: var(--ink); }
+.sale-field { display: grid; gap: 8px; margin: 8px 0 14px; font-weight: 700; }
+.sale-field select, .sale-field input { width: 100%; min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; color: var(--ink); }

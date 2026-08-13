@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#5A2E1B">
+    <meta name="description" content="Acceso al sistema de gestion de Cafe Fusiones.">
+    <title>Iniciar sesion | Cafe Fusiones</title>
+    <link rel="manifest" href="../manifest.webmanifest">
+    <link rel="icon" href="../assets/img/cafe-fusiones-mark.svg" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="preload" href="../assets/img/cafe-hero.webp" as="image">
+    <link rel="stylesheet" href="../css/base/reset.css">
+    <link rel="stylesheet" href="../css/base/variables.css">
+    <link rel="stylesheet" href="../css/base/typography.css">
+    <link rel="stylesheet" href="../css/components/buttons.css">
+    <link rel="stylesheet" href="../css/components/forms.css">
+    <link rel="stylesheet" href="../css/pages/login.css">
+    <link rel="stylesheet" href="../css/base/theme-min.css">
+    <script type="module" src="../js/pages/login.js"></script>
+  </head>
+  <body class="auth-page">
+    <main class="auth-shell" aria-labelledby="login-title">
+      <section class="auth-visual" aria-label="Cafe Fusiones">
+        <div class="auth-visual__overlay"></div>
+        <div class="auth-brand">
+          <img class="auth-brand__logo" src="../assets/img/logo-intro.webp" alt="Cafe Fusiones">
+        </div>
+      </section>
+      <section class="login-panel" aria-label="Acceso al sistema">
+        <div class="login-card">
+          <img class="login-card__mark" src="../assets/img/cafe-fusiones-mark.svg" alt="" aria-hidden="true">
+          <div class="login-card__copy"><h2 id="login-title">Iniciar sesion</h2></div>
+          <form class="login-form" id="login-form" novalidate>
+            <label class="field">
+              <span>Usuario</span>
+              <span class="field__control">
+                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>
+                <input id="username" name="username" type="text" autocomplete="username" value="CFUSIONES" required>
+              </span>
+            </label>
+            <label class="field">
+              <span>Clave</span>
+              <span class="field__control">
+                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.6 7.6a5 5 0 1 1-7-7 5 5 0 0 1 7 7Zm0 0L15 8m0 0 3 3 3-3-3-3"/></svg>
+                <input id="password" name="password" type="password" autocomplete="current-password" value="prototipo" required>
+                <button class="icon-button field__toggle" type="button" id="toggle-password" aria-label="Mostrar clave">
+                  <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </span>
+            </label>
+            <p class="form-message" id="login-message" role="status" aria-live="polite"></p>
+            <button class="button button--primary button--block" type="submit">
+              <span>Ingresar</span>
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+            </button>
+          </form>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

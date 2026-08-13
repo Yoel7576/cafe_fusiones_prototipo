@@ -1,0 +1,92 @@
+/* Cafe Fusiones - pages/reportes.css (generado desde styles.css, sin cambios visuales) */
+
+.report-card {
+    min-height: 180px;
+    padding: 18px;
+  }
+.report-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(280px, .45fr);
+  gap: 18px;
+  align-items: stretch;
+}
+.report-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.report-card {
+  display: grid;
+  align-content: center;
+  gap: 16px;
+  text-align: center;
+}
+@media (max-width: 1180px) {
+  .report-layout {grid-template-columns: 1fr;}
+}
+.report-filter-panel {
+  padding-bottom: 16px;
+}
+.report-filter-row {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  margin-bottom: 0;
+}
+.report-kpis .metric-card,
+.compact-kpis article {
+  min-height: auto;
+}
+.compact-kpis {
+  margin-bottom: 16px;
+}
+.compact-kpis article {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+}
+.compact-kpis strong {
+  color: var(--brown);
+  font-size: 1.24rem;
+}
+.compact-kpis span {
+  color: var(--muted);
+  font-size: .78rem;
+  font-weight: 800;
+}
+.reports-grid .table-wrap,
+.report-layout .table-wrap,
+.inventory-view .table-wrap {
+  margin-top: 10px;
+}
+@media (max-width: 920px) {
+  .report-filter-row {grid-template-columns: 1fr;}
+}
+.reports-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+.reports-grid .panel {
+  overflow: hidden;
+}
+.reports-grid .data-table {
+  min-width: 920px;
+}
+.report-actions .mini-button {
+  min-height: 38px;
+  margin-left: 0;
+  padding: 0 14px;
+  background: #fff;
+}
+.report-range-caption {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: .88rem;
+  font-weight: 700;
+}
+.report-range-caption strong {
+  color: var(--brown);
+}
