@@ -4,9 +4,13 @@
     min-height: 100vh;
     display: grid;
     grid-template-columns: var(--sidebar) minmax(0, 1fr);
+    transition: grid-template-columns .2s ease;
     background:
       linear-gradient(180deg, rgba(245, 239, 230, .9), rgba(245, 239, 230, .98)),
       var(--cream);
+  }
+  .app-shell.sidebar-collapsed {
+    grid-template-columns: 88px minmax(0, 1fr);
   }
 .workspace {
     min-width: 0;

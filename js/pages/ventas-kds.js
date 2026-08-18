@@ -50,7 +50,7 @@ function init() {
 
   renderSidebar("ventas", session.role);
   renderTopbar({
-    title: "Produccion KDS",
+    title: "Producción",
     eyebrow: stationEyebrow(),
     searchPlaceholder: "Buscar mesa, pedido o producto...",
     onSearch: (query) => {

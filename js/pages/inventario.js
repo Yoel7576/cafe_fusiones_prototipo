@@ -20,8 +20,7 @@ const params = new URLSearchParams(location.search);
 const TABS = [
   ["resumen","Resumen","▦"],["stock","Stock","▤"],["kardex","Kardex","↕"],
   ["lotes","Lotes","◫"],["compras","Compras","🛒"],["proveedores","Proveedores","◎"],
-  ["recetas","Recetas / BOM","◈"],["mermas","Mermas","△"],
-  ["produccion","Producción","⚙"],["trazabilidad","Farm-to-Cup","⌁"]
+  ["mermas","Mermas","△"],["produccion","Producción","⚙"]
 ];
 
 const WASTE_REASONS = {
@@ -157,7 +156,7 @@ function render(){
 function header(){
   const m=metrics();
   return `<section class="panel inventory-module-head">
-    <div><p class="eyebrow">Inventario y logística</p><h2>Abastecimiento, recetas y trazabilidad</h2>
+    <div><p class="eyebrow">Inventario y logística</p><h2>Abastecimiento y recetas</h2>
     <p>Stock, lotes, proveedores, compras, BOM, mermas y producción conectados a la operación.</p></div>
     <div class="inventory-head-pills"><span><strong>${m.low}</strong> stock crítico</span><span><strong>${m.expiring}</strong> por vencer</span><span><strong>${state.purchaseSuggestions.length}</strong> sugerencias</span></div>
   </section>`;
@@ -171,7 +170,7 @@ function currentView(){
   return ({
     resumen:summaryView,stock:stockView,kardex:kardexView,lotes:lotsView,
     compras:purchasesView,proveedores:suppliersView,recetas:recipesView,
-    mermas:wasteView,produccion:productionView,trazabilidad:traceView
+    mermas:wasteView,produccion:productionView
   }[ui.tab]||summaryView)();
 }
 
@@ -289,19 +288,27 @@ function supplierCard(s){
 
 function recipesView(){
   const stations=["Todos","Barra","Cocina"];
-  const rows=state.recipes.filter(r=>ui.recipeStation==="Todos"||r.station===ui.recipeStation).filter(r=>matchesSearch(ui.search,r.name,r.station,r.version));
+  const rows=[...state.recipes]
+    .filter(r=>ui.recipeStation==="Todos"||r.station===ui.recipeStation)
+    .filter(r=>matchesSearch(ui.search,r.name,r.station))
+    .sort((a,b)=>a.name.localeCompare(b.name) || a.station.localeCompare(b.station));
   const avgMargin=rows.length?rows.reduce((s,r)=>s+recipeMargin(r),0)/rows.length:0;
   return `<div class="inventory-tab-view"><section class="inventory-kpis inventory-kpis--3">${kpi("Recetas activas",state.recipes.filter(r=>r.status==="Activa").length,"Conectadas a la carta","ok")}${kpi("Costo promedio",money(rows.length?rows.reduce((s,r)=>s+recipeCost(r),0)/rows.length:0),"Por porción")}${kpi("Margen promedio",`${avgMargin.toFixed(1)}%`,"Precio vs costo",avgMargin>=50?"ok":"warn")}</section>
   <section class="panel inventory-toolbar"><div class="inventory-toolbar__filters"><label><span>Estación</span><select data-recipe-station>${stations.map(s=>`<option ${ui.recipeStation===s?"selected":""}>${s}</option>`).join("")}</select></label></div><div class="inventory-toolbar__actions"><button class="button button--primary" data-new-recipe>${icon("plus")}<span>Nueva receta</span></button></div></section>
-  <section class="recipe-grid">${rows.map(recipeCard).join("")||emptyMini("◈","Sin recetas","No hay recetas con este filtro.")}</section></div>`;
+  <section class="panel"><div class="panel__header"><div><p class="eyebrow">Recetas</p><h2>Listado de preparación</h2></div><span class="status status--info">${rows.length}</span></div>
+    <div class="table-wrap"><table class="data-table recipe-table"><thead><tr><th>Receta</th><th>Estación</th><th>Costo</th><th>Venta</th><th>Margen</th><th>Tiempo</th><th>Merma</th><th>Acciones</th></tr></thead><tbody>${rows.map(recipeRow).join("")||tableEmpty(8,"No hay recetas con este filtro.")}</tbody></table></div>
+  </section></div>`;
 }
-function recipeCard(r){
+function recipeRow(r){
   const product=state.menuItems.find(p=>p.id===r.productId), cost=recipeCost(r), price=Number(product?.price||0), margin=price?((price-cost)/price)*100:0;
-  return `<article class="panel recipe-card"><header><div><span class="${statusClass(r.status)}">${r.status}</span><h3>${escapeHtml(r.name)}</h3><p>${escapeHtml(r.station)} · v${escapeHtml(r.version)}</p></div><div class="recipe-cost"><span>Costo</span><strong>${money(cost)}</strong></div></header>
-  <div class="recipe-metrics"><div><span>Venta</span><strong>${money(price)}</strong></div><div><span>Margen</span><strong>${margin.toFixed(1)}%</strong></div><div><span>Tiempo</span><strong>${r.targetMinutes} min</strong></div><div><span>Merma técnica</span><strong>${r.expectedWastePct}%</strong></div></div>
-  <div class="recipe-ingredients"><strong>Ingredientes</strong>${r.ingredients.map(ing=>{const i=inv(ing.inventoryId);return `<div><span>${escapeHtml(i?.item||ing.inventoryId)}</span><b>${qty(ing.qty)} ${escapeHtml(ing.unit)}</b></div>`}).join("")}</div>
-  ${r.variants.length?`<div class="recipe-variants"><span>${r.variants.length} variante(s)</span><small>Modificadores sustituyen el insumo base.</small></div>`:""}
-  <footer><button class="mini-button" data-recipe-view="${r.id}">Ver BOM</button><button class="mini-button" data-recipe-edit="${r.id}">Editar</button></footer></article>`;
+  return `<tr><td><div class="recipe-name-cell"><strong>${escapeHtml(r.name)}</strong><span class="${statusClass(r.status)}">${r.status}</span></div></td>
+    <td>${escapeHtml(r.station)}</td>
+    <td><strong>${money(cost)}</strong></td>
+    <td>${money(price)}</td>
+    <td>${margin.toFixed(1)}%</td>
+    <td>${r.targetMinutes} min</td>
+    <td>${r.expectedWastePct}%</td>
+    <td><div class="table-actions"><button class="mini-button" data-recipe-view="${r.id}">Ver</button><button class="mini-button" data-recipe-edit="${r.id}">Editar</button></div></td></tr>`;
 }
 
 /* -------------------------- MERMAS -------------------------- */
@@ -339,9 +346,9 @@ function traceView(){
   const c=state.coffeeLots[0]||{code:"AMZ-2608-01",origin:"Valle del Huayabamba, Amazonas",producer:"Productor local",altitude:"1200-1800 msnm",variety:"Caturra",roast:"Media",received:"2026-08-02",roastedAt:"2026-08-05",stock:7,unit:"kg"};
   const moves=state.inventoryMovements.filter(m=>m.inventoryId==="INS-01").slice(0,6);
   return `<div class="inventory-tab-view">
-  <section class="panel trace-hero"><div><p class="eyebrow">Farm-to-Cup</p><h2>Lote ${escapeHtml(c.code)}</h2><p>Del productor amazónico a la preparación y venta.</p></div><div class="trace-hero-data"><span><b>Origen</b>${escapeHtml(c.origin)}</span><span><b>Productor</b>${escapeHtml(c.producer)}</span><span><b>Variedad</b>${escapeHtml(c.variety||"-")}</span><span><b>Altitud</b>${escapeHtml(c.altitude||"-")}</span></div></section>
+  <section class="panel trace-hero"><div><p class="eyebrow">Trazabilidad</p><h2>Lote ${escapeHtml(c.code)}</h2><p>Del productor amazónico a la preparación y venta.</p></div><div class="trace-hero-data"><span><b>Origen</b>${escapeHtml(c.origin)}</span><span><b>Productor</b>${escapeHtml(c.producer)}</span><span><b>Variedad</b>${escapeHtml(c.variety||"-")}</span><span><b>Altitud</b>${escapeHtml(c.altitude||"-")}</span></div></section>
   <section class="panel trace-timeline-panel"><div class="panel__header"><div><p class="eyebrow">Trazabilidad</p><h2>Del origen a la taza</h2></div><span class="status status--ok">Lote activo</span></div><div class="trace-timeline">
-    ${traceStep(1,"Productor",c.producer,c.origin,"Origen registrado")}${traceStep(2,"Recepción",shortDate(c.received),`${Number(c.stock||0)+3} kg recibidos`,"Lote identificado")}${traceStep(3,"Tostado",shortDate(c.roastedAt),`Tueste ${c.roast||"medio"}`,"Rendimiento registrado")}${traceStep(4,"Inventario",`${c.stock} ${c.unit}`,"Almacén seco","FIFO")}${traceStep(5,"Recetas","Espresso / Cappuccino / Latte","Consumo por BOM","Trazabilidad de insumos")}${traceStep(6,"Venta","Pedidos asociados","Mesa / cliente / fecha","Cierre Farm-to-Cup")}
+    ${traceStep(1,"Productor",c.producer,c.origin,"Origen registrado")}${traceStep(2,"Recepción",shortDate(c.received),`${Number(c.stock||0)+3} kg recibidos`,"Lote identificado")}${traceStep(3,"Tostado",shortDate(c.roastedAt),`Tueste ${c.roast||"medio"}`,"Rendimiento registrado")}${traceStep(4,"Inventario",`${c.stock} ${c.unit}`,"Almacén seco","FIFO")}${traceStep(5,"Recetas","Espresso / Cappuccino / Latte","Consumo por BOM","Trazabilidad de insumos")}${traceStep(6,"Venta","Pedidos asociados","Mesa / cliente / fecha","Cierre de trazabilidad")}
   </div></section>
   <div class="inventory-summary-grid"><section class="panel"><div class="panel__header"><h2>Transformaciones</h2></div><div class="trace-event-list">${state.productionBatches.filter(b=>b.lotCode===c.code).map(b=>`<article><span>⚙</span><div><strong>${escapeHtml(b.name)}</strong><small>${Number(b.yieldPct).toFixed(1)}% · ${escapeHtml(b.user)}</small></div></article>`).join("")||emptyMini("⚙","Sin transformaciones","No hay registros.")}</div></section>
   <section class="panel"><div class="panel__header"><h2>Movimientos asociados</h2></div><div class="trace-event-list">${moves.map(m=>`<article><span>↕</span><div><strong>${escapeHtml(m.type)}</strong><small>${qty(m.qty)} ${escapeHtml(m.unit)} · ${escapeHtml(m.origin)}</small></div></article>`).join("")||emptyMini("↕","Sin movimientos","No hay consumos.")}</div></section></div></div>`;
@@ -472,15 +479,15 @@ function wireRecipes(){
 }
 function openRecipeDetail(id){
   const r=state.recipes.find(x=>x.id===id);if(!r)return;const p=state.menuItems.find(x=>x.id===r.productId),cost=recipeCost(r),price=Number(p?.price||0),margin=price?((price-cost)/price)*100:0;
-  openModal(`<section class="modal recipe-detail-modal"><div class="modal__header"><div><p class="eyebrow">BOM · ${escapeHtml(r.station)}</p><h2>${escapeHtml(r.name)}</h2></div><button class="icon-button" data-close-modal>${closeIcon}</button></div><div class="recipe-detail-body"><div class="inventory-detail-kpis"><div><span>Costo/porción</span><strong>${money(cost)}</strong></div><div><span>Precio</span><strong>${money(price)}</strong></div><div><span>Margen</span><strong>${margin.toFixed(1)}%</strong></div><div><span>Versión</span><strong>v${r.version}</strong></div></div><div class="table-wrap"><table class="data-table"><thead><tr><th>Ingrediente</th><th>Cantidad</th><th>Costo unit.</th><th>Costo receta</th></tr></thead><tbody>${r.ingredients.map(ing=>{const i=inv(ing.inventoryId);return `<tr><td><strong>${escapeHtml(i?.item||ing.inventoryId)}</strong><br><small class="muted">${escapeHtml(ing.note||"")}</small></td><td>${qty(ing.qty)} ${escapeHtml(ing.unit)}</td><td>${money(i?.cost||0)} / ${escapeHtml(i?.unit||"-")}</td><td><strong>${money(ingredientCost(i,ing))}</strong></td></tr>`}).join("")}</tbody></table></div>${r.variants.length?`<section class="recipe-detail-variants"><h3>Variantes</h3>${r.variants.map(v=>`<article><strong>${escapeHtml(v.modifier)}</strong><small>Reemplaza ${escapeHtml(inv(v.replaceInventoryId)?.item||v.replaceInventoryId)} por ${escapeHtml(inv(v.withInventoryId)?.item||v.withInventoryId)} · ${qty(v.qty)} ${escapeHtml(v.unit)}</small></article>`).join("")}</section>`:""}</div></section>`);
+  openModal(`<section class="modal recipe-detail-modal"><div class="modal__header"><div><p class="eyebrow">BOM · ${escapeHtml(r.station)}</p><h2>${escapeHtml(r.name)}</h2></div><button class="icon-button" data-close-modal>${closeIcon}</button></div><div class="recipe-detail-body"><div class="inventory-detail-kpis"><div><span>Costo/porción</span><strong>${money(cost)}</strong></div><div><span>Precio</span><strong>${money(price)}</strong></div><div><span>Margen</span><strong>${margin.toFixed(1)}%</strong></div></div><div class="table-wrap"><table class="data-table"><thead><tr><th>Ingrediente</th><th>Cantidad</th><th>Costo unit.</th><th>Costo receta</th></tr></thead><tbody>${r.ingredients.map(ing=>{const i=inv(ing.inventoryId);return `<tr><td><strong>${escapeHtml(i?.item||ing.inventoryId)}</strong><br><small class="muted">${escapeHtml(ing.note||"")}</small></td><td>${qty(ing.qty)} ${escapeHtml(ing.unit)}</td><td>${money(i?.cost||0)} / ${escapeHtml(i?.unit||"-")}</td><td><strong>${money(ingredientCost(i,ing))}</strong></td></tr>`}).join("")}</tbody></table></div>${r.variants.length?`<section class="recipe-detail-variants"><h3>Variantes</h3>${r.variants.map(v=>`<article><strong>${escapeHtml(v.modifier)}</strong><small>Reemplaza ${escapeHtml(inv(v.replaceInventoryId)?.item||v.replaceInventoryId)} por ${escapeHtml(inv(v.withInventoryId)?.item||v.withInventoryId)} · ${qty(v.qty)} ${escapeHtml(v.unit)}</small></article>`).join("")}</section>`:""}</div></section>`);
 }
 function openRecipe(id=null){
   const r=id?state.recipes.find(x=>x.id===id):null;
   const html=`<section class="modal recipe-form-modal"><div class="modal__header"><div><p class="eyebrow">Recetas / BOM</p><h2>${r?"Editar receta":"Nueva receta"}</h2></div><button class="icon-button" data-close-modal>${closeIcon}</button></div><form class="form-grid inventory-form-modal__body" data-recipe-form>
-  <label class="span-2">Producto de carta *<select name="productId" required><option value="">Seleccionar...</option>${state.menuItems.filter(p=>p.requiresPreparation!==false).map(p=>`<option value="${p.id}" ${r?.productId===p.id?"selected":""}>${escapeHtml(p.name)} · ${escapeHtml(p.station||"Producción")}</option>`).join("")}</select></label><label>Estación<select name="station"><option ${r?.station==="Barra"?"selected":""}>Barra</option><option ${r?.station==="Cocina"?"selected":""}>Cocina</option></select></label><label>Tiempo objetivo<input name="targetMinutes" type="number" min="1" value="${r?.targetMinutes??5}"></label><label>Rendimiento<input name="yieldQty" type="number" min=".001" step=".001" value="${r?.yieldQty??1}"></label><label>Unidad rendimiento<input name="yieldUnit" value="${escapeHtml(r?.yieldUnit||"porción")}"></label><label>Merma técnica %<input name="expectedWastePct" type="number" min="0" max="100" step=".1" value="${r?.expectedWastePct??0}"></label><label>Versión<input name="version" value="${escapeHtml(r?.version||"1.0")}"></label>
+  <label class="span-2">Producto de carta *<select name="productId" required><option value="">Seleccionar...</option>${state.menuItems.filter(p=>p.requiresPreparation!==false).map(p=>`<option value="${p.id}" ${r?.productId===p.id?"selected":""}>${escapeHtml(p.name)} · ${escapeHtml(p.station||"Producción")}</option>`).join("")}</select></label><label>Estación<select name="station"><option ${r?.station==="Barra"?"selected":""}>Barra</option><option ${r?.station==="Cocina"?"selected":""}>Cocina</option></select></label><label>Tiempo objetivo<input name="targetMinutes" type="number" min="1" value="${r?.targetMinutes??5}"></label><label>Rendimiento<input name="yieldQty" type="number" min=".001" step=".001" value="${r?.yieldQty??1}"></label><label>Unidad rendimiento<input name="yieldUnit" value="${escapeHtml(r?.yieldUnit||"porción")}"></label><label>Merma técnica %<input name="expectedWastePct" type="number" min="0" max="100" step=".1" value="${r?.expectedWastePct??0}"></label>
   <label class="span-2">Ingrediente principal *<select name="ingredientId">${state.inventory.map(i=>`<option value="${i.id}" ${r?.ingredients?.[0]?.inventoryId===i.id?"selected":""}>${escapeHtml(i.item)} · ${escapeHtml(i.unit)}</option>`).join("")}</select></label><label>Cantidad<input name="ingredientQty" type="number" min=".001" step=".001" value="${r?.ingredients?.[0]?.qty??1}" required></label><label>Unidad<select name="ingredientUnit">${unitOptions(r?.ingredients?.[0]?.unit||"",true)}</select></label><label class="span-2">Nota<input name="ingredientNote" value="${escapeHtml(r?.ingredients?.[0]?.note||"")}"></label><div class="recipe-form-info span-2"><strong>Alta rápida del prototipo</strong><p>El ERP final permitirá múltiples ingredientes, sustituciones y versionado detallado.</p></div>
   <div class="modal__actions span-2"><button class="button button--secondary" type="button" data-close-modal>Cancelar</button><button class="button button--primary">${r?"Guardar receta":"Crear receta"}</button></div></form></section>`;
-  const modal=openModal(html);modal.querySelector("[data-recipe-form]").onsubmit=e=>{e.preventDefault();const d=Object.fromEntries(new FormData(e.currentTarget)),p=state.menuItems.find(x=>x.id===d.productId),i=inv(d.ingredientId);if(!p||!i){showToast("Selecciona producto e ingrediente.");return}const payload={productId:p.id,name:p.name,station:d.station,yieldQty:Number(d.yieldQty),yieldUnit:d.yieldUnit.trim(),targetMinutes:Number(d.targetMinutes),expectedWastePct:Number(d.expectedWastePct),version:d.version.trim()||"1.0",status:"Activa",ingredients:[{inventoryId:i.id,qty:Number(d.ingredientQty),unit:d.ingredientUnit,note:d.ingredientNote.trim()},...(r?.ingredients?.slice(1)||[])],variants:r?.variants||[]};if(r)Object.assign(r,payload);else state.recipes.unshift({id:nextRecipeId(),...payload});addAuditEvent(state,{user:session.name,action:r?"Receta actualizada":"Receta creada",module:"Inventario",detail:p.name});saveState(state);closeModal();showToast(r?"Receta actualizada.":"Receta registrada.");render()}
+  const modal=openModal(html);modal.querySelector("[data-recipe-form]").onsubmit=e=>{e.preventDefault();const d=Object.fromEntries(new FormData(e.currentTarget)),p=state.menuItems.find(x=>x.id===d.productId),i=inv(d.ingredientId);if(!p||!i){showToast("Selecciona producto e ingrediente.");return}const payload={productId:p.id,name:p.name,station:d.station,yieldQty:Number(d.yieldQty),yieldUnit:d.yieldUnit.trim(),targetMinutes:Number(d.targetMinutes),expectedWastePct:Number(d.expectedWastePct),version:r?.version||"1.0",status:"Activa",ingredients:[{inventoryId:i.id,qty:Number(d.ingredientQty),unit:d.ingredientUnit,note:d.ingredientNote.trim()},...(r?.ingredients?.slice(1)||[])],variants:r?.variants||[]};if(r)Object.assign(r,payload);else state.recipes.unshift({id:nextRecipeId(),...payload});addAuditEvent(state,{user:session.name,action:r?"Receta actualizada":"Receta creada",module:"Inventario",detail:p.name});saveState(state);closeModal();showToast(r?"Receta actualizada.":"Receta registrada.");render()}
 }
 
 /* -------------------------- WASTE MODAL -------------------------- */

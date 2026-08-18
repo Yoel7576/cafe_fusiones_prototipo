@@ -427,7 +427,8 @@
 }
 
 .inventory-v4 .data-table {
-  min-width: 860px;
+  width: 100%;
+  min-width: 0;
 }
 
 .inventory-v4 .data-table th {
@@ -642,158 +643,71 @@
    RECETAS / BOM
    ========================================================================== */
 
-.recipe-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
-  gap: 10px;
-}
-
-.recipe-card {
-  padding: 0;
-  overflow: hidden;
-}
-
-.recipe-card header {
-  min-height: 82px;
-  padding: 11px 12px;
-  border-bottom: 1px solid var(--line);
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-  background:
-    radial-gradient(circle at 90% 8%, rgba(212, 160, 23, .08), transparent 12rem),
-    #fffdf9;
-}
-
-.recipe-card header > div:first-child {
+.recipe-table {
+  width: 100%;
   min-width: 0;
-  display: grid;
-  gap: 3px;
+  table-layout: fixed;
 }
 
-.recipe-card h3 {
-  margin: 2px 0 0;
+.recipe-table th,
+.recipe-table td {
+  vertical-align: top;
+}
+
+.recipe-table th:nth-child(1),
+.recipe-table td:nth-child(1) { width: 26%; }
+.recipe-table th:nth-child(2),
+.recipe-table td:nth-child(2) { width: 14%; }
+.recipe-table th:nth-child(3),
+.recipe-table td:nth-child(3) { width: 12%; }
+.recipe-table th:nth-child(4),
+.recipe-table td:nth-child(4) { width: 12%; }
+.recipe-table th:nth-child(5),
+.recipe-table td:nth-child(5) { width: 12%; }
+.recipe-table th:nth-child(6),
+.recipe-table td:nth-child(6) { width: 10%; }
+.recipe-table th:nth-child(7),
+.recipe-table td:nth-child(7) { width: 10%; }
+.recipe-table th:nth-child(8),
+.recipe-table td:nth-child(8) { width: 14%; }
+
+.recipe-name-cell {
+  display: grid;
+  gap: 4px;
+  align-items: start;
+}
+
+.recipe-name-cell strong {
   color: var(--brown);
-  font-size: .86rem;
-}
-
-.recipe-card header p {
-  margin: 0;
-  color: var(--muted);
-  font-size: .57rem;
-}
-
-.recipe-cost {
-  flex: 0 0 auto;
-  min-width: 68px;
-  display: grid;
-  justify-items: end;
-  gap: 2px;
-}
-
-.recipe-cost span {
-  color: var(--muted);
-  font-size: .53rem;
-}
-
-.recipe-cost strong {
-  color: var(--red);
-  font-size: .88rem;
-}
-
-.recipe-metrics {
-  padding: 9px 12px;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 6px;
-  border-bottom: 1px solid var(--line);
-}
-
-.recipe-metrics > div {
-  min-width: 0;
-  border-radius: 8px;
-  padding: 7px;
-  background: #faf7f2;
-  display: grid;
-  gap: 2px;
-}
-
-.recipe-metrics span {
-  color: var(--muted);
-  font-size: .49rem;
-  text-transform: uppercase;
-}
-
-.recipe-metrics strong {
-  color: var(--brown);
-  font-size: .64rem;
-}
-
-.recipe-ingredients {
-  padding: 10px 12px;
-  display: grid;
-  gap: 5px;
-}
-
-.recipe-ingredients > strong {
-  color: var(--brown);
-  font-size: .63rem;
-  text-transform: uppercase;
-}
-
-.recipe-ingredients > div {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-  border-bottom: 1px dashed #eadfd6;
-  padding-bottom: 4px;
-}
-
-.recipe-ingredients > div:last-child {
-  border-bottom: 0;
-}
-
-.recipe-ingredients span {
-  color: var(--ink);
-  font-size: .61rem;
-}
-
-.recipe-ingredients b {
-  color: var(--muted);
-  font-size: .58rem;
-}
-
-.recipe-variants {
-  margin: 0 12px 10px;
-  border-radius: 9px;
-  padding: 7px 8px;
-  background: var(--blue-soft);
-  display: grid;
-  gap: 2px;
-}
-
-.recipe-variants span {
-  color: var(--blue);
-  font-size: .59rem;
+  font-size: 1rem;
+  line-height: 1.2;
   font-weight: 900;
 }
 
-.recipe-variants small {
-  color: #547487;
-  font-size: .54rem;
+.recipe-name-cell .status {
+  width: fit-content;
+  font-size: .56rem;
+  line-height: 1.2;
 }
 
-.recipe-card footer {
-  border-top: 1px solid var(--line);
-  min-height: 47px;
-  padding: 8px 10px;
-  display: flex;
+.recipe-ingredient-list {
+  display: grid;
+  gap: 4px;
+  color: var(--muted);
+  font-size: .58rem;
+  line-height: 1.4;
+}
+
+.recipe-variant-pill {
+  display: inline-flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 5px;
-  background: #fffdf9;
+  width: fit-content;
+  border-radius: 999px;
+  padding: 4px 7px;
+  background: var(--blue-soft);
+  color: var(--blue);
+  font-size: .53rem;
+  font-weight: 800;
 }
 
 /* ==========================================================================

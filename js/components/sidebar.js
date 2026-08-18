@@ -93,22 +93,31 @@ export function renderSidebar(activeId, role) {
 
   if (sidebar) {
     sidebar.innerHTML = `
+      <button
+        class="sidebar-toggle"
+        type="button"
+        aria-label="Ocultar o mostrar menu lateral"
+        title="Ocultar o mostrar menu lateral"
+      >
+        <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+
       <a
         class="brand-lockup"
         href="dashboard.html"
         aria-label="Cafe Fusiones inicio"
       >
         <img
-          src="../assets/img/cafe-fusiones-mark.svg"
-          alt=""
-          aria-hidden="true"
+          src="../assets/img/Logo café fusiones.png"
+          alt="Cafe Fusiones"
+          aria-hidden="false"
         >
         <span>
           <strong>Cafe Fusiones</strong>
           <small>Sistema integral</small>
         </span>
       </a>
-
+ 
       <nav
         class="side-nav"
         aria-label="Navegacion principal"
@@ -123,6 +132,15 @@ export function renderSidebar(activeId, role) {
         ${secondaryItems.map((item) => secondaryItem(item, activeId)).join("")}
       </nav>
     `;
+
+    const shell = document.querySelector(".app-shell");
+    const toggleButton = sidebar.querySelector(".sidebar-toggle");
+
+    toggleButton?.addEventListener("click", () => {
+      const collapsed = shell?.classList.toggle("sidebar-collapsed");
+      sidebar.classList.toggle("is-collapsed", collapsed);
+      toggleButton.setAttribute("aria-expanded", String(!collapsed));
+    });
 
     // Solo los elementos que siguen siendo acciones utilizan useractions.js.
     // Configuracion es un <a> y por tanto no pasa por handleUserAction().

@@ -11,7 +11,7 @@ import { reportSalesRows, reportExpenseRows } from "../data/data.js";
 
 const session = requireAuth();
 const state = getState();
-const ui = { search: "", from: "2026-07-01", to: "2026-07-06", channel: "Todos", staff: "Todos", segment: "Todos", level: "Todos" };
+const ui = { search: "", from: "2026-08-08", to: "2026-08-11", channel: "Todos", staff: "Todos", segment: "Todos", level: "Todos" };
 const view = document.getElementById("view");
 
 if (session) {

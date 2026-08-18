@@ -11,6 +11,52 @@
     border-right: 1px solid rgba(231, 217, 203, .82);
     background: var(--brown);
     color: #fff;
+    transition: width .2s ease, padding .2s ease;
+  }
+  .sidebar-toggle {
+    align-self: flex-end;
+    width: 34px;
+    height: 34px;
+    border: 1px solid rgba(255, 255, 255, .18);
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    background: rgba(255, 255, 255, .08);
+    color: #fff;
+    cursor: pointer;
+  }
+  .sidebar-toggle svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    stroke-width: 1.9;
+    fill: none;
+    stroke-linecap: round;
+  }
+  .sidebar.is-collapsed {
+    width: 88px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .sidebar.is-collapsed .brand-lockup {
+    justify-content: center;
+  }
+  .sidebar.is-collapsed .brand-lockup span,
+  .sidebar.is-collapsed .nav-button span,
+  .sidebar.is-collapsed .side-actions .nav-button span {
+    display: none;
+  }
+  .sidebar.is-collapsed .nav-button,
+  .sidebar.is-collapsed .brand-lockup {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .sidebar.is-collapsed .nav-button {
+    min-height: 42px;
+  }
+  .sidebar.is-collapsed .side-actions {
+    align-items: center;
   }
 .bottom-nav {
     display: none;

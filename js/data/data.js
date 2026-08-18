@@ -361,7 +361,7 @@ export const coffeeLotsSeed = [
     roastedAt: "2026-08-05",
     stock: 7,
     unit: "kg",
-    notes: "Lote demostrativo para trazabilidad Farm-to-Cup."
+    notes: "Lote demostrativo para trazabilidad del café."
   }
 ];
 
@@ -394,7 +394,9 @@ export const reportSalesRows = [
   { date: "2026-08-10", channel: "Local", staff: "Carlos Mendoza", product: "Cold Brew", category: "Cafe", qty: 17, income: 255, cost: 88 },
   { date: "2026-08-10", channel: "Reservas", staff: "Carlos Mendoza", product: "Regional", category: "Desayunos", qty: 12, income: 216, cost: 96 },
   { date: "2026-08-09", channel: "Local", staff: "Carlos Mendoza", product: "Acevichado", category: "Sandwiches", qty: 18, income: 234, cost: 108 },
-  { date: "2026-08-09", channel: "Local", staff: "Carlos Mendoza", product: "Brownie con fudge y helado", category: "Postres", qty: 20, income: 160, cost: 62 }
+  { date: "2026-08-09", channel: "Local", staff: "Carlos Mendoza", product: "Brownie con fudge y helado", category: "Postres", qty: 20, income: 160, cost: 62 },
+  { date: "2026-08-08", channel: "Local", staff: "Lucia Torres", product: "Chocolate caliente", category: "Chocolate", qty: 11, income: 110, cost: 42 },
+  { date: "2026-08-08", channel: "Delivery", staff: "Caja principal", product: "Cafe Americano", category: "Cafe", qty: 14, income: 84, cost: 32 }
 ];
 
 export const reportExpenseRows = [
@@ -402,7 +404,8 @@ export const reportExpenseRows = [
   { date: "2026-08-11", type: "Insumos", detail: "Cafe de especialidad Amazonas", amount: 294 },
   { date: "2026-08-10", type: "Logistica", detail: "Envases para box lunch", amount: 96 },
   { date: "2026-08-09", type: "Operativo", detail: "Mantenimiento de maquina espresso", amount: 260 },
-  { date: "2026-08-08", type: "Marketing", detail: "Campanas digitales", amount: 180 }
+  { date: "2026-08-08", type: "Marketing", detail: "Campanas digitales", amount: 180 },
+  { date: "2026-08-08", type: "Insumos", detail: "Leche de avena y palta", amount: 88 }
 ];
 
 export const reportOperationsSeed = {

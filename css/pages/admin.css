@@ -1,4 +1,33 @@
-/* Cafe Fusiones - pages/admin.css (generado desde styles.css, sin cambios visuales) */
+.admin-tabbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 18px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: rgba(255,255,255,.6);
+    backdrop-filter: blur(6px);
+}
+
+.admin-tab {
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-weight: 700;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: all .2s ease;
+}
+
+.admin-tab.is-active {
+    border-color: rgba(82, 47, 28, .2);
+    background: var(--brown);
+    color: #fff;
+    box-shadow: 0 10px 22px rgba(92, 61, 41, .18);
+}
 
 .admin-list {
     display: grid;

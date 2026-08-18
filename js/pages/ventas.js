@@ -25,10 +25,11 @@ import {
 const session = requireAuth();
 const state = getState();
 const view = document.getElementById("view");
+const params = new URLSearchParams(window.location.search);
 
 const ui = {
-  tab: "salon",
-  salonMode: "map",
+  tab: params.get("tab") === "pedidos" || params.get("tab") === "kds" || params.get("tab") === "historial" ? params.get("tab") : "salon",
+  salonMode: params.get("mode") === "list" ? "list" : "map",
   search: "",
   area: "Todos",
   tableStatus: "Todos",
@@ -133,7 +134,7 @@ function salesTabs() {
   const tabs = [
     { id: "salon", label: "Salon", count: occupiedTables().length },
     { id: "pedidos", label: "Pedidos", count: activeOrders },
-    { id: "kds", label: "Produccion KDS", count: ready },
+    { id: "kds", label: "Producción", count: ready },
     { id: "historial", label: "Historial", count: state.salesHistory.length }
   ];
 
@@ -146,9 +147,6 @@ function salesTabs() {
             <b>${tab.count}</b>
           </button>`).join("")}
       </div>
-      <button class="button button--primary" type="button" data-new-sale>
-        ${icon("plus")}<span>Nueva venta</span>
-      </button>
     </section>`;
 }
 
@@ -167,8 +165,6 @@ function wireMain() {
     });
   });
 
-  view.querySelector("[data-new-sale]")?.addEventListener("click", () => openSaleModal(null, "new"));
-
   if (ui.tab === "salon") wireSalon();
   if (ui.tab === "pedidos") wireOrders();
   if (ui.tab === "kds") wireKds();
@@ -184,7 +180,6 @@ function salonSection() {
   const occupied = occupiedTables().length;
   const free = state.tables.filter((table) => table.seats > 0 && table.status === "Libre").length;
   const reserved = state.tables.filter((table) => table.seats > 0 && table.status === "Reservada").length;
-  const readyTables = countTablesWithReadyItems();
 
   return `
     <section class="panel salon-shell">
@@ -204,7 +199,6 @@ function salonSection() {
         ${miniKpi("Ocupadas", occupied, "Atencion activa")}
         ${miniKpi("Libres", free, "Disponibles")}
         ${miniKpi("Reservadas", reserved, "Proximas atenciones")}
-        ${miniKpi("Pedidos listos", readyTables, "Por entregar")}
       </div>
 
       <div class="salon-filters">
@@ -220,7 +214,7 @@ function salonSection() {
           </select>
         </label>
         <div class="legend-row" aria-label="Leyenda">
-          ${legendDot("Libre", "free")}${legendDot("Ocupada", "busy")}${legendDot("Reservada", "reserved")}${legendDot("Pedido listo", "ready")}
+          ${legendDot("Libre", "free")}${legendDot("Ocupada", "busy")}${legendDot("Reservada", "reserved")}
         </div>
       </div>
 
@@ -249,33 +243,32 @@ function filteredTables() {
 
 function floorPlan(tables) {
   const allowed = new Set(tables.map((table) => table.id));
-  const realTables = state.tables.filter((table) => table.seats > 0 && allowed.has(table.id));
+  const realTables = [...state.tables.filter((table) => table.seats > 0 && allowed.has(table.id))].sort((a, b) => {
+    const mapA = a.map || fallbackTableMap(a.id);
+    const mapB = b.map || fallbackTableMap(b.id);
+    const byY = (mapA.y || 0) - (mapB.y || 0);
+    return byY !== 0 ? byY : (mapA.x || 0) - (mapB.x || 0);
+  });
 
   return `
-    <div class="floorplan-wrap">
+    <div class="floorplan-wrap floorplan-wrap--map-only">
       <div class="floorplan" aria-label="Plano operativo de Cafe Fusiones">
         <div class="floor-zone floor-zone--books"><span>Intercambio<br>de libros</span></div>
         <div class="floor-zone floor-zone--art-a"><span>Artesania</span></div>
         <div class="floor-zone floor-zone--art-b"><span>Artesania</span></div>
         <div class="floor-zone floor-zone--office"><span>Oficina</span></div>
         <button class="floor-zone floor-zone--kitchen" type="button" data-open-station="Cocina"><span>Cocina</span><small>${stationPending("Cocina")} pendientes</small></button>
-        <button class="floor-zone floor-zone--bar" type="button" data-open-station="Barra"><span>Barra / Barista</span><small>${stationPending("Barra")} pendientes</small></button>
+        <button class="floor-zone floor-zone--bar" type="button" data-open-station="Barra"><span>Barra</span><small>${stationPending("Barra")} pendientes</small></button>
         <div class="floor-zone floor-zone--wc"><span>SS.HH.</span></div>
         <span class="floor-door floor-door--a">Ingreso</span>
         <span class="floor-door floor-door--b">Ingreso</span>
         ${realTables.map(floorTableButton).join("")}
       </div>
-      <aside class="floorplan-side">
-        <h3>Operacion en vivo</h3>
-        ${operationSnapshot()}
-      </aside>
     </div>`;
 }
 
 function floorTableButton(table) {
-  const order = latestOrderForTable(table.id);
-  const ready = order && order.status === "Listo";
-  const tone = ready ? "ready" : table.status === "Libre" ? "free" : table.status === "Reservada" ? "reserved" : "busy";
+  const tone = table.status === "Libre" ? "free" : table.status === "Reservada" ? "reserved" : "busy";
   const map = table.map || fallbackTableMap(table.id);
   const total = table.items?.length ? tableTotal(table) : 0;
   const customer = customerById(table.customerId);
@@ -284,7 +277,6 @@ function floorTableButton(table) {
   return `
     <button class="floor-table floor-table--${tone} ${map.shape === "round" ? "is-round" : ""}" style="${style}" type="button" data-table-open="${table.id}" title="${escapeHtml(table.name)} - ${escapeHtml(table.status)}">
       <strong>${escapeHtml(table.name.replace("Mesa ", ""))}</strong>
-      ${ready ? `<span class="floor-table__ready">LISTO</span>` : ""}
       ${table.status === "Ocupada" ? `<small>${money(total)}</small>` : `<small>${escapeHtml(table.status)}</small>`}
       ${customer ? `<em>${escapeHtml(firstName(customer.name))}</em>` : ""}
     </button>`;
@@ -324,8 +316,6 @@ function tablesList(tables) {
 
 function tableTile(table) {
   const busy = table.status === "Ocupada";
-  const order = latestOrderForTable(table.id);
-  const ready = order?.status === "Listo";
   const cls = table.status === "Libre" ? "is-free" : busy ? "is-busy" : "";
   const total = tableTotal(table);
   const customer = customerById(table.customerId);
@@ -333,8 +323,8 @@ function tableTile(table) {
     ? `<div class="tile-actions"><button class="mini-button" type="button" data-add-sale="${table.id}">Agregar</button><button class="mini-button mini-button--danger" type="button" data-charge="${table.id}">Cobrar</button></div>`
     : `<button class="mini-button" type="button" data-new-order="${table.id}">Tomar pedido</button>`;
 
-  return `<article class="table-tile ${cls} ${ready ? "table-tile--ready" : ""}" data-table-card="${table.id}">
-    <div class="table-tile__head"><strong>${escapeHtml(table.name)}</strong><span class="${statusClass(ready ? "Listo" : table.status)}">${ready ? "Pedido listo" : table.status}</span></div>
+  return `<article class="table-tile ${cls}" data-table-card="${table.id}">
+    <div class="table-tile__head"><strong>${escapeHtml(table.name)}</strong><span class="${statusClass(table.status)}">${table.status}</span></div>
     <span class="muted">${table.seats} asientos · ${escapeHtml(table.area)}</span>
     ${customer ? `<span class="muted">${escapeHtml(customer.name)} · ${escapeHtml(customer.level || "Cliente")}</span>` : ""}
     <span class="muted">${busy ? `${table.items.reduce((sum, item) => sum + Number(item.qty || 0), 0)} items · ${money(total)}` : "Disponible"}</span>

@@ -26,7 +26,7 @@ function init(role) {
           <h2>Agregar una venta</h2>
           <p>Registra pedidos de mesa o delivery desde un flujo simple para mozos y caja.</p>
         </div>
-        <a class="button button--primary button--xl" href="ventas.html">${icon("receipt")}<span>Agregar venta</span></a>
+        <a class="button button--primary button--xl" href="ventas.html?tab=salon&mode=map">${icon("receipt")}<span>Nueva venta</span></a>
       </section>
       <section class="grid grid--3" aria-label="Indicadores principales">${metrics.map(renderMetric).join("")}</section>
       <section class="grid grid--2">

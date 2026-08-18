@@ -2035,8 +2035,8 @@ function openTablesModal() {
       <div class="settings-list-modal-body">
         <div class="settings-inline-head">
           <p>
-            Configura nombre, zona y capacidad. La ubicación visual del plano
-            se conserva cuando editas una mesa existente.
+            Configura nombre, zona, capacidad y ubicación en el mapa de mesas.
+            También puedes agregar nuevas y editar las existentes en la sucursal activa.
           </p>
           <button class="button button--primary" type="button" data-new-table>
             ${icon("plus")}<span>Nueva mesa</span>
@@ -2093,6 +2093,7 @@ function openTableForm(tableId = null) {
   const table = tableId
     ? state.tables.find((item) => item.id === tableId)
     : null;
+  const currentMap = table?.map || { x: 15, y: 18, w: 10, h: 10, shape: "rect" };
 
   const html = `
     <section class="modal settings-form-modal" role="dialog" aria-modal="true">
@@ -2133,16 +2134,51 @@ function openTableForm(tableId = null) {
         <label>
           Estado operativo
           <select name="status">
-            ${["Libre", "Fuera de servicio"].map((status) => `
+            ${["Libre", "Ocupada", "Reservada", "Fuera de servicio"].map((status) => `
               <option ${table?.status === status ? "selected" : ""}>${status}</option>
             `).join("")}
+          </select>
+        </label>
+
+        <div class="span-2 settings-form-note">
+          <strong>Mapa de mesas</strong>
+          <small>
+            Ajusta la posición y tamaño en el plano para ubicar correctamente cada mesa.
+          </small>
+        </div>
+
+        <label>
+          Posición X (%)
+          <input name="mapX" type="number" min="0" max="100" step="1" value="${Number(currentMap.x ?? 15)}">
+        </label>
+
+        <label>
+          Posición Y (%)
+          <input name="mapY" type="number" min="0" max="100" step="1" value="${Number(currentMap.y ?? 18)}">
+        </label>
+
+        <label>
+          Ancho (%)
+          <input name="mapW" type="number" min="5" max="30" step="1" value="${Number(currentMap.w ?? 10)}">
+        </label>
+
+        <label>
+          Alto (%)
+          <input name="mapH" type="number" min="5" max="25" step="1" value="${Number(currentMap.h ?? 10)}">
+        </label>
+
+        <label class="span-2">
+          Forma
+          <select name="shape">
+            <option value="rect" ${currentMap.shape === "round" ? "" : "selected"}>Rectangular</option>
+            <option value="round" ${currentMap.shape === "round" ? "selected" : ""}>Redonda</option>
           </select>
         </label>
 
         <div class="settings-form-note span-2">
           <strong>Plano de mesas</strong>
           <small>
-            Al editar una mesa se conserva su ubicación actual en el plano.
+            La ubicación visual del mapa se conserva al editar y el plano se actualiza automáticamente en ventas.
           </small>
         </div>
 
@@ -2156,13 +2192,25 @@ function openTableForm(tableId = null) {
     event.preventDefault();
 
     const data = Object.fromEntries(new FormData(event.currentTarget));
+    const mapX = Number(data.mapX ?? currentMap.x ?? 15);
+    const mapY = Number(data.mapY ?? currentMap.y ?? 18);
+    const mapW = Number(data.mapW ?? currentMap.w ?? 10);
+    const mapH = Number(data.mapH ?? currentMap.h ?? 10);
+    const shape = String(data.shape || "rect");
 
     const payload = {
       name: String(data.name || "").trim(),
       area: String(data.area || "").trim(),
       seats: Number(data.seats || 0),
       status: data.status,
-      branchId: ui.operationBranchId
+      branchId: ui.operationBranchId,
+      map: {
+        x: Math.min(Math.max(mapX, 0), 100),
+        y: Math.min(Math.max(mapY, 0), 100),
+        w: Math.min(Math.max(mapW, 5), 30),
+        h: Math.min(Math.max(mapH, 5), 25),
+        shape: shape === "round" ? "round" : "rect"
+      }
     };
 
     if (table) {
@@ -2173,8 +2221,7 @@ function openTableForm(tableId = null) {
         ...payload,
         customerId: null,
         openedAt: null,
-        items: [],
-        map: null
+        items: []
       });
     }
 

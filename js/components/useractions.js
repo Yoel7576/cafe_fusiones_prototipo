@@ -8,20 +8,7 @@ import { getState, saveState } from "../core/storage.js";
 import { escapeHtml, isExpiringSoon } from "../core/utils.js";
 
 export function openNotifications() {
-  const state = getState();
-  const items = [];
-  state.inventory.filter((i) => i.stock <= i.min).forEach((i) => items.push({ tone: "danger", text: `Stock bajo: ${i.item} (${i.stock} ${i.unit})` }));
-  state.inventory.filter((i) => isExpiringSoon(i.expiry)).forEach((i) => items.push({ tone: "warn", text: `Por vencer: ${i.item} (vence ${i.expiry})` }));
-  (state.reservations || []).forEach((r) => items.push({ tone: "info", text: `Reserva: ${r.name} ${r.lastname} · ${r.people} personas · ${r.date}` }));
-  items.push({ tone: state.cashBox.open ? "ok" : "info", text: state.cashBox.open ? `Caja abierta por ${state.cashBox.user}` : "Caja cerrada" });
-
-  const list = items.map((n) => `<li class="notif-item notif--${n.tone}">${escapeHtml(n.text)}</li>`).join("");
-  const html = `
-    <section class="modal modal--small" role="dialog" aria-modal="true" aria-labelledby="nt">
-      <div class="modal__header"><div><p class="eyebrow">Alertas</p><h2 id="nt">Notificaciones</h2></div><button class="icon-button" type="button" data-close-modal aria-label="Cerrar">${closeIcon}</button></div>
-      <div style="padding:16px 20px 20px;"><ul class="notif-list">${list || '<li class="muted">Sin notificaciones.</li>'}</ul></div>
-    </section>`;
-  openModal(html);
+  window.location.href = "notificaciones.html";
 }
 
 export function openSettings() {
