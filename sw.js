@@ -1,8 +1,9 @@
-const CACHE_NAME = "cafe-fusiones-modular-v5";
+const CACHE_NAME = "cafe-fusiones-modular-v6";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
+  "./pages/landing.html",
   "./pages/login.html",
   "./pages/dashboard.html",
   "./pages/ventas.html",
