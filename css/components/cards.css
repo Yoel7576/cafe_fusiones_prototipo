@@ -35,6 +35,11 @@
   }
   .metric-card .metric-card__top p {
     min-width: 0;
+    /* El titulo y la insignia no se parten en dos lineas. */
+    white-space: nowrap;
+  }
+  .metric-card .metric-card__top .trend {
+    white-space: nowrap;
   }
 .metric-card__top,
   .panel__header,

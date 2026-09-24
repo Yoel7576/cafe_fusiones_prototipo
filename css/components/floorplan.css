@@ -146,14 +146,32 @@ button.floor-item--station:hover {
 .floorplan .floor-item__code {
   font-size: .95rem;
   font-weight: 800;
+  line-height: 1.05;
+}
+
+.floorplan .floor-item__seats {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
   line-height: 1;
+}
+
+.floorplan .floor-item__seats svg {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .floorplan .floor-item__meta {
   max-width: 100%;
-  font-size: .52rem;
+  font-size: .54rem;
   font-weight: 600;
-  line-height: 1.1;
+  line-height: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

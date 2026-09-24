@@ -45,6 +45,9 @@ export function acotar(valor, minimo, maximo) {
   return Math.min(Math.max(Number(valor || 0), minimo), Math.max(minimo, maximo));
 }
 
+// Icono de capacidad: ocupa mucho menos que la palabra "pers.".
+const iconoPersonas = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/></svg>';
+
 function estilo(map) {
   return `left:${map.x}%;top:${map.y}%;width:${map.w}%;height:${map.h}%;`;
 }
@@ -127,13 +130,16 @@ export function mesaHtml(table, { editable = false, selected = false, total = 0 
     selected ? "is-selected" : ""
   ].filter(Boolean).join(" ");
 
-  const detalle = !editable && table.status === "Ocupada" && total
-    ? money(total)
-    : `${Number(table.seats || 0)} pers.`;
+  // En una mesa de 2 personas no entra "2 pers." sin truncarse: la capacidad va
+  // como icono + numero, y el consumo sin el prefijo "S/ ".
+  const ocupada = !editable && table.status === "Ocupada" && total;
+  const detalle = ocupada
+    ? `<small class="floor-item__meta">${escapeHtml(money(total).replace(/^S\/\s*/, ""))}</small>`
+    : `<small class="floor-item__meta floor-item__seats">${iconoPersonas}${Number(table.seats || 0)}</small>`;
 
   const cuerpo = `
     <strong class="floor-item__code">${escapeHtml(etiquetaMesa(table))}</strong>
-    <small class="floor-item__meta">${escapeHtml(detalle)}</small>`;
+    ${detalle}`;
 
   if (editable) {
     return `<div class="${clases}" style="${estilo(map)}"

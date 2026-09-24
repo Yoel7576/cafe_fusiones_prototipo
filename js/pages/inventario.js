@@ -41,7 +41,7 @@ function init(){
   normalizeState();
   renderSidebar("inventario", session.role);
   renderTopbar({
-    title:"Inventario y Logística", eyebrow:"Operaciones",
+    title:"Inventario", eyebrow:"Operaciones",
     searchPlaceholder:"Buscar en inventario...",
     onSearch:q => { ui.search=q||""; render(); }
   });
@@ -143,7 +143,7 @@ function summaryView(){
         <div class="inventory-alert-list">${alerts.length?alerts.map(a=>`<button class="inventory-alert-row inventory-alert-row--${a.tone}" data-go-tab="${a.tab}"><span>${a.icon}</span><div><strong>${escapeHtml(a.title)}</strong><small>${escapeHtml(a.detail)}</small></div><b>›</b></button>`).join(""):emptyMini("✓","Sin alertas críticas","Inventario dentro de parámetros.")}</div>
       </section>
       <section class="panel inventory-summary-panel"><div class="panel__header"><div><p class="eyebrow">Reposición</p><h2>Sugerencias de compra</h2></div><button class="mini-button" data-go-tab="compras">Ver compras</button></div>
-        <div class="inventory-suggestion-list">${state.purchaseSuggestions.slice(0,5).map(s=>`<article><div><strong>${escapeHtml(s.item)}</strong><small>${qty(s.stock)} ${escapeHtml(s.unit)} · mínimo ${qty(s.min)}</small></div><div><span>${qty(s.suggestedQty)} ${escapeHtml(s.unit)}</span><button class="mini-button" data-create-po-from="${s.inventoryId}">Comprar</button></div></article>`).join("")||emptyMini("✓","Sin reposiciones","No hay insumos bajo mínimo.")}</div>
+        <div class="inventory-suggestion-list">${state.purchaseSuggestions.slice(0,5).map(s=>`<article><div><strong>${escapeHtml(s.item)}</strong><small>${qty(s.stock)} ${escapeHtml(s.unit)} · mínimo ${qty(s.min)}</small></div><div><span>${qty(s.suggestedQty)} ${escapeHtml(s.unit)}</span><button class="mini-button" data-create-po-from="${s.inventoryId}">Comprar</button></div></article>`).join("")||emptyMini("✓","Sin sugerencias","Define los mínimos en Stock para que el sistema sugiera reposiciones.")}</div>
       </section>
     </div>
     <section class="panel"><div class="panel__header"><div><p class="eyebrow">Trazabilidad</p><h2>Últimos movimientos</h2></div><button class="mini-button" data-go-tab="kardex">Abrir Kardex</button></div>${movementTable(moves)}</section>
@@ -211,7 +211,7 @@ function purchasesView(){
   const total=orders.filter(o=>String(o.createdAt).startsWith(today().slice(0,7))).reduce((s,o)=>s+Number(o.total||0),0);
   return `<div class="inventory-tab-view"><section class="inventory-kpis inventory-kpis--3">${kpi("Órdenes abiertas",pending,"Pendientes de recepción",pending?"warn":"ok")}${kpi("Compras del mes",money(total),"Órdenes registradas")}${kpi("Sugerencias",state.purchaseSuggestions.length,"Según stock mínimo",state.purchaseSuggestions.length?"danger":"ok")}</section>
   <section class="panel purchase-suggestions-panel"><div class="panel__header"><div><p class="eyebrow">Reposición</p><h2>Sugerencias de compra</h2></div><button class="button button--primary" data-new-purchase>${icon("plus")}<span>Nueva compra</span></button></div>
-  <div class="purchase-suggestion-grid">${state.purchaseSuggestions.slice(0,6).map(s=>{const p=preferredSupplier(s.inventoryId);return `<article class="purchase-suggestion-card"><div><span class="status status--danger">Reposición</span><strong>${escapeHtml(s.item)}</strong><small>Actual ${qty(s.stock)} ${escapeHtml(s.unit)} · mín. ${qty(s.min)}</small></div><div><p>Sugerido</p><strong>${qty(s.suggestedQty)} ${escapeHtml(s.unit)}</strong><small>${escapeHtml(p?.tradeName||p?.name||"Proveedor por definir")}</small></div><button class="mini-button" data-create-po-from="${s.inventoryId}">Crear orden</button></article>`}).join("")||emptyMini("✓","Sin sugerencias","No hay reposiciones inmediatas.")}</div></section>
+  <div class="purchase-suggestion-grid">${state.purchaseSuggestions.slice(0,6).map(s=>{const p=preferredSupplier(s.inventoryId);return `<article class="purchase-suggestion-card"><div><span class="status status--danger">Reposición</span><strong>${escapeHtml(s.item)}</strong><small>Actual ${qty(s.stock)} ${escapeHtml(s.unit)} · mín. ${qty(s.min)}</small></div><div><p>Sugerido</p><strong>${qty(s.suggestedQty)} ${escapeHtml(s.unit)}</strong><small>${escapeHtml(p?.tradeName||p?.name||"Proveedor por definir")}</small></div><button class="mini-button" data-create-po-from="${s.inventoryId}">Crear orden</button></article>`}).join("")||emptyMini("✓","Sin sugerencias","Define los mínimos en Stock para que el sistema sugiera reposiciones.")}</div></section>
   <section class="panel"><div class="panel__header"><div><p class="eyebrow">Abastecimiento</p><h2>Órdenes de compra</h2></div><span class="status status--info">${orders.length}</span></div><div class="table-wrap"><table class="data-table"><thead><tr><th>Orden</th><th>Proveedor</th><th>Tipo</th><th>Emisión</th><th>Entrega</th><th>Total</th><th>Documento</th><th>Estado</th><th></th></tr></thead><tbody>
   ${orders.map(o=>`<tr><td><strong>${o.id}</strong></td><td>${escapeHtml(o.supplier)}</td><td>${escapeHtml(o.type)}</td><td>${shortDate(o.createdAt)}</td><td>${shortDate(o.expectedAt)}</td><td><strong>${money(o.total)}</strong></td><td>${escapeHtml(o.voucher||"-")}</td><td><span class="${statusClass(o.status)}">${o.status}</span></td><td><div class="table-actions"><button class="mini-button" data-po-view="${o.id}">Ver</button>${o.status!=="Recibida"?`<button class="mini-button" data-po-receive="${o.id}">Recibir</button>`:""}</div></td></tr>`).join("")||tableEmpty(9,"Sin órdenes.")}</tbody></table></div></section></div>`;
 }
@@ -469,7 +469,7 @@ function openProduction(){
 
 /* -------------------------- HELPERS -------------------------- */
 
-function buildSuggestions(){state.purchaseSuggestions=state.inventory.filter(i=>Number(i.stock)<=Number(i.min)).map(i=>({id:`SGR-${i.id}`,inventoryId:i.id,item:i.item,stock:Number(i.stock),min:Number(i.min),unit:i.unit,suggestedQty:round3(Math.max(0,Math.max(i.min*2,i.min+1)-i.stock)),reason:"Stock por debajo del mínimo",supplierId:preferredSupplier(i.id)?.id||null}))}
+function buildSuggestions(){state.purchaseSuggestions=state.inventory.filter(esCritico).map(i=>({id:`SGR-${i.id}`,inventoryId:i.id,item:i.item,stock:Number(i.stock),min:Number(i.min),unit:i.unit,suggestedQty:round3(Math.max(0,Math.max(i.min*2,i.min+1)-i.stock)),reason:"Stock por debajo del mínimo",supplierId:preferredSupplier(i.id)?.id||null}))}
 function inv(id){return state.inventory.find(i=>i.id===id)||null}
 // Cada insumo lleva su proveedor segun el cuadro de proveedores del cliente.
 function defaultSupplier(id){return inv(id)?.supplierId||null}

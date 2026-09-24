@@ -22,7 +22,7 @@ export const PLANO_ASPECTO = 1.6;
 
 // Tamanos estandar de mesa por capacidad.
 export const TAMANOS_MESA = {
-  2: { w: 5.0, h: 10.0 },
+  2: { w: 5.0, h: 12.5 },
   4: { w: 7.5, h: 12.5 },
   6: { w: 12.5, h: 12.5 }
 };
@@ -30,12 +30,12 @@ export const TAMANOS_MESA = {
 export const tablesSeed = [
   { id: "A4", name: "Mesa A4", area: "Salon A", seats: 4, status: "Libre", map: { x: 7.5, y: 20.0, w: 7.5, h: 12.5, shape: "rect" } },
   { id: "A3", name: "Mesa A3", area: "Salon A", seats: 4, status: "Libre", map: { x: 7.5, y: 40.0, w: 7.5, h: 12.5, shape: "rect" } },
-  { id: "M2", name: "Mesa 2", area: "Salon principal", seats: 2, status: "Libre", map: { x: 10.0, y: 60.0, w: 5.0, h: 10.0, shape: "round" } },
+  { id: "M2", name: "Mesa 2", area: "Salon principal", seats: 2, status: "Libre", map: { x: 10.0, y: 60.0, w: 5.0, h: 12.5, shape: "round" } },
   { id: "M3", name: "Mesa 3", area: "Salon principal", seats: 4, status: "Libre", map: { x: 32.5, y: 25.0, w: 7.5, h: 12.5, shape: "rect" } },
-  { id: "M5", name: "Mesa 5", area: "Salon principal", seats: 2, status: "Libre", map: { x: 35.0, y: 47.5, w: 5.0, h: 10.0, shape: "rect" } },
+  { id: "M5", name: "Mesa 5", area: "Salon principal", seats: 2, status: "Libre", map: { x: 35.0, y: 47.5, w: 5.0, h: 12.5, shape: "rect" } },
   { id: "M4", name: "Mesa 4", area: "Salon principal", seats: 4, status: "Libre", map: { x: 55.0, y: 25.0, w: 7.5, h: 12.5, shape: "rect" } },
-  { id: "M6", name: "Mesa 6", area: "Salon principal", seats: 2, status: "Libre", map: { x: 55.0, y: 47.5, w: 5.0, h: 10.0, shape: "rect" } },
-  { id: "M1", name: "Mesa 1", area: "Salon principal", seats: 2, status: "Libre", map: { x: 70.0, y: 47.5, w: 5.0, h: 10.0, shape: "rect" } },
+  { id: "M6", name: "Mesa 6", area: "Salon principal", seats: 2, status: "Libre", map: { x: 55.0, y: 47.5, w: 5.0, h: 12.5, shape: "rect" } },
+  { id: "M1", name: "Mesa 1", area: "Salon principal", seats: 2, status: "Libre", map: { x: 70.0, y: 47.5, w: 5.0, h: 12.5, shape: "rect" } },
   { id: "A2", name: "Mesa A2", area: "Salon A", seats: 4, status: "Libre", map: { x: 30.0, y: 70.0, w: 7.5, h: 12.5, shape: "rect" } },
   { id: "A1", name: "Mesa A1", area: "Salon A", seats: 4, status: "Libre", map: { x: 62.5, y: 70.0, w: 7.5, h: 12.5, shape: "rect" } }
 ];

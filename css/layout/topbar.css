@@ -19,6 +19,10 @@
 .topbar h1 {
     color: var(--brown);
     font-size: 1.72rem;
+    /* Una sola linea: si no entra, se recorta con puntos suspensivos. */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 .search-box {
     min-height: 46px;

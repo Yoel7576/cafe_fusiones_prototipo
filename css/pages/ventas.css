@@ -1287,6 +1287,12 @@
   gap: 6px;
 }
 
+.content .salon-head .salon-mode-switch button.is-active {
+  background: var(--brown);
+  border-color: var(--brown);
+  color: #fff;
+}
+
 .salon-mode-switch button {
   min-height: 42px;
 }

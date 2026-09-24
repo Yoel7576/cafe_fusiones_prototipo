@@ -26,7 +26,12 @@ function normalizeNotification(item) {
 function buildNotifications() {
   const generated = [];
 
-  state.inventory.filter((i) => i.stock <= i.min).forEach((i) => {
+  // Solo avisa de los insumos con minimo definido que lo alcanzaron. Con el
+  // minimo en 0 (los que el cliente aun no carga) se generaban cientos de
+  // avisos de "0 disponibles" sin ninguna utilidad.
+  state.inventory
+    .filter((i) => Number(i.min || 0) > 0 && Number(i.stock || 0) <= Number(i.min || 0))
+    .forEach((i) => {
     generated.push(normalizeNotification({
       id: `stock-${i.id}`,
       title: "Stock bajo",
@@ -34,6 +39,18 @@ function buildNotifications() {
       tone: "danger",
       message: `${i.item}: ${i.stock} ${i.unit} disponibles`,
       details: `El insumo ${i.item} está por debajo del mínimo recomendado (${i.min} ${i.unit}). Revisa el pedido o el ajuste de inventario para evitar faltantes.`,
+      createdAt: new Date().toISOString()
+    }));
+  });
+
+  state.inventory.filter((i) => Number(i.stock || 0) < 0).forEach((i) => {
+    generated.push(normalizeNotification({
+      id: `negativo-${i.id}`,
+      title: "Stock en negativo",
+      category: "Inventario",
+      tone: "danger",
+      message: `${i.item}: ${i.stock} ${i.unit}`,
+      details: `Se vendio ${i.item} sin existencias cargadas, por eso el stock quedo en negativo. Registra la entrada correspondiente para regularizarlo.`,
       createdAt: new Date().toISOString()
     }));
   });

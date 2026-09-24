@@ -254,12 +254,28 @@
 .inventory-summary-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* Cada panel mide lo que su contenido: sin esto los dos tomaban el alto del
+     mas largo y quedaban enormes y vacios. */
+  align-items: start;
   gap: 10px;
 }
 
+/* El panel no lleva padding porque las filas ocupan todo el ancho; la cabecera
+   si lo necesita, antes quedaba pegada al borde. */
 .inventory-summary-panel {
   padding: 0;
   overflow: hidden;
+}
+
+.inventory-summary-panel > .panel__header {
+  margin-bottom: 0;
+  padding: 14px 16px;
+  border-bottom: 1px solid #f0e7df;
+}
+
+.inventory-summary-panel .inventory-alert-list,
+.inventory-summary-panel .inventory-suggestion-list {
+  padding: 0;
 }
 
 .inventory-alert-list,
@@ -463,9 +479,17 @@
    SUGERENCIAS DE COMPRA
    ========================================================================== */
 
+/* El panel no lleva padding porque la grilla lo aporta; la cabecera si, antes
+   quedaba pegada al borde. */
 .purchase-suggestions-panel {
   padding: 0;
   overflow: hidden;
+}
+
+.purchase-suggestions-panel > .panel__header {
+  margin-bottom: 0;
+  padding: 14px 16px;
+  border-bottom: 1px solid #f0e7df;
 }
 
 .purchase-suggestion-grid {

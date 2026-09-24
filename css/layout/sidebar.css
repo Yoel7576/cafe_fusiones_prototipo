@@ -7,12 +7,33 @@
     height: 100dvh;
     display: flex;
     flex-direction: column;
-    gap: 22px;
-    padding: 24px 18px;
+    gap: 10px;
+    padding: 12px 14px;
     border-right: 1px solid rgba(231, 217, 203, .82);
     background: var(--brown);
     color: #fff;
+    /* En una ventana baja (1280x600, 1359x630) el contenido del menu no entra.
+       Scrollea por dentro: el documento nunca debe crecer por culpa del menu,
+       porque entonces queda una franja clara debajo del bloque cafe. */
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, .28) transparent;
     transition: width .2s ease, padding .2s ease;
+  }
+  .sidebar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .sidebar::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .24);
+  }
+  .sidebar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  /* Los bloques no se comprimen: si falta alto, se scrollea. */
+  .sidebar > * {
+    flex-shrink: 0;
   }
   .sidebar-toggle {
     align-self: flex-end;
@@ -68,13 +89,13 @@
 .brand-lockup {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 8px;
+    gap: 10px;
+    padding: 2px 6px;
     border-radius: var(--radius);
   }
 .brand-lockup img {
-    width: 48px;
-    height: 48px;
+    width: 34px;
+    height: 34px;
     flex-shrink: 0;
     border-radius: 12px;
     object-fit: contain;
@@ -89,10 +110,13 @@
   }
 .side-nav {
     display: grid;
-    gap: 8px;
+    gap: 4px;
   }
-.nav-button {
+.sidebar .nav-button,
+  .side-actions .nav-button {
     width: 100%;
+    /* Mas bajo que el boton estandar (44px) para que el menu entre completo. */
+    min-height: 38px;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -151,5 +175,5 @@
 }
 
 /* --- V3: acciones de cuenta al fondo del menu lateral --- */
-.side-actions { margin-top: auto; display: grid; gap: 6px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.16); }
+.side-actions { margin-top: auto; display: grid; gap: 3px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,.16); }
 .side-actions .nav-button { font-weight: 700; }

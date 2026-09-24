@@ -1,5 +1,13 @@
 /* Cafe Fusiones - layout/app-shell.css (generado desde styles.css, sin cambios visuales) */
 
+/* html y body llevan el mismo fondo que el area de trabajo: si algun dia el
+   documento queda mas alto que el shell, no se ve una franja de otro color. */
+html,
+body {
+    min-height: 100%;
+    background: var(--cream);
+  }
+
 .app-shell {
     min-height: 100dvh;
     display: grid;
