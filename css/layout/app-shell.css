@@ -20,18 +20,33 @@ body {
   .app-shell.sidebar-collapsed {
     grid-template-columns: 88px minmax(0, 1fr);
   }
-  /* El menu lateral es sticky y mide una pantalla, asi que al hacer scroll la
-     columna quedaba sin pintar por debajo (se veia una franja clara). Esta capa
-     ocupa la columna completa y le da el fondo. */
+  /* Fondo de la columna del menu.
+     Va FIJA a la ventana, no dentro del grid: asi cubre de borde a borde pase
+     lo que pase con el sticky al hacer scroll. Cuando dependia del grid, un
+     desajuste de subpixel del sticky dejaba asomar una franja clara arriba. */
   .app-shell::before {
     content: "";
-    grid-area: 1 / 1;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: var(--sidebar);
     background: var(--brown);
     border-right: 1px solid rgba(231, 217, 203, .82);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .app-shell.sidebar-collapsed::before {
+    width: 88px;
   }
   .app-shell > .sidebar {
-    grid-area: 1 / 1;
+    position: sticky;
+    /* Por encima de la capa de fondo. */
     z-index: 1;
+    /* El sticky se resuelve contra la ventana; -1px de margen absorbe el
+       redondeo de subpixel para que nunca quede una linea sin pintar. */
+    margin-top: -1px;
+    padding-top: 13px;
   }
 .workspace {
     min-width: 0;
