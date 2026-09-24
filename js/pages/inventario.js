@@ -112,19 +112,32 @@ function currentView(){
 
 /* -------------------------- RESUMEN -------------------------- */
 
+// Un insumo solo es critico si tiene minimo definido y lo alcanzo. El stock en
+// negativo (se vendio sin haber cargado existencias) se avisa aparte.
+function esCritico(i){return Number(i.min||0)>0 && Number(i.stock||0)<=Number(i.min||0)}
+function enNegativo(i){return Number(i.stock||0)<0}
+
+function estadoDeInsumo(i){
+  if(enNegativo(i))return "Negativo";
+  if(esCritico(i))return "Crítico";
+  if(Number(i.stock||0)===0)return "Sin stock";
+  return "Disponible";
+}
+
 function metrics(){
-  const low=state.inventory.filter(i=>Number(i.stock)<=Number(i.min)).length;
+  const low=state.inventory.filter(esCritico).length;
+  const negative=state.inventory.filter(enNegativo).length;
   const expiring=state.inventoryLots.filter(l=>{const d=daysUntil(l.expiry);return d>=0&&d<=7&&Number(l.availableQty)>0}).length;
   const value=state.inventory.reduce((s,i)=>s+Number(i.stock||0)*Number(i.cost||0),0);
   const month=today().slice(0,7);
   const waste=state.wasteRecords.filter(r=>String(r.date||r.at||"").startsWith(month)).reduce((s,r)=>s+Number(r.cost||0),0);
-  return {low,expiring,value,waste};
+  return {low,negative,expiring,value,waste};
 }
 function kpi(label,value,detail,tone="neutral"){return `<article class="panel inventory-kpi inventory-kpi--${tone}"><span>${escapeHtml(label)}</span><strong>${escapeHtml(String(value))}</strong><small>${escapeHtml(detail)}</small></article>`}
 function summaryView(){
   const m=metrics(), alerts=alertsList().slice(0,6), moves=[...state.inventoryMovements].sort((a,b)=>new Date(b.at)-new Date(a.at)).slice(0,6);
   return `<div class="inventory-tab-view">
-    <section class="inventory-kpis">${kpi("Valor inventario",money(m.value),"Costo valorizado")}${kpi("Stock crítico",m.low,"Bajo el mínimo",m.low?"danger":"ok")}${kpi("Lotes por vencer",m.expiring,"Próximos 7 días",m.expiring?"warn":"ok")}${kpi("Mermas del mes",money(m.waste),"Costo estimado",m.waste?"danger":"ok")}</section>
+    <section class="inventory-kpis">${kpi("Valor inventario",money(m.value),"Costo valorizado")}${kpi("Stock crítico",m.low,"Bajo el mínimo",m.low?"danger":"ok")}${m.negative?kpi("En negativo",m.negative,"Vendido sin existencias","danger"):""}${kpi("Lotes por vencer",m.expiring,"Próximos 7 días",m.expiring?"warn":"ok")}${kpi("Mermas del mes",money(m.waste),"Costo estimado",m.waste?"danger":"ok")}</section>
     <div class="inventory-summary-grid">
       <section class="panel inventory-summary-panel"><div class="panel__header"><div><p class="eyebrow">Atención</p><h2>Alertas prioritarias</h2></div><span class="${statusClass(alerts.length?"Atención":"Disponible")}">${alerts.length}</span></div>
         <div class="inventory-alert-list">${alerts.length?alerts.map(a=>`<button class="inventory-alert-row inventory-alert-row--${a.tone}" data-go-tab="${a.tab}"><span>${a.icon}</span><div><strong>${escapeHtml(a.title)}</strong><small>${escapeHtml(a.detail)}</small></div><b>›</b></button>`).join(""):emptyMini("✓","Sin alertas críticas","Inventario dentro de parámetros.")}</div>
@@ -138,7 +151,8 @@ function summaryView(){
 }
 function alertsList(){
   const a=[];
-  state.inventory.filter(i=>Number(i.stock)<=Number(i.min)).forEach(i=>a.push({tone:"danger",icon:"!",title:`${i.item}: stock crítico`,detail:`${i.stock} ${i.unit} disponibles · mínimo ${i.min}`,tab:"stock"}));
+  state.inventory.filter(enNegativo).forEach(i=>a.push({tone:"danger",icon:"!",title:`${i.item}: stock en negativo`,detail:`${qty(i.stock)} ${i.unit} · se vendió sin existencias cargadas`,tab:"stock"}));
+  state.inventory.filter(esCritico).forEach(i=>a.push({tone:"danger",icon:"!",title:`${i.item}: stock crítico`,detail:`${qty(i.stock)} ${i.unit} disponibles · mínimo ${qty(i.min)}`,tab:"stock"}));
   state.inventoryLots.filter(l=>{const d=daysUntil(l.expiry);return d>=0&&d<=7&&Number(l.availableQty)>0}).forEach(l=>a.push({tone:"warn",icon:"◷",title:`${l.item}: lote por vencer`,detail:`${l.code} · ${shortDate(l.expiry)} · ${l.availableQty} ${l.unit}`,tab:"lotes"}));
   return a;
 }
@@ -158,7 +172,8 @@ function stockView(){
     </section></div>`;
 }
 function stockRow(i){
-  const available=Math.max(0,Number(i.stock)-Number(i.committed||0)), label=available<=Number(i.min)?"Crítico":"Disponible";
+  // Sin Math.max: el stock negativo tiene que verse.
+  const available=Number(i.stock||0)-Number(i.committed||0), label=estadoDeInsumo(i);
   return `<tr><td><strong>${escapeHtml(i.item)}</strong><br><small class="muted">${escapeHtml(i.category)} · ${escapeHtml(i.lot||"Sin lote")}</small></td><td>${escapeHtml(i.type||"Insumo")}</td>
   <td><strong>${qty(available)} ${escapeHtml(i.unit)}</strong>${i.committed?`<br><small class="muted">${qty(i.committed)} comprometido</small>`:""}</td><td>${qty(i.min)} ${escapeHtml(i.unit)}</td><td>${escapeHtml(i.location||"-")}</td><td>${escapeHtml(i.rotation||"FIFO")}</td><td>${money(i.cost||0)}</td><td><span class="${statusClass(label)}">${label}</span></td>
   <td><div class="table-actions"><button class="mini-button" data-stock-view="${i.id}">Ver</button><button class="mini-button" data-stock-edit="${i.id}">${icon("edit")}<span>Editar</span></button></div></td></tr>`;

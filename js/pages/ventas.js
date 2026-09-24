@@ -9,6 +9,7 @@ import { getState, saveState, nextId, addAuditEvent } from "../core/storage.js";
 import { openModal, closeModal, closeIcon } from "../components/modal.js";
 import { showToast } from "../components/toast.js";
 import { zonaHtml, mesaHtml, lienzoHtml, leyendaHtml } from "../components/floorplan.js";
+import { consumirInventarioPorVenta, resumenDeConsumo } from "../core/inventario.js";
 import {
   icon,
   money,
@@ -1329,6 +1330,16 @@ function finalizeSale(table, total, method, opCode) {
     at: now
   });
 
+  // El inventario se descuenta segun la receta de cada producto. Si un insumo
+  // queda en negativo la venta NO se bloquea: se avisa para regularizarlo.
+  const consumo = consumirInventarioPorVenta(state, {
+    items: table.items,
+    origin: saleId,
+    user: session.name,
+    table: table.name,
+    branchId: table.branchId
+  });
+
   state.salesHistory ||= [];
   state.salesHistory.unshift({
     id: saleId,
@@ -1372,7 +1383,17 @@ function finalizeSale(table, total, method, opCode) {
 
   saveState(state);
   closeModal();
-  showToast(customer ? `Venta ${saleId} cerrada. ${customer.name} acumulo puntos.` : `Venta ${saleId} cerrada con ${method}.`);
+
+  const aviso = resumenDeConsumo(consumo);
+  showToast(customer
+    ? `Venta ${saleId} cerrada. ${customer.name} acumulo puntos.`
+    : `Venta ${saleId} cerrada con ${method}.`);
+
+  if (aviso) {
+    // Segundo aviso para que no se pierda entre el mensaje de la venta.
+    window.setTimeout(() => showToast(`Inventario: ${aviso}.`), 2200);
+  }
+
   render();
 }
 

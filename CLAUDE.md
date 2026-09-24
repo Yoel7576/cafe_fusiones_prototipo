@@ -149,6 +149,20 @@ enlazan esa hoja). Si se toca el aspecto del plano, se toca ahi, no en
   selector de una sola clase, por eso las reglas de tipografia del plano van
   acotadas con `.floorplan`.
 
+### Inventario y recetas
+
+`js/core/inventario.js` concentra el consumo de insumos por venta:
+
+- Al cerrar una venta (`finalizeSale` en ventas.js) cada linea descuenta segun
+  su receta; los productos de despacho directo descuentan su insumo asociado y
+  los que no tienen ninguno de los dos se informan como "sin receta".
+- **La falta de stock NO bloquea la venta.** Cafe Fusiones todavia no cargo su
+  inventario inicial, asi que el stock puede quedar en negativo; eso se avisa en
+  un toast y se marca en Inventario con el estado `Negativo`.
+- Cada descuento deja un movimiento en el Kardex (`state.inventoryMovements`).
+- Un insumo solo es `Critico` si tiene minimo definido y lo alcanzo: con minimo
+  0 (el valor por defecto hasta que el cliente lo cargue) no se marca nada.
+
 ### Landing publica
 
 La landing (`pages/landing*.html`) no tiene sesion, pero **si lee el estado**:

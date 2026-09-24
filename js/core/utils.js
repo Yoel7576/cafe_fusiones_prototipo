@@ -46,7 +46,8 @@ export function statusClass(status) {
   const value = normalize(status);
   if (value.includes("libre") || value.includes("activo") || value.includes("oro")) return "status status--ok";
   if (value.includes("reservada") || value.includes("plata")) return "status status--info";
-  if (value.includes("bajo") || value.includes("critico") || value.includes("venc")) return "status status--danger";
+  if (value.includes("bajo") || value.includes("critico") || value.includes("venc") || value.includes("negativo")) return "status status--danger";
+  if (value.includes("sin stock")) return "status status--busy";
   if (value.includes("ocupada") || value.includes("bronce") || value.includes("pendiente")) return "status status--busy";
   return "status";
 }

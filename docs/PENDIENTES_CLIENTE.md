@@ -68,6 +68,11 @@ reales. Todos los costos son editables desde Inventario.
 tienen su stock real; los demás quedaron en **stock 0 y mínimo 0**, marcados con origen
 "Recetario". No inventamos existencias.
 
+**Ojo:** el sistema ya descuenta los insumos al cerrar una venta. Como la mayoría
+está en 0, el stock queda en **negativo** y aparece marcado en rojo en Inventario.
+Eso es a propósito: la venta nunca se bloquea, pero la alerta recuerda que falta
+cargar las existencias.
+
 **Qué necesitamos:**
 
 1. El **inventario inicial** (stock actual) de los insumos que faltan.
