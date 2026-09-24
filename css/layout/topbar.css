@@ -37,6 +37,7 @@
   }
 .topbar-actions {
     position: relative;
+    min-width: 0;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -102,12 +103,16 @@
     background: var(--cream);
   }
 @media (max-width: 920px) {
-  .topbar {grid-template-columns: 1fr auto;
+  .topbar {grid-template-columns: minmax(0, 1fr) auto;
     gap: 12px;
     padding: 14px;}
   .search-box {grid-column: 1 / -1;
     order: 3;}
   .profile-button span:not(.avatar) {display: none;}
+  /* El nombre y el rol del usuario desbordaban la pantalla en movil. */
+  .topbar-user span:not(.avatar) {display: none;}
+  .topbar-user {padding: 0;}
+  .topbar h1 {font-size: 1.3rem;}
 }
 
 /* --- V3: usuario en la barra superior (sin dropdown) --- */

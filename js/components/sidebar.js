@@ -108,7 +108,7 @@ export function renderSidebar(activeId, role) {
         aria-label="Cafe Fusiones inicio"
       >
         <img
-          src="../assets/img/Logo café fusiones.png"
+          src="../assets/img/logo_cafe_fusiones.png"
           alt="Cafe Fusiones"
           aria-hidden="false"
         >

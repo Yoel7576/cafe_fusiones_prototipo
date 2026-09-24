@@ -14,7 +14,15 @@ if (session) init(session.role);
 
 function init(role) {
   renderSidebar("dashboard", role);
-  renderTopbar({ title: "Inicio", eyebrow: "Panel", showSearch: false });
+  // Acceso rapido a Ventas: boton normal en la cabecera, no un bloque aparte.
+  renderTopbar({
+    title: "Inicio",
+    eyebrow: "Panel",
+    showSearch: false,
+    actions: canAccess(role, "ventas")
+      ? `<a class="button button--primary" href="ventas.html?tab=salon&mode=map">${icon("receipt")}<span>Nueva venta</span></a>`
+      : ""
+  });
 
   const view = document.getElementById("view");
   const adminAuditButton = canAccess(role, "admin")
@@ -23,7 +31,7 @@ function init(role) {
 
   view.innerHTML = `
     <div class="view-stack">
-      <section class="grid grid--3" aria-label="Indicadores principales">${metrics().map(renderMetric).join("")}</section>
+      <section class="grid grid--4" aria-label="Indicadores principales">${metrics().map(renderMetric).join("")}</section>
       <section class="grid grid--2">
         <article class="panel">
           <div class="panel__header"><h2>Ventas por canal</h2><span class="status status--ok">Hoy</span></div>
@@ -78,7 +86,7 @@ function metrics() {
     {
       label: "Pedidos activos",
       value: String(orders.length),
-      trend: ready ? `${ready} listos` : "Ninguno listo",
+      trend: ready ? `${ready} listos` : "Ninguno",
       tone: ready ? "warn" : "neutral"
     },
     {

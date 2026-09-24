@@ -26,6 +26,9 @@
     cursor: pointer;
   }
   .sidebar-toggle svg {
+    /* `display: block` evita que el svg se apoye en la linea base del texto
+       y quede recortado por el borde inferior del boton. */
+    display: block;
     width: 18px;
     height: 18px;
     stroke: currentColor;
@@ -71,7 +74,10 @@
 .brand-lockup img {
     width: 48px;
     height: 48px;
+    flex-shrink: 0;
     border-radius: 12px;
+    object-fit: contain;
+    background: rgba(255, 255, 255, .06);
   }
 .brand-lockup strong,
   .brand-lockup small {

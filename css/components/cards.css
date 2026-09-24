@@ -23,8 +23,18 @@
 .metric-card {
     min-height: 132px;
     display: grid;
+    align-content: start;
     gap: 10px;
     padding: 18px;
+  }
+  /* Altura fija de la fila superior: si una etiqueta o una insignia ocupa dos
+     lineas, el valor de esa tarjeta no se desalinea del resto de la fila. */
+  .metric-card .metric-card__top {
+    min-height: 38px;
+    align-items: flex-start;
+  }
+  .metric-card .metric-card__top p {
+    min-width: 0;
   }
 .metric-card__top,
   .panel__header,

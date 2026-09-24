@@ -7,7 +7,9 @@ import { showToast } from "./toast.js";
 const searchIcon = '<svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>';
 const syncIcon = '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 1-15.5 6.2"/><path d="M3 12A9 9 0 0 1 18.5 5.8"/><path d="M3 17v4h4"/><path d="M21 7V3h-4"/></svg>';
 
-export function renderTopbar({ title, eyebrow = "Modulo", showSearch = true, searchPlaceholder = "Buscar producto, mesa o cliente", onSearch } = {}) {
+// `actions` recibe HTML de la propia pantalla (por ejemplo un acceso rapido).
+// Se pinta antes del boton de sincronizar, al mismo tamano que el resto.
+export function renderTopbar({ title, eyebrow = "Modulo", showSearch = true, searchPlaceholder = "Buscar producto, mesa o cliente", onSearch, actions = "" } = {}) {
   const session = getSession() || demoUser;
   const topbar = document.getElementById("topbar");
   if (!topbar) return;
@@ -24,6 +26,7 @@ export function renderTopbar({ title, eyebrow = "Modulo", showSearch = true, sea
       <input id="global-search" type="search" placeholder="${searchPlaceholder}">
     </label>` : ""}
     <div class="topbar-actions">
+      ${actions}
       <button class="icon-button" id="sync-button" type="button" aria-label="Sincronizar datos">${syncIcon}</button>
       <div class="topbar-user">
         <span class="avatar">${session.initials || "CF"}</span>
