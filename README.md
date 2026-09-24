@@ -65,7 +65,8 @@ Cafe_Fusiones_MODULAR/
 - **css/pages**: solo los estilos propios de cada pantalla.
 - **js/core**: autenticacion, permisos por rol, estado persistente y utilidades.
 - **js/data**: la data real del cliente (carta, recetario, inventario, proveedores,
-  usuarios por perfil, mesas del plano y datos de la empresa). Ya no hay datos demo.
+  usuarios por perfil, plano del salon y datos de la empresa). Ya no hay datos demo.
+  `site-data.js` es el puente de solo lectura que alimenta la landing publica.
 - **js/components**: barra lateral, barra superior, toasts, modales y confirmaciones reutilizables.
 - **js/pages**: la logica exclusiva de cada pantalla.
 
@@ -76,3 +77,8 @@ Cafe_Fusiones_MODULAR/
 - Clientes, ventas, pedidos y reportes arrancan **vacios**: se llenan con la operacion.
 - `docs/PENDIENTES_CLIENTE.md` lista lo que falto o vino contradictorio en los
   documentos que entrego Cafe Fusiones.
+- `docs/CHECKLIST_DEMO.md` es el guion de prueba manual para la presentacion.
+- El plano del salon se edita en Configuracion > Operacion > Mesas (arrastre y
+  redimension, tambien con el dedo) y Ventas > Salon lo muestra en solo lectura.
+- La landing publica (`pages/landing*.html`) muestra los lotes de cafe y los
+  platos que se marcan como publicados desde el sistema.
