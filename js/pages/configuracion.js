@@ -96,7 +96,7 @@ function normalizeSettingsState() {
 
   const currentBranch = getActiveBranch(state);
 
-  state.settings.commercialName ||= "Cafe Fusiones";
+  state.settings.commercialName ||= state.settings.tradeName || "Cafe Fusiones";
   state.settings.legalName ||= state.settings.business || "";
   state.settings.fiscalAddress ||= state.settings.address || currentBranch?.address || "";
   state.settings.currency ||= "PEN";

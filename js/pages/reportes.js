@@ -7,11 +7,15 @@ import { renderTopbar } from "../components/topbar.js";
 import { getState } from "../core/storage.js";
 import { showToast } from "../components/toast.js";
 import { icon, money, escapeHtml, statusClass, trendClass, matchesSearch, formatDate, downloadBlob, xmlEscape, buildSimplePdf } from "../core/utils.js";
-import { reportSalesRows, reportExpenseRows } from "../data/data.js";
 
 const session = requireAuth();
 const state = getState();
-const ui = { search: "", from: "2026-08-08", to: "2026-08-11", channel: "Todos", staff: "Todos", segment: "Todos", level: "Todos" };
+
+// Rango por defecto: los ultimos 30 dias hasta hoy.
+const HOY = new Date().toISOString().slice(0, 10);
+const HACE_30 = new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10);
+
+const ui = { search: "", from: HACE_30, to: HOY, channel: "Todos", staff: "Todos", segment: "Todos", level: "Todos" };
 const view = document.getElementById("view");
 
 if (session) {
@@ -22,14 +26,71 @@ if (session) {
 
 function inRange(date) { return date >= ui.from && date <= ui.to; }
 
+/* ==================== ORIGEN DE DATOS ====================
+   Los reportes se arman con la operacion real guardada en el estado:
+   las ventas cerradas (state.salesHistory) y los egresos de caja.
+   Mientras no haya operacion registrada, las tablas quedan vacias. */
+
+// Costo directo por unidad de un producto: sale del recetario si tiene receta,
+// o del insumo asociado si es un producto de despacho directo.
+function unitCost(productId) {
+  const recipe = (state.recipes || []).find(
+    (item) => item.productId === productId || (item.productIds || []).includes(productId)
+  );
+  if (recipe) return Number(recipe.referenceCost || 0);
+
+  const product = (state.menuItems || []).find((item) => item.id === productId);
+  if (product?.inventoryItemId) {
+    const supply = (state.inventory || []).find((item) => item.id === product.inventoryItemId);
+    if (supply) return Number(supply.cost || 0);
+  }
+  return 0;
+}
+
+// Una fila por producto vendido, que es el grano que consumen los reportes.
+function salesRows() {
+  const rows = [];
+
+  (state.salesHistory || []).forEach((sale) => {
+    const date = String(sale.closedAt || "").slice(0, 10);
+    (sale.items || []).forEach((item) => {
+      const product = (state.menuItems || []).find((menu) => menu.id === item.id);
+      const qty = Number(item.qty || 0);
+      rows.push({
+        date,
+        channel: sale.channel || "Local",
+        staff: sale.user || "Sin responsable",
+        product: item.name,
+        category: product?.category || "Sin categoria",
+        qty,
+        income: qty * Number(item.price || 0),
+        cost: qty * unitCost(item.id)
+      });
+    });
+  });
+
+  return rows;
+}
+
+function expenseRows() {
+  return (state.cashBox?.movements || [])
+    .filter((movement) => movement.type === "egreso")
+    .map((movement) => ({
+      date: String(movement.at || "").slice(0, 10),
+      type: movement.category || "Egreso",
+      detail: movement.concept || movement.description || "Egreso de caja",
+      amount: Number(movement.amount || 0)
+    }));
+}
+
 function sales() {
-  return reportSalesRows.filter((r) =>
+  return salesRows().filter((r) =>
     inRange(r.date) &&
     (ui.channel === "Todos" || r.channel === ui.channel) &&
     (ui.staff === "Todos" || r.staff === ui.staff) &&
     matchesSearch(ui.search, r.product, r.category, r.staff, r.channel));
 }
-function expenses() { return reportExpenseRows.filter((r) => inRange(r.date)); }
+function expenses() { return expenseRows().filter((r) => inRange(r.date)); }
 
 function summary(s, e) {
   const income = s.reduce((a, r) => a + r.income, 0);
@@ -53,8 +114,9 @@ function render() {
   const avgSat = customers.length ? Math.round(customers.reduce((a, c) => a + c.satisfaction, 0) / customers.length) : 0;
   const segments = ["Todos", ...new Set(state.customers.map((c) => c.segment))];
   const levels = ["Todos", ...new Set(state.customers.map((c) => c.level))];
-  const channels = ["Todos", ...new Set(reportSalesRows.map((r) => r.channel))];
-  const staff = ["Todos", ...new Set(reportSalesRows.map((r) => r.staff))];
+  const allRows = salesRows();
+  const channels = ["Todos", ...new Set(allRows.map((r) => r.channel))];
+  const staff = ["Todos", ...new Set(allRows.map((r) => r.staff))];
   const lowStock = state.inventory.filter((i) => i.stock <= i.min);
 
   view.innerHTML = `
@@ -83,14 +145,14 @@ function render() {
         </article>
         <article class="panel">
           <div class="panel__header"><h2>Mozos con mayores ventas</h2><span class="status status--ok">Rendimiento</span></div>
-          <div class="table-wrap"><table class="data-table"><thead><tr><th>Mozo</th><th>Ventas</th><th>Pedidos</th><th>Ticket prom.</th></tr></thead><tbody>${staffPerformance(s).map((r) => `<tr><td><strong>${r.staff}</strong></td><td>${money(r.income)}</td><td>${r.orders}</td><td>${money(r.average)}</td></tr>`).join("")}</tbody></table></div>
+          <div class="table-wrap"><table class="data-table"><thead><tr><th>Mozo</th><th>Ventas</th><th>Pedidos</th><th>Ticket prom.</th></tr></thead><tbody>${staffPerformance(s).map((r) => `<tr><td><strong>${escapeHtml(r.staff)}</strong></td><td>${money(r.income)}</td><td>${r.orders}</td><td>${money(r.average)}</td></tr>`).join("") || '<tr><td colspan="4" class="muted text-center">Aun no hay ventas registradas.</td></tr>'}</tbody></table></div>
         </article>
       </section>
 
       <section class="reports-grid">
         <article class="panel">
           <div class="panel__header"><h2>Platos mas vendidos</h2><span class="status">Productos</span></div>
-          <div class="table-wrap"><table class="data-table"><thead><tr><th>Producto</th><th>Categoria</th><th>Unidades</th><th>Ingreso</th></tr></thead><tbody>${productPerformance(s).map((r) => `<tr><td><strong>${r.product}</strong></td><td>${r.category}</td><td>${r.qty}</td><td>${money(r.income)}</td></tr>`).join("")}</tbody></table></div>
+          <div class="table-wrap"><table class="data-table"><thead><tr><th>Producto</th><th>Categoria</th><th>Unidades</th><th>Ingreso</th></tr></thead><tbody>${productPerformance(s).map((r) => `<tr><td><strong>${escapeHtml(r.product)}</strong></td><td>${escapeHtml(r.category)}</td><td>${r.qty}</td><td>${money(r.income)}</td></tr>`).join("") || '<tr><td colspan="4" class="muted text-center">Aun no hay ventas registradas.</td></tr>'}</tbody></table></div>
         </article>
         <article class="panel">
           <div class="panel__header"><h2>Clientes</h2><span class="status status--info">${customers.length} activos</span></div>
@@ -103,7 +165,7 @@ function render() {
       <section class="report-layout">
         <article class="panel">
           <div class="panel__header"><h2>Ventas por canal</h2><span class="status">Distribucion</span></div>
-          <div class="chart-bars">${channelPerformance(s).map((i) => `<div class="bar-row"><span>${i.label}</span><span class="bar-track"><span class="bar-fill" style="width:${i.value}%"></span></span><strong>${i.amount}</strong></div>`).join("")}</div>
+          <div class="chart-bars">${channelPerformance(s).map((i) => `<div class="bar-row"><span>${escapeHtml(i.label)}</span><span class="bar-track"><span class="bar-fill" style="width:${i.value}%"></span></span><strong>${i.amount}</strong></div>`).join("") || '<p class="muted">Aun no hay ventas registradas.</p>'}</div>
         </article>
         ${donutCard(customers)}
       </section>
@@ -118,9 +180,16 @@ function render() {
 }
 
 function stockRows() {
-  return state.inventory.map((i) => {
-    const label = i.stock <= i.min ? "Bajo" : "Disponible";
-    return `<tr><td><strong>${escapeHtml(i.item)}</strong></td><td>${i.category}</td><td>${i.stock} ${i.unit}</td><td>${i.min} ${i.unit}</td><td><span class="${statusClass(label)}">${label}</span></td></tr>`;
+  const ordenado = [...state.inventory]
+    .filter((i) => i.active !== false)
+    .sort((a, b) => {
+      const critico = (x) => (Number(x.min || 0) > 0 && Number(x.stock || 0) <= Number(x.min || 0) ? 0 : 1);
+      return critico(a) - critico(b) || String(a.item).localeCompare(String(b.item));
+    });
+
+  return ordenado.map((i) => {
+    const label = Number(i.min || 0) > 0 && Number(i.stock || 0) <= Number(i.min || 0) ? "Bajo" : "Disponible";
+    return `<tr><td><strong>${escapeHtml(i.item)}</strong></td><td>${escapeHtml(i.category)}</td><td>${i.stock} ${i.unit}</td><td>${i.min} ${i.unit}</td><td><span class="${statusClass(label)}">${label}</span></td></tr>`;
   }).join("") || '<tr><td colspan="5" class="muted text-center">Sin insumos.</td></tr>';
 }
 

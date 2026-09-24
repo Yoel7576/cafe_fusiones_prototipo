@@ -9,7 +9,6 @@ import { getState, saveState } from "../core/storage.js";
 import { openModal, closeModal, closeIcon } from "../components/modal.js";
 import { showToast } from "../components/toast.js";
 import { icon, money, escapeHtml, statusClass } from "../core/utils.js";
-import { auditEvents } from "../data/data.js";
 
 const session = requireAuth();
 if (session && !canAccess(session.role, "admin")) window.location.replace("dashboard.html");
@@ -24,16 +23,6 @@ const adminTabs = [
   { id: "historial", label: "Historial" }
 ];
 let activeAdminTab = "platos";
-
-if (!Array.isArray(state.recipes) || state.recipes.length === 0) {
-  state.recipes = [
-    { id: "RCP-001", productId: "caf-cappuccino", name: "Cappuccino", station: "Barra", yieldQty: 1, yieldUnit: "porción", targetMinutes: 5, expectedWastePct: 2, version: "1.1", status: "Activa", ingredients: [{ inventoryId: "INS-01", qty: 0.018, unit: "kg", note: "18 g café tostado" }, { inventoryId: "INS-02", qty: 0.18, unit: "L", note: "180 ml leche fresca" }], variants: [] },
-    { id: "RCP-002", productId: "caf-latte", name: "Café Latte", station: "Barra", yieldQty: 1, yieldUnit: "porción", targetMinutes: 5, expectedWastePct: 2, version: "1.0", status: "Activa", ingredients: [{ inventoryId: "INS-01", qty: 0.018, unit: "kg", note: "18 g café tostado" }, { inventoryId: "INS-02", qty: 0.22, unit: "L", note: "220 ml leche fresca" }], variants: [] },
-    { id: "RCP-003", productId: "san-acevichado", name: "Sándwich Acevichado", station: "Cocina", yieldQty: 1, yieldUnit: "porción", targetMinutes: 9, expectedWastePct: 4, version: "1.0", status: "Activa", ingredients: [{ inventoryId: "INS-05", qty: 1, unit: "un", note: "Pan artesanal" }, { inventoryId: "INS-06", qty: 0.08, unit: "kg", note: "Palta" }], variants: [] },
-    { id: "RCP-004", productId: "cho-caliente", name: "Chocolate caliente", station: "Barra", yieldQty: 1, yieldUnit: "porción", targetMinutes: 6, expectedWastePct: 2, version: "1.0", status: "Activa", ingredients: [{ inventoryId: "INS-08", qty: 0.035, unit: "kg", note: "Chocolate regional" }, { inventoryId: "INS-02", qty: 0.2, unit: "L", note: "Leche fresca" }], variants: [] }
-  ];
-  saveState(state);
-}
 
 if (session && canAccess(session.role, "admin")) {
   renderSidebar("admin", session.role);
@@ -103,7 +92,7 @@ function renderAdminTabContent(tabId) {
       return `
         <section class="panel">
           <div class="panel__header"><h2>Bitacora</h2><span class="status">Auditoria</span></div>
-          <div class="timeline">${auditEvents.map((e) => `<div class="timeline-item"><time>${e.time}</time><p><strong>${e.user}</strong><br><span class="muted">${e.action} · ${e.module}</span></p></div>`).join("")}</div>
+          <div class="timeline">${auditTimeline()}</div>
         </section>
       `;
     case "platos":
@@ -115,7 +104,8 @@ function renderAdminTabContent(tabId) {
             <label>Nombre<input name="name" required placeholder="Producto"></label>
             <label>Categoria<select name="category">${state.menuCategories.filter((c) => c !== "Todos").map((c) => `<option value="${c}">${c}</option>`).join("")}</select></label>
             <label>Precio<input name="price" type="number" min="0" step="0.01" required></label>
-            <label>Stock<input name="stock" type="number" min="0" step="1" required></label>
+            <label>Estado<select name="status"><option value="Activo">Activo</option><option value="Inactivo">Inactivo</option></select></label>
+            <label>Estacion<select name="station"><option value="Cocina">Cocina</option><option value="Barra">Barra</option></select></label>
             <label class="span-2">Descripcion<textarea class="textarea" name="description" required placeholder="Descripcion visible en la carta"></textarea></label>
             <label class="span-2">Fotografia (URL)<input name="image" placeholder="https://... (opcional)"></label>
             <label class="span-2 check-inline"><input type="checkbox" name="publishLanding" checked> Publicar tambien en la landing page</label>
@@ -257,6 +247,24 @@ function openRecipeEditor(id) {
   });
 }
 
+// La bitacora se arma con los eventos reales que registra addAuditEvent().
+function auditTimeline() {
+  const events = state.auditEvents || [];
+
+  if (!events.length) {
+    return '<p class="muted">Aun no hay movimientos registrados. Las acciones sensibles del sistema apareceran aqui.</p>';
+  }
+
+  return events
+    .slice(0, 40)
+    .map((event) => {
+      const time = event.time || String(event.at || "").slice(11, 16) || "--:--";
+      const detail = event.detail ? ` · ${escapeHtml(event.detail)}` : "";
+      return `<div class="timeline-item"><time>${escapeHtml(time)}</time><p><strong>${escapeHtml(event.user || "Sistema")}</strong><br><span class="muted">${escapeHtml(event.action || "")} · ${escapeHtml(event.module || "")}${detail}</span></p></div>`;
+    })
+    .join("");
+}
+
 function coffeeLotForm() {
   return `<form class="form-grid" data-lot-form><label>Codigo de lote<input name="code" required placeholder="AMZ-2607-02"></label><label>Origen<input name="origin" required placeholder="Provincia / finca"></label><label>Productor<input name="producer" required placeholder="Nombre del productor"></label><label>Variedad<input name="variety" required placeholder="Typica, Caturra..."></label><label>Tostado<select name="roast"><option>Ligero</option><option>Media</option><option>Oscuro</option></select></label><label>Recepcion<input name="received" type="date" required></label><label>Cantidad<input name="stock" type="number" min="0.01" step="0.01" required></label><label>Unidad<input name="unit" value="kg" required></label><label class="span-2">Notas de trazabilidad<textarea class="textarea" name="notes" placeholder="Finca, altura, proceso, perfil de taza"></textarea></label><button class="button button--primary" type="submit">Guardar lote</button></form>`;
 }
@@ -318,9 +326,16 @@ function wire() {
   menuForm?.addEventListener("submit", (event) => {
     event.preventDefault();
     const d = Object.fromEntries(new FormData(event.target));
+    const station = d.station === "Barra" ? "Barra" : "Cocina";
     state.menuItems.push({
       id: `prd-${Date.now().toString(36)}`, name: d.name, category: d.category,
-      price: Number(d.price), stock: Number(d.stock), channel: "Local", description: d.description,
+      price: Number(d.price), channel: "Local", description: d.description,
+      descriptionEn: "", station, dispatchStation: station,
+      operationType: "preparation", requiresPreparation: true,
+      // Sin receta todavia: no descuenta insumos hasta que se le cargue una.
+      inventoryMode: "none", editUntil: "Nuevo", estimatedTime: 10,
+      dietary: [], modifiers: [], branchIds: ["ALL"],
+      status: d.status === "Inactivo" ? "Inactivo" : "Activo",
       image: (d.image || "").trim(), publishLanding: !!d.publishLanding
     });
     saveState(state);

@@ -40,15 +40,20 @@ Capas compartidas:
 
 - `js/core/auth.js` — sesion en `sessionStorage` (`cafeFusionesSession`); `requireAuth()`
   redirige a `login.html` si no hay sesion.
-- `js/core/router.js` — `navItems` + `rolePermissions` por rol (Gerencia, Administrador,
-  Cajero, Cocina, Operaciones); `allowedIds()` / `canAccess()` filtran el menu.
+- `js/core/router.js` — `navItems` + `rolePermissions` por rol real del cliente
+  (Gerencia, Administrador, Asistente de Gerencia, Contadora, Cajero, Barra, Mozo,
+  Cocina, Operaciones); `allowedIds()` / `canAccess()` filtran el menu.
 - `js/core/storage.js` — **fuente unica de estado** (~1000 lineas). `getState()`,
   `saveState()`, `resetState()`, helpers de sucursales y categorias, `nextId()`,
   `addAuditEvent()`.
 - `js/core/utils.js` — `icon()` (sprites SVG inline), `money()` (PEN), `escapeHtml()`,
   `matchesSearch()`, `statusClass()`, `IGV_RATE` (0.18), `tableTotal()`,
   `buildSimplePdf()` / `downloadBlob()` (exportacion sin librerias), `TODAY` (fecha fija de la demo).
-- `js/data/data.js` — **solo** datos demo (carta, mesas, inventario, clientes, usuarios...).
+- `js/data/` — **data real del cliente**, no demo. `data.js` tiene la estructura del
+  negocio (usuarios por perfil, mesas del plano, estaciones, empresa); `carta.js`,
+  `recetas.js`, `inventario.js` y `proveedores.js` se generaron desde los documentos
+  entregados (carta 2025, recetario con costos, inventario de almacen y de cocina,
+  cuadro de proveedores). Clientes, ventas y reportes arrancan vacios.
 - `js/components/` — `sidebar.js`, `topbar.js`, `toast.js`, `modal.js`, `confirm.js`,
   `useractions.js`.
 
@@ -77,19 +82,31 @@ params (`?tab=`, `?mode=`, `?station=`, `?mesa=`) y `history.replaceState`.
 
 ### Estado persistente
 
-`localStorage["cafeFusionesState"]`, esquema versionado (`VERSION = 8` en `storage.js`).
+`localStorage["cafeFusionesState"]`, esquema versionado (`VERSION = 9` en `storage.js`).
 `getState()` hidrata y **migra** el estado existente en vez de borrarlo. Claves
-principales: `tables`, `menuItems`, `kitchenOrders`, `salesHistory`, `inventory`,
-`inventoryMovements`, `wasteRecords`, `customers`, `reservations`, `loyaltyMovements`,
-`users`, `branches`, `categories`, `cashBoxes`, `auditEvents`, `settings`, `sequences`.
+principales: `tables`, `menuItems`, `recipes`, `kitchenOrders`, `salesHistory`,
+`inventory`, `inventoryMovements`, `inventoryLots`, `productionBatches`, `suppliers`,
+`purchaseOrders`, `wasteRecords`, `coffeeLots`, `customers`, `reservations`,
+`loyaltyMovements`, `users`, `branches`, `categories`, `cashBoxes`, `auditEvents`,
+`settings`, `sequences`.
+
+Cada subida de `VERSION` que cambie la data base debe resembrar los catalogos en la
+migracion (ver `migrateToV9` y las listas `V9_RESEED` / `V9_LIMPIAR`): los navegadores
+que ya abrieron el prototipo conservan el estado viejo y `getState()` no lo borra.
 
 Reglas del modelo:
 
 - **Sucursales** (`branchId`) son transversales: toda operacion dependiente de local lo conserva.
   El cliente, en cambio, es global a la marca.
-- **Categorias son dinamicas** y se crean **solo** desde Configuracion. No sembrar
-  categorias por defecto. `menuCategories` en `data.js` queda solo por compatibilidad
-  temporal con las pantallas de Ventas.
+- **Categorias son dinamicas** y se administran **solo** desde Configuracion
+  (`state.categories` arranca vacio). Las 16 categorias de la carta real si vienen
+  sembradas en `menuCategoriesSeed` porque son el catalogo del cliente, no un default
+  inventado. `menuCategories` (con "Todos" al inicio) se deriva de ahi y queda por
+  compatibilidad con las pantallas de Ventas.
+- **Los seeds no se declaran dentro de las paginas.** Toda data base vive en `js/data/`
+  y se siembra desde `storage.js`.
+- **Unidades de inventario: `g`, `ml` y `un`**, para que coincidan con las cantidades
+  del recetario y el descuento por receta no necesite conversiones.
 - IDs nuevos siempre via `nextId(state, secuencia, prefijo)`; nunca correlativos a mano.
 - Acciones sensibles registran auditoria con `addAuditEvent(...)`.
 - Registros con historial **no se eliminan**: se activan/desactivan.
@@ -116,6 +133,9 @@ Ingresos en azul, Egresos en rojo.
 
 ## Notas
 
+- `docs/PENDIENTES_CLIENTE.md` lista la data que falto o vino contradictoria en los
+  insumos del cliente. Actualizarlo si aparece otro hueco.
+- `_insumos/` son los documentos fuente del cliente; esta en `.gitignore` y no se sube.
 - `Cafe_Fusiones_JS_17_categorias_corregidas/` es una copia de respaldo parcial
   (storage, clientes, configuracion). **No es codigo activo**; editar siempre `js/`.
 - Inter se carga desde Google Fonts (requiere internet la primera vez).

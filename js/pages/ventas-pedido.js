@@ -496,8 +496,15 @@ function countCategoryProducts(category) {
   return state.menuItems.filter((item) => item.category === category).length;
 }
 
+// Un producto se oferta salvo que Administracion lo haya desactivado.
+// La disponibilidad ya no depende de un contador por plato: el consumo de
+// insumos se controla en Inventario, contra la receta.
+function isUnavailable(product) {
+  return product?.status === "Inactivo" || product?.active === false;
+}
+
 function productCard(product) {
-  const soldOut = Number(product.stock || 0) <= 0;
+  const soldOut = isUnavailable(product);
   const configurable = hasProductConfiguration(product);
   const tags = dietaryTags(product);
 
@@ -809,8 +816,8 @@ function selectProduct(productId) {
   const product = state.menuItems.find((item) => item.id === productId);
   if (!product) return;
 
-  if (Number(product.stock || 0) <= 0) {
-    showToast("Este producto no esta disponible.");
+  if (isUnavailable(product)) {
+    showToast("Este producto esta desactivado en la carta.");
     return;
   }
 

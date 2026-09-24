@@ -1,12 +1,16 @@
-// Cafe Fusiones - Estado persistente del prototipo V8.
+// Cafe Fusiones - Estado persistente del prototipo V9.
 // Ruta: js/core/storage.js
 //
 // Este archivo es la fuente central de estado del frontend multipagina.
 // El estado se guarda en localStorage para conservar la demo al navegar entre:
 // Ventas, Caja, Inventario, Clientes, Reportes y Administracion.
 //
-// PRINCIPIOS V7
+// PRINCIPIOS
 // ---------------------------------------------------------------------------
+// - La carta, las recetas, el inventario y los proveedores son DATA REAL del
+//   cliente y viven en js/data/carta.js, recetas.js, inventario.js y
+//   proveedores.js. Este archivo solo los siembra y los migra.
+// - Clientes, ventas, pedidos, mermas y auditoria arrancan VACIOS.
 // - Sucursales son una entidad transversal del ERP.
 // - Cada operacion que depende de un local conserva branchId.
 // - El cliente es global a Cafe Fusiones; ventas/reservas conservan sucursal.
@@ -35,27 +39,21 @@
 // crearlas, editarlas, ordenarlas y desactivarlas.
 
 import {
-  inventory,
   tables,
-  customers,
   users,
-  menuItems,
   menuCategories,
-  coffeeLotsSeed,
-  reservations,
-  tableItemsSeed,
-  kitchenOrders,
-  wasteRecordsSeed,
-  loyaltyConfigSeed,
-  rewardsSeed,
-  loyaltyMovementsSeed,
   stationsSeed,
-  auditEvents,
-  reportOperationsSeed
+  businessSeed,
+  loyaltyConfigSeed,
+  coffeeLotsSeed
 } from "../data/data.js";
+import { menuItemsSeed } from "../data/carta.js";
+import { recipesSeed } from "../data/recetas.js";
+import { inventorySeed } from "../data/inventario.js";
+import { suppliersSeed } from "../data/proveedores.js";
 
 const STATE_KEY = "cafeFusionesState";
-const VERSION = 8;
+const VERSION = 9;
 
 export const MAIN_BRANCH_ID = "SUC-01";
 
@@ -143,6 +141,15 @@ function firstActiveBranchId(branches) {
   );
 }
 
+// Indicadores de operacion en cero: se calculan con la operacion real.
+const emptyReportOperations = {
+  avgPreparationMinutes: 0,
+  onTimeRate: 0,
+  delayedOrders: 0,
+  wasteCost: 0,
+  byStation: []
+};
+
 function wasteDate(record) {
   if (record?.date) return record.date;
   if (record?.at) return String(record.at).slice(0, 10);
@@ -158,107 +165,51 @@ function buildBranches() {
 }
 
 function buildTables() {
-  return tables.map((table) => {
-    const items = clone(tableItemsSeed[table.id] || []);
-
-    const next = {
-      ...clone(table),
-      branchId: table.branchId || MAIN_BRANCH_ID,
-      items,
-      customerId: table.customerId || null,
-      openedAt: table.openedAt || (items.length ? nowIso() : null)
-    };
-
-    // Delivery no tiene asientos y se comporta como una cola operativa.
-    if (table.seats === 0) {
-      next.status = items.length ? "Ocupada" : "Libre";
-      return next;
-    }
-
-    // Las reservas se respetan aunque todavia no tengan productos.
-    if (table.status === "Reservada" && !items.length) {
-      next.status = "Reservada";
-      return next;
-    }
-
-    next.status = items.length ? "Ocupada" : "Libre";
-    return next;
-  });
+  // Las mesas salen del plano del local. Arrancan libres y sin consumo:
+  // el prototipo ya no trae pedidos simulados.
+  return tables.map((table) => ({
+    ...clone(table),
+    branchId: table.branchId || MAIN_BRANCH_ID,
+    items: [],
+    customerId: null,
+    openedAt: null,
+    people: null,
+    status: "Libre"
+  }));
 }
 
 function buildMenuItems() {
   // Carta/productos son catalogo global.
   // La disponibilidad especifica por sucursal se agregara posteriormente
   // mediante branchIds/availabilityByBranch desde Administracion.
-  return menuItems.map((item) => ({
+  return menuItemsSeed.map((item) => ({
     ...clone(item),
     branchIds: Array.isArray(item.branchIds) ? clone(item.branchIds) : ["ALL"]
   }));
 }
 
-function buildKitchenOrders() {
-  return kitchenOrders.map((order) => ({
-    ...clone(order),
-    branchId: order.branchId || MAIN_BRANCH_ID,
-    items: Array.isArray(order.items) ? clone(order.items) : []
-  }));
-}
-
 function buildInventory() {
-  // En V7 el stock es por sucursal. Los registros seed pertenecen a la sede
-  // principal. Una futura sucursal tendra sus propios registros/stock.
-  return inventory.map((item) => ({
+  // El stock es por sucursal. Los registros seed pertenecen a la sede principal.
+  return inventorySeed.map((item) => ({
     ...clone(item),
     branchId: item.branchId || MAIN_BRANCH_ID
   }));
 }
 
-function buildWasteRecords() {
-  return wasteRecordsSeed.map((record) => ({
-    ...clone(record),
-    branchId: record.branchId || MAIN_BRANCH_ID,
-    date: wasteDate(record)
-  }));
+function buildRecipes() {
+  // Recetario estandar del cliente. Una receta puede cubrir varios productos
+  // de la carta (por ejemplo los seis metodos de cafe filtrado).
+  return recipesSeed.map((recipe) => clone(recipe));
+}
+
+function buildSuppliers() {
+  return suppliersSeed.map((supplier) => clone(supplier));
 }
 
 function buildCoffeeLots() {
   return coffeeLotsSeed.map((lot) => ({
     ...clone(lot),
     branchId: lot.branchId || MAIN_BRANCH_ID
-  }));
-}
-
-function buildCustomers() {
-  // El perfil de cliente es global. Solo guardamos origen/ultima sucursal.
-  // Las ventas y reservas son las que siempre deben conservar branchId.
-  return customers.map((customer) => ({
-    ...clone(customer),
-    originBranchId: customer.originBranchId || MAIN_BRANCH_ID,
-    lastBranchId: customer.lastBranchId || MAIN_BRANCH_ID
-  }));
-}
-
-function buildReservations() {
-  return reservations.map((reservation) => ({
-    ...clone(reservation),
-    branchId: reservation.branchId || MAIN_BRANCH_ID
-  }));
-}
-
-function buildRewards() {
-  // Una recompensa puede aplicar a todas o a una sucursal concreta.
-  return rewardsSeed.map((reward) => ({
-    ...clone(reward),
-    branchId: reward.branchId || "ALL"
-  }));
-}
-
-function buildLoyaltyMovements() {
-  // El saldo de fidelizacion es del cliente/empresa, pero cada movimiento
-  // conserva en que sucursal se genero o canjeo.
-  return loyaltyMovementsSeed.map((movement) => ({
-    ...clone(movement),
-    branchId: movement.branchId || MAIN_BRANCH_ID
   }));
 }
 
@@ -330,31 +281,37 @@ function seed() {
     // No representa el nuevo catalogo state.categories.
     menuCategories: clone(menuCategories),
 
-    kitchenOrders: buildKitchenOrders(),
+    // Sin pedidos ni ventas simuladas: el prototipo arranca en cero.
+    kitchenOrders: [],
     salesHistory: [],
 
     /* ==================== INVENTARIO ==================== */
     inventory: buildInventory(),
+    recipes: buildRecipes(),
+    suppliers: buildSuppliers(),
     inventoryMovements: [],
+    inventoryLots: [],
+    productionBatches: [],
     purchaseOrders: [],
     purchaseSuggestions: [],
-    wasteRecords: buildWasteRecords(),
+    wasteRecords: [],
     coffeeLots: buildCoffeeLots(),
 
     /* ==================== CLIENTES ==================== */
-    customers: buildCustomers(),
-    reservations: buildReservations(),
+    // La base de clientes arranca vacia: se carga con la operacion real.
+    customers: [],
+    reservations: [],
     loyaltyConfig: clone(loyaltyConfigSeed),
-    rewards: buildRewards(),
-    loyaltyMovements: buildLoyaltyMovements(),
+    rewards: [],
+    loyaltyMovements: [],
 
     /* ==================== OPERACION / CONFIGURACION ==================== */
     users: buildUsers(),
     stations: buildStations(),
 
     /* ==================== AUDITORIA / REPORTES ==================== */
-    auditEvents: clone(auditEvents),
-    reportOperations: clone(reportOperationsSeed),
+    auditEvents: [],
+    reportOperations: clone(emptyReportOperations),
 
     /* ==================== CAJA ==================== */
     // `cashBox` se conserva por compatibilidad con la version actual.
@@ -363,12 +320,11 @@ function seed() {
     cashBoxes: [emptyCashBox(MAIN_BRANCH_ID)],
 
     /* ==================== NEGOCIO ==================== */
+    // Datos reales de "IDENTIDAD CORPORATIVA.docx" y del manual de marca.
     settings: {
-      business: "Cafe Fusiones E.I.R.L.",
-      ruc: "20512345678",
+      ...clone(businessSeed),
       igv: 18,
       currency: "PEN",
-      address: "Jr. Ortiz Arrieta 779, Chachapoyas",
       language: "es",
       loyaltyEnabled: true,
       kdsEnabled: true,
@@ -383,12 +339,15 @@ function seed() {
 
     /* ==================== SECUENCIAS ==================== */
     sequences: {
-      order: 1045,
-      sale: 1042,
-      waste: 4,
-      customer: customers.length + 1,
-      reservation: reservations.length + 1,
-      inventoryMovement: 5,
+      order: 1,
+      sale: 1,
+      waste: 1,
+      customer: 1,
+      reservation: 1,
+      inventoryMovement: 1,
+      recipe: recipesSeed.length + 1,
+      supplier: suppliersSeed.length + 1,
+      coffeeLot: coffeeLotsSeed.length + 1,
       branch: 2,
       category: 1
     }
@@ -659,6 +618,74 @@ function normalizeCash(state, base) {
  * A diferencia del V6, no se elimina el localStorage solo porque cambio
  * la version del esquema.
  */
+// Catalogos que la V9 vuelve a sembrar con la data real del cliente, y
+// registros de la demo anterior que deben quedar vacios.
+const V9_RESEED = [
+  "tables",
+  "menuItems",
+  "menuCategories",
+  "recipes",
+  "inventory",
+  "suppliers",
+  "users",
+  "stations",
+  "coffeeLots"
+];
+
+const V9_LIMPIAR = [
+  "kitchenOrders",
+  "salesHistory",
+  "inventoryMovements",
+  "inventoryLots",
+  "productionBatches",
+  "purchaseOrders",
+  "purchaseSuggestions",
+  "wasteRecords",
+  "customers",
+  "reservations",
+  "rewards",
+  "loyaltyMovements",
+  "auditEvents"
+];
+
+/**
+ * Migracion a V9: reemplaza la data demo por la data real del cliente.
+ *
+ * Los navegadores que ya abrieron el prototipo tienen la carta, el inventario
+ * y los clientes de demostracion en localStorage. Al subir a V9 se resiembran
+ * los catalogos desde js/data/ y se vacian ventas, pedidos y clientes, porque
+ * eran datos simulados que no deben mezclarse con la operacion real.
+ */
+function migrateToV9(next, base, saved) {
+  if (Number(saved.__v || 0) >= 9) return;
+
+  V9_RESEED.forEach((key) => {
+    next[key] = clone(base[key]);
+  });
+
+  V9_LIMPIAR.forEach((key) => {
+    next[key] = [];
+  });
+
+  next.loyaltyConfig = clone(base.loyaltyConfig);
+  next.reportOperations = clone(base.reportOperations);
+  next.cashBox = clone(base.cashBox);
+  next.cashBoxes = clone(base.cashBoxes);
+  next.sequences = clone(base.sequences);
+
+  // Los datos de la empresa (RUC, direccion, marca) pasan a ser los reales.
+  next.settings = {
+    ...next.settings,
+    ...clone(businessSeed)
+  };
+
+  // Configuracion deriva estos campos de los anteriores. Se borran para que se
+  // vuelvan a calcular con la razon social y la direccion reales.
+  delete next.settings.legalName;
+  delete next.settings.commercialName;
+  delete next.settings.fiscalAddress;
+}
+
 function hydrateState(saved = {}) {
   const base = seed();
 
@@ -692,7 +719,11 @@ function hydrateState(saved = {}) {
     "kitchenOrders",
     "salesHistory",
     "inventory",
+    "recipes",
+    "suppliers",
     "inventoryMovements",
+    "inventoryLots",
+    "productionBatches",
     "purchaseOrders",
     "purchaseSuggestions",
     "wasteRecords",
@@ -712,6 +743,8 @@ function hydrateState(saved = {}) {
     }
   });
 
+  migrateToV9(next, base, saved);
+
   normalizeBranches(next, base);
   normalizeCategories(next);
   attachBranchIds(next);
@@ -720,10 +753,11 @@ function hydrateState(saved = {}) {
   normalizeLoyalty(next, base, saved);
   normalizeCash(next, base);
 
-  next.reportOperations = {
-    ...base.reportOperations,
-    ...(saved.reportOperations || next.reportOperations || {})
-  };
+  // Tras la migracion a V9 los indicadores quedan en cero; solo se conserva
+  // lo guardado cuando el estado ya venia en V9 o superior.
+  next.reportOperations = Number(saved.__v || 0) >= 9
+    ? { ...base.reportOperations, ...(saved.reportOperations || {}) }
+    : clone(base.reportOperations);
 
   // Marketing se retiro del alcance operativo del ERP.
   // Si existe de un localStorage V6, lo limpiamos durante la migracion.

@@ -554,7 +554,8 @@ function filteredProducts() {
 
 function productButton(item) {
   const hasModifiers = Array.isArray(item.modifiers) && item.modifiers.length > 0;
-  const soldOut = Number(item.stock) === 0;
+  // Solo se bloquea lo que Administracion desactivo en la carta.
+  const soldOut = item.status === "Inactivo" || item.active === false;
   return `<button class="product-line product-line--v4 ${soldOut ? "is-disabled" : ""}" type="button" data-add-item="${item.id}" ${soldOut ? "disabled" : ""}>
     <span class="product-line__icon">${productEmoji(item.category)}</span>
     <span class="product-line__copy">

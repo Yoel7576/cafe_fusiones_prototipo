@@ -23,6 +23,7 @@ Esta version (V3) incorpora la 4ta ronda de mejoras del jefe:
    - Landing (sitio publico): http://127.0.0.1:5501/pages/landing.html
    - Sistema (staff): http://127.0.0.1:5501/pages/login.html
 3. Usuario: **CFUSIONES** — Clave: **prototipo** (tambien es la contrasena para anular productos).
+   Entra con el perfil **Gerencia**, que tiene acceso a todos los modulos.
 
 > La tipografia Inter se carga desde Google Fonts (requiere internet la primera vez).
 
@@ -63,11 +64,15 @@ Cafe_Fusiones_MODULAR/
 - **css/components**: piezas reutilizables (botones, tarjetas, formularios, tablas, modales).
 - **css/pages**: solo los estilos propios de cada pantalla.
 - **js/core**: autenticacion, permisos por rol, estado persistente y utilidades.
-- **js/data**: unicamente los datos demo.
+- **js/data**: la data real del cliente (carta, recetario, inventario, proveedores,
+  usuarios por perfil, mesas del plano y datos de la empresa). Ya no hay datos demo.
 - **js/components**: barra lateral, barra superior, toasts, modales y confirmaciones reutilizables.
 - **js/pages**: la logica exclusiva de cada pantalla.
 
 ## Notas
 - Al ser multipagina, el estado (inventario, pedidos, clientes, caja) se guarda en
   el navegador (`localStorage`) para que no se pierda al cambiar de pantalla.
-- Para reiniciar los datos demo: borra los datos del sitio en el navegador.
+- Para volver al estado inicial: borra los datos del sitio en el navegador.
+- Clientes, ventas, pedidos y reportes arrancan **vacios**: se llenan con la operacion.
+- `docs/PENDIENTES_CLIENTE.md` lista lo que falto o vino contradictorio en los
+  documentos que entrego Cafe Fusiones.

@@ -56,12 +56,12 @@ function normalizeState(){
   state.wasteRecords ||= [];
   state.coffeeLots ||= [];
   state.menuItems ||= [];
-  if(!Array.isArray(state.suppliers)) state.suppliers = supplierSeed();
-  if(!Array.isArray(state.recipes)) state.recipes = recipeSeed();
-  if(!Array.isArray(state.inventoryLots)) state.inventoryLots = lotSeed();
-  if(!Array.isArray(state.productionBatches)) state.productionBatches = productionSeed();
-  if(!state.purchaseOrders.length) state.purchaseOrders = purchaseSeed();
-  if(!state.inventoryMovements.length) state.inventoryMovements = movementSeed();
+  // Proveedores, recetas e inventario ya vienen sembrados desde js/core/storage.js
+  // con la data real del cliente. Aqui solo se garantiza la forma de los arrays.
+  state.suppliers ||= [];
+  state.recipes ||= [];
+  state.inventoryLots ||= [];
+  state.productionBatches ||= [];
 
   state.inventory = state.inventory.map(i=>({
     type: inferInventoryType(i), committed:Number(i.committed||0), active:i.active!==false, ...i
@@ -81,70 +81,6 @@ function normalizeState(){
   state.productionBatches = state.productionBatches.map(b=>({status:b.status||"Finalizado",...b}));
   buildSuggestions();
   saveState(state);
-}
-
-/* -------------------------- DEMO SEEDS -------------------------- */
-
-function supplierSeed(){
-  return [
-    {id:"PRV-001",type:"Formal",name:"Lácteos Amazonas S.A.C.",tradeName:"Lácteos Amazonas",documentType:"RUC",document:"20608452139",phone:"942 310 188",email:"ventas@lacteosamazonas.pe",origin:"Chachapoyas, Amazonas",paymentTerms:"Crédito 15 días",voucher:"Factura",products:["Leche fresca","Quesos"],status:"Activo",notes:"Proveedor recurrente de refrigerados."},
-    {id:"PRV-002",type:"Informal",name:"Don Mateo Huamán",tradeName:"Productor Huayabamba",documentType:"Sin documento",document:"",phone:"987 420 816",email:"",origin:"Valle del Huayabamba, Amazonas",paymentTerms:"Contado",voucher:"Sustento interno",products:["Café verde de especialidad"],status:"Activo",notes:"Productor local. Se registra procedencia, lote y responsable interno."},
-    {id:"PRV-003",type:"Informal",name:"Rosa Pinedo",tradeName:"Chacra Pinedo",documentType:"DNI opcional",document:"43821976",phone:"956 311 742",email:"",origin:"Levanto, Amazonas",paymentTerms:"Contado",voucher:"Sustento interno",products:["Palta","Naranja","Hierbas"],status:"Activo",notes:"Abastecimiento estacional."},
-    {id:"PRV-004",type:"Formal",name:"Distribuidora Andina E.I.R.L.",tradeName:"Distribuidora Andina",documentType:"RUC",document:"20487831246",phone:"945 228 071",email:"pedidos@distribuidoraandina.pe",origin:"Chachapoyas",paymentTerms:"Contado",voucher:"Factura",products:["Gaseosa","Agua mineral","Cerveza"],status:"Activo",notes:""}
-  ];
-}
-
-function recipeSeed(){
-  return [
-    {id:"RCP-001",productId:"caf-cappuccino",name:"Cappuccino",station:"Barra",yieldQty:1,yieldUnit:"porción",targetMinutes:5,expectedWastePct:2,version:"1.1",status:"Activa",
-      ingredients:[{inventoryId:"INS-01",qty:.018,unit:"kg",note:"18 g café tostado"},{inventoryId:"INS-02",qty:.18,unit:"L",note:"180 ml leche fresca"}],
-      variants:[{modifier:"Leche de avena",replaceInventoryId:"INS-02",withInventoryId:"INS-03",qty:.18,unit:"L"},{modifier:"Leche de almendras",replaceInventoryId:"INS-02",withInventoryId:"INS-04",qty:.18,unit:"L"}]},
-    {id:"RCP-002",productId:"caf-latte",name:"Café Latte",station:"Barra",yieldQty:1,yieldUnit:"porción",targetMinutes:5,expectedWastePct:2,version:"1.0",status:"Activa",
-      ingredients:[{inventoryId:"INS-01",qty:.018,unit:"kg",note:"18 g café tostado"},{inventoryId:"INS-02",qty:.22,unit:"L",note:"220 ml leche fresca"}],
-      variants:[{modifier:"Leche de avena",replaceInventoryId:"INS-02",withInventoryId:"INS-03",qty:.22,unit:"L"}]},
-    {id:"RCP-003",productId:"san-acevichado",name:"Sándwich Acevichado",station:"Cocina",yieldQty:1,yieldUnit:"porción",targetMinutes:9,expectedWastePct:4,version:"1.0",status:"Activa",
-      ingredients:[{inventoryId:"INS-05",qty:1,unit:"un",note:"Pan artesanal"},{inventoryId:"INS-06",qty:.08,unit:"kg",note:"Palta"}],variants:[]},
-    {id:"RCP-004",productId:"des-energetico",name:"Desayuno Energético",station:"Cocina",yieldQty:1,yieldUnit:"porción",targetMinutes:12,expectedWastePct:3,version:"1.0",status:"Activa",
-      ingredients:[{inventoryId:"INS-07",qty:.08,unit:"kg",note:"Quinoa"},{inventoryId:"INS-05",qty:2,unit:"un",note:"Pan"},{inventoryId:"INS-06",qty:.08,unit:"kg",note:"Palta"}],variants:[]},
-    {id:"RCP-005",productId:"cho-caliente",name:"Chocolate caliente",station:"Barra",yieldQty:1,yieldUnit:"porción",targetMinutes:6,expectedWastePct:2,version:"1.0",status:"Activa",
-      ingredients:[{inventoryId:"INS-08",qty:.035,unit:"kg",note:"Chocolate regional"},{inventoryId:"INS-02",qty:.20,unit:"L",note:"Leche fresca"}],variants:[]}
-  ];
-}
-
-function lotSeed(){
-  return state.inventory.map((i,n)=>({
-    id:`LOT-${String(n+1).padStart(3,"0")}`,code:i.lot||`LOTE-${n+1}`,
-    inventoryId:i.id,item:i.item,supplierId:defaultSupplier(i.id),
-    receivedAt:n<4?"2026-08-08":"2026-08-10",expiry:i.expiry,
-    initialQty:Number(i.stock||0)+(n%3===0?4:0),availableQty:Number(i.stock||0),
-    unit:i.unit,location:i.location,rotation:i.rotation||"FIFO",
-    documentation:i.category==="Cafe"?"Ficha de lote / procedencia":"Recepción / comprobante"
-  }));
-}
-
-function purchaseSeed(){
-  return [
-    {id:"OC-0001",supplierId:"PRV-001",supplier:"Lácteos Amazonas",type:"Compra formal",createdAt:"2026-08-10",expectedAt:"2026-08-11",status:"Recibida",voucher:"Factura",total:150,receiptApplied:true,items:[{inventoryId:"INS-02",item:"Leche fresca",qty:30,unit:"L",unitCost:5}],notes:""},
-    {id:"OC-0002",supplierId:"PRV-002",supplier:"Productor Huayabamba",type:"Compra directa a productor",createdAt:"2026-08-09",expectedAt:"2026-08-12",status:"Pendiente",voucher:"Sustento interno",total:504,items:[{inventoryId:"INS-01",item:"Café tostado de especialidad",qty:12,unit:"kg",unitCost:42}],notes:"Compra local con registro de procedencia; sin comprobante tributario externo."},
-    {id:"OC-0003",supplierId:"PRV-003",supplier:"Chacra Pinedo",type:"Compra informal",createdAt:"2026-08-11",expectedAt:"2026-08-11",status:"Por recibir",voucher:"Sustento interno",total:126,items:[{inventoryId:"INS-06",item:"Palta",qty:8,unit:"kg",unitCost:9},{inventoryId:"INS-09",item:"Naranja",qty:12,unit:"kg",unitCost:4.5}],notes:"Compra de productos frescos de procedencia local."}
-  ];
-}
-
-function movementSeed(){
-  return [
-    {id:"MOV-0001",at:"2026-08-11T07:58:00-05:00",inventoryId:"INS-02",item:"Leche fresca",type:"Salida por receta",direction:"Salida",qty:.36,unit:"L",unitCost:5,cost:1.8,origin:"ORD-1042",reference:"Cappuccino x2",user:"Lucia Torres"},
-    {id:"MOV-0002",at:"2026-08-11T07:55:00-05:00",inventoryId:"INS-01",item:"Café tostado de especialidad",type:"Salida por receta",direction:"Salida",qty:.036,unit:"kg",unitCost:42,cost:1.51,origin:"ORD-1042",reference:"Cappuccino x2",user:"Lucia Torres"},
-    {id:"MOV-0003",at:"2026-08-11T07:02:00-05:00",inventoryId:"INS-01",item:"Café tostado de especialidad",type:"Merma",direction:"Salida",qty:.036,unit:"kg",unitCost:42,cost:1.51,origin:"MER-002",reference:"Calibración de molienda",user:"Lucia Torres"},
-    {id:"MOV-0004",at:"2026-08-10T16:20:00-05:00",inventoryId:"INS-02",item:"Leche fresca",type:"Entrada por compra",direction:"Entrada",qty:30,unit:"L",unitCost:5,cost:150,origin:"OC-0001",reference:"Recepción de compra",user:"Graciela Silva"}
-  ];
-}
-
-function productionSeed(){
-  return [
-    {id:"PROD-001",name:"Calibración espresso - apertura",station:"Barra",lotCode:"AMZ-2608-01",expectedQty:10,actualQty:9.4,unit:"porciones",yieldPct:94,wasteQty:.6,wasteCost:.72,startedAt:"2026-08-11T06:48:00-05:00",finishedAt:"2026-08-11T07:00:00-05:00",user:"Lucia Torres",status:"Finalizado",notes:"Ajuste inicial de molienda."},
-    {id:"PROD-002",name:"Preparación base de quinoa",station:"Cocina",lotCode:"QUI-0726",expectedQty:20,actualQty:18.5,unit:"porciones",yieldPct:92.5,wasteQty:1.5,wasteCost:6.3,startedAt:"2026-08-11T06:30:00-05:00",finishedAt:"2026-08-11T07:05:00-05:00",user:"Diego Quino",status:"Finalizado",notes:"Reducción durante cocción."},
-    {id:"PROD-003",name:"Tostado lote AMZ-2608-01",station:"Producción",lotCode:"AMZ-2608-01",expectedQty:10,actualQty:8.7,unit:"kg",yieldPct:87,wasteQty:1.3,wasteCost:0,startedAt:"2026-08-05T09:00:00-05:00",finishedAt:"2026-08-05T10:15:00-05:00",user:"Graciela Silva",status:"Finalizado",notes:"Pérdida de peso esperada por tostado."}
-  ];
 }
 
 /* -------------------------- SHELL -------------------------- */
@@ -520,7 +456,8 @@ function openProduction(){
 
 function buildSuggestions(){state.purchaseSuggestions=state.inventory.filter(i=>Number(i.stock)<=Number(i.min)).map(i=>({id:`SGR-${i.id}`,inventoryId:i.id,item:i.item,stock:Number(i.stock),min:Number(i.min),unit:i.unit,suggestedQty:round3(Math.max(0,Math.max(i.min*2,i.min+1)-i.stock)),reason:"Stock por debajo del mínimo",supplierId:preferredSupplier(i.id)?.id||null}))}
 function inv(id){return state.inventory.find(i=>i.id===id)||null}
-function defaultSupplier(id){if(id==="INS-01")return"PRV-002";if(id==="INS-02")return"PRV-001";if(["INS-06","INS-09"].includes(id))return"PRV-003";if(["INS-11","INS-12","INS-13","INS-14","INS-15","INS-16","INS-17"].includes(id))return"PRV-004";return null}
+// Cada insumo lleva su proveedor segun el cuadro de proveedores del cliente.
+function defaultSupplier(id){return inv(id)?.supplierId||null}
 function preferredSupplier(id){const direct=defaultSupplier(id);if(direct)return state.suppliers.find(s=>s.id===direct)||null;const i=inv(id);return state.suppliers.find(s=>(s.products||[]).some(p=>norm(i?.item).includes(norm(p))||norm(p).includes(norm(i?.item))))||null}
 function supplierName(id){const s=state.suppliers.find(x=>x.id===id);return s?.tradeName||s?.name||""}
 function inferInventoryType(i){if(i.category==="Bebidas listas")return"Despacho directo";if(i.category==="Cafe")return"Materia prima";return"Insumo"}

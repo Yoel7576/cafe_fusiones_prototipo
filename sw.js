@@ -1,4 +1,4 @@
-const CACHE_NAME = "cafe-fusiones-modular-v8";
+const CACHE_NAME = "cafe-fusiones-modular-v9";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -18,7 +18,11 @@ const APP_SHELL = [
   "./pages/inventario.html",
   "./pages/clientes.html",
   "./pages/reportes.html",
-  "./pages/admin.html"
+  "./pages/admin.html",
+  "./pages/configuracion.html",
+  "./pages/notificaciones.html",
+  "./pages/ventas-pedido.html",
+  "./pages/ventas-kds.html"
 ];
 
 self.addEventListener("install", (event) => {

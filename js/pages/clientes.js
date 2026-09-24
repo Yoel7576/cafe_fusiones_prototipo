@@ -577,7 +577,7 @@ function renderCustomers() {
               </tr>
             </thead>
             <tbody>
-              ${list.map(customerRow).join("") || tableEmpty(8, "No hay clientes con estos filtros.")}
+              ${list.map(customerRow).join("") || tableEmpty(8, state.customers.length ? "No hay clientes con estos filtros." : "Aun no hay clientes registrados. Usa \"Nuevo cliente\" para empezar.")}
             </tbody>
           </table>
         </div>
@@ -890,7 +890,7 @@ function renderReservations() {
               </tr>
             </thead>
             <tbody>
-              ${list.map(reservationRow).join("") || tableEmpty(8, "No hay reservas con estos filtros.")}
+              ${list.map(reservationRow).join("") || tableEmpty(8, state.reservations.length ? "No hay reservas con estos filtros." : "Aun no hay reservas registradas.")}
             </tbody>
           </table>
         </div>
