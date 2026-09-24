@@ -100,16 +100,7 @@
   outline-offset: 2px;
 }
 
-.floor-zone--kitchen:hover,
-.floor-zone--bar:hover {
-  border-color: rgba(221, 51, 54, .45);
-  box-shadow: 0 8px 22px rgba(86, 47, 31, .10);
-}
-
-.floor-zone--kitchen:active,
-.floor-zone--bar:active,
-.floor-table:active,
-.product-line--v4:active,
+.floorplan .product-line--v4:active,
 .pos-table-choice:active {
   transform: scale(.985);
 }
@@ -324,216 +315,33 @@
   background:#b82a35;
 }
 
-.floorplan-wrap {
-  /* Sin panel lateral: el plano usa todo el ancho del bloque. */
-  display:block;
-}
 
-.floorplan {
-  position:relative;
-  min-height:560px;
-  border:1px solid #b9ada4;
-  border-radius:18px;
-  overflow:hidden;
-  background:linear-gradient(90deg,rgba(86,47,31,.03) 1px,transparent 1px),linear-gradient(rgba(86,47,31,.03) 1px,transparent 1px),#f7f2e9;
-  background-size:24px 24px;
-}
 
-.floorplan:after {
-  content:"";
-  position:absolute;
-  left:31%;
-  top:8%;
-  right:10%;
-  bottom:12%;
-  border:2px solid rgba(90,46,27,.23);
-  border-radius:4px;
-  pointer-events:none;
-}
 
-.floor-zone {
-  position:absolute;
-  border:1px solid rgba(90,46,27,.25);
-  background:rgba(255,255,255,.78);
-  color:var(--brown);
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  text-align:center;
-  font-size:.68rem;
-  font-weight:900;
-  text-transform:uppercase;
-  letter-spacing:.05em;
-  z-index:2;
-}
 
-.floor-zone small {
-  font-size:.6rem;
-  font-weight:700;
-  color:var(--muted);
-  margin-top:3px;
-}
 
-.floor-zone--books {
-  left:4%;
-  top:13%;
-  width:12%;
-  height:15%;
-}
 
-.floor-zone--art-a {
-  left:4%;
-  top:34%;
-  width:12%;
-  height:17%;
-}
 
-.floor-zone--art-b {
-  left:82%;
-  top:48%;
-  width:12%;
-  height:15%;
-}
 
-.floor-zone--office {
-  left:35%;
-  top:8%;
-  width:16%;
-  height:12%;
-}
 
-.floor-zone--kitchen {
-  left:35%;
-  top:22%;
-  width:18%;
-  height:24%;
-  background:#efe4d7;
-  cursor:pointer;
-}
 
-.floor-zone--bar {
-  left:36%;
-  top:49%;
-  width:17%;
-  height:9%;
-  background:#f3e7cc;
-  cursor:pointer;
-}
 
-.floor-zone--wc {
-  left:4%;
-  bottom:12%;
-  width:12%;
-  height:13%;
-}
 
-.floor-door {
-  position:absolute;
-  font-size:.63rem;
-  font-weight:900;
-  color:var(--muted);
-  text-transform:uppercase;
-}
 
-.floor-door--a {
-  left:18%;
-  bottom:5%;
-}
 
-.floor-door--b {
-  right:18%;
-  bottom:5%;
-}
 
-.floor-table {
-  position:absolute;
-  min-width:58px;
-  min-height:46px;
-  border-radius:10px;
-  border:2px solid transparent;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:1px;
-  padding:4px;
-  z-index:4;
-  box-shadow:0 5px 12px rgba(64,37,24,.09);
-  transition:transform .15s ease,box-shadow .15s ease;
-  cursor:pointer;
-}
 
-.floor-table:hover {
-  transform:translateY(-2px);
-  box-shadow:0 8px 18px rgba(64,37,24,.16);
-}
 
-.floor-table strong {
-  font-size:1rem;
-}
 
-.floor-table small {
-  font-size:.61rem;
-}
 
-.floor-table em {
-  font-size:.55rem;
-  font-style:normal;
-  max-width:90%;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
 
-.floor-table--free {
-  background:#edf7ef;
-  border-color:#72a47c;
-  color:#2f6b40;
-}
 
-.floor-table--busy {
-  background:#fff4dc;
-  border-color:#d6a044;
-  color:#785014;
-}
 
-.floor-table--reserved {
-  background:#edf3fc;
-  border-color:#7394c7;
-  color:#3f6194;
-}
 
-.floor-table--ready {
-  background:#fde9ea;
-  border-color:#b82a35;
-  color:#8e1e28;
-  animation:readyPulse 1.8s infinite;
-}
 
-.floor-table.is-round {
-  border-radius:999px;
-}
 
-.floor-table__ready {
-  font-size:.52rem;
-  font-weight:900;
-  letter-spacing:.08em;
-}
 
-.floorplan-side {
-  border:1px solid var(--line);
-  border-radius:16px;
-  padding:14px;
-  background:#fff;
-  height:max-content;
-  display:grid;
-  gap:12px;
-}
 
-.floorplan-side h3 {
-  color:var(--brown);
-}
 
 .operation-box {
   display:grid;
@@ -1318,12 +1126,6 @@
 }
 
 @media(max-width:1100px) {
-  .floorplan-wrap {
-    grid-template-columns:1fr;
-  }
-  .floorplan-side {
-    grid-template-columns:repeat(2,1fr);
-  }
   .sale-modal__body--pos {
     grid-template-columns:190px 1fr 300px;
   }
@@ -1351,12 +1153,6 @@
   }
   .sales-toolbar>.button {
     width:100%;
-  }
-  .floorplan {
-    min-height:470px;
-  }
-  .floorplan-side {
-    grid-template-columns:1fr;
   }
   .sale-v4-head {
     grid-template-columns:1fr;
@@ -1398,22 +1194,6 @@
 }
 
 @media(max-width:520px) {
-  .floorplan {
-    min-height:410px;
-  }
-  .floor-zone {
-    font-size:.5rem;
-  }
-  .floor-table {
-    min-width:42px;
-    min-height:40px;
-  }
-  .floor-table strong {
-    font-size:.8rem;
-  }
-  .floor-table small, .floor-table em {
-    display:none;
-  }
   .product-picker--v4 {
     grid-template-columns:1fr;
   }
@@ -1443,8 +1223,8 @@
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 12px 18px;
-  margin-bottom: 14px;
+  gap: 10px 18px;
+  margin-bottom: 10px;
 }
 
 .salon-head__title h2 {
@@ -1517,12 +1297,6 @@
   color: #fff;
 }
 
-.floorplan-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 14px;
-  margin-bottom: 10px;
-}
 
 .legend-item {
   display: flex;
@@ -1547,5 +1321,280 @@
   .salon-head__controls label,
   .salon-head__controls select {
     width: 100%;
+  }
+}
+
+
+/* ==========================================================================
+   Plano del salon (solo lectura en Ventas)
+   Las mesas y las zonas se posicionan en porcentaje sobre el lienzo, con las
+   coordenadas del plano real. El lienzo conserva la proporcion del local y se
+   limita en alto para que entre completo en pantalla sin scroll.
+   ========================================================================== */
+
+.floorplan-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 210px;
+  gap: 16px;
+  align-items: start;
+}
+
+.floorplan {
+  /* El local es casi cuadrado. Se permite un ensanche moderado para que las
+     mesas sean legibles sin que el plano deje de entrar en pantalla. */
+  --floor-height: clamp(280px, 46vh, 430px);
+  position: relative;
+  width: min(100%, calc(var(--floor-height) * 1.55));
+  height: var(--floor-height);
+  margin-inline: auto;
+  border: 1px solid #cfc3b8;
+  border-radius: 14px;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgba(86, 47, 31, .04) 1px, transparent 1px),
+    linear-gradient(rgba(86, 47, 31, .04) 1px, transparent 1px),
+    #faf7f2;
+  background-size: 22px 22px;
+}
+
+.floorplan .floor-zone {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid rgba(90, 46, 27, .22);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, .86);
+  color: var(--brown);
+  font-size: .56rem;
+  font-weight: 800;
+  line-height: 1.1;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+  overflow: hidden;
+  z-index: 2;
+}
+
+.floorplan .floor-zone > span {
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+}
+
+/* Zonas bajas: una sola linea, sin partir la palabra. */
+.floorplan .floor-zone.is-compact > span {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: .42rem;
+  letter-spacing: 0;
+}
+
+/* Zonas verticales: el nombre rota para caber a lo largo. Si aun asi no entra
+   (las vitrinas de artesania son muy angostas), se recorta con puntos
+   suspensivos; el nombre completo queda en el title. */
+.floorplan .floor-zone.is-vertical > span,
+.plan-item.is-vertical > span {
+  writing-mode: vertical-rl;
+  white-space: nowrap;
+  max-height: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: .44rem;
+  letter-spacing: 0;
+}
+
+.floorplan .floor-zone.is-vertical {
+  padding: 2px 1px;
+}
+
+.floorplan .floor-zone.is-vertical small {
+  display: none;
+}
+
+.floorplan .floor-zone small {
+  font-size: .54rem;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--muted);
+}
+
+.floorplan .floor-zone--station {
+  background: #efe4d7;
+  cursor: pointer;
+}
+
+.floorplan .floor-zone--station:hover {
+  background: #e7d8c6;
+  border-color: rgba(221, 51, 54, .45);
+  box-shadow: 0 8px 22px rgba(86, 47, 31, .1);
+}
+
+.floorplan .floor-zone--station:active,
+.floorplan .floor-table:active {
+  transform: scale(.985);
+}
+
+.floorplan .floor-zone--door {
+  border-style: dashed;
+  background: rgba(255, 255, 255, .6);
+  color: var(--muted);
+}
+
+.floorplan .floor-table {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 2px;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(64, 37, 24, .1);
+  transition: transform .15s ease, box-shadow .15s ease;
+  cursor: pointer;
+  overflow: hidden;
+  z-index: 4;
+}
+
+.floorplan .floor-table:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(64, 37, 24, .18);
+}
+
+.floorplan .floor-table strong {
+  font-size: .9rem;
+  line-height: 1;
+}
+
+.floorplan .floor-table small {
+  font-size: .56rem;
+  line-height: 1.1;
+}
+
+.floorplan .floor-table em {
+  max-width: 94%;
+  font-size: .54rem;
+  font-style: normal;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.floorplan .floor-table.is-round {
+  border-radius: 999px;
+}
+
+.floorplan .floor-table--free {
+  background: #edf7ef;
+  border-color: #72a47c;
+  color: #2f6b40;
+}
+
+.floorplan .floor-table--busy {
+  background: #fff4dc;
+  border-color: #d6a044;
+  color: #785014;
+}
+
+.floorplan .floor-table--reserved {
+  background: #edf3fc;
+  border-color: #7394c7;
+  color: #3f6194;
+}
+
+.floorplan .floor-table--ready {
+  background: #fde9ea;
+  border-color: #b82a35;
+  color: #8e1e28;
+  animation: readyPulse 1.8s infinite;
+}
+
+@keyframes readyPulse {
+  50% { box-shadow: 0 0 0 5px rgba(184, 42, 53, .1); }
+}
+
+/* Panel al costado del plano: leyenda y accesos a las estaciones. */
+.floorplan-side {
+  display: grid;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.floorplan-side__title {
+  display: block;
+  margin-bottom: 8px;
+  font-size: .66rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--muted);
+}
+
+.floorplan-legend {
+  display: grid;
+  gap: 7px;
+}
+
+.floorplan-stations {
+  display: grid;
+  gap: 7px;
+}
+
+.floorplan-station {
+  display: grid;
+  gap: 2px;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  text-align: left;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.floorplan-station:hover {
+  background: var(--cream);
+}
+
+.floorplan-station small {
+  color: var(--muted);
+  font-size: .72rem;
+}
+
+@media (max-width: 920px) {
+  .floorplan-wrap {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .floorplan {
+    --floor-height: min(88vw, 430px);
+  }
+  .floorplan-side {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .floorplan .floor-zone {
+    font-size: .42rem;
+    letter-spacing: 0;
+  }
+  .floor-zone small,
+  .floor-table em {
+    display: none;
+  }
+  .floor-table strong {
+    font-size: .72rem;
+  }
+  .floorplan-side {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

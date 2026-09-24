@@ -238,58 +238,87 @@ function filteredTables() {
 }
 
 function floorPlan(tables) {
-  const allowed = new Set(tables.map((table) => table.id));
-  const realTables = [...state.tables.filter((table) => table.seats > 0 && allowed.has(table.id))].sort((a, b) => {
-    const mapA = a.map || fallbackTableMap(a.id);
-    const mapB = b.map || fallbackTableMap(b.id);
-    const byY = (mapA.y || 0) - (mapB.y || 0);
-    return byY !== 0 ? byY : (mapA.x || 0) - (mapB.x || 0);
-  });
+  const visibles = new Set(tables.map((table) => table.id));
+  const mesas = state.tables
+    .filter((table) => table.seats > 0 && table.map && visibles.has(table.id))
+    .sort((a, b) => (a.map.y - b.map.y) || (a.map.x - b.map.x));
+
+  const zonas = (state.floorZones || []).filter((zone) => zone.map);
 
   return `
-    <div class="floorplan-wrap floorplan-wrap--map-only">
-      <div class="floorplan-legend" aria-label="Leyenda de estados">
-        ${legendDot("Libre", "free")}${legendDot("Ocupada", "busy")}${legendDot("Reservada", "reserved")}${legendDot("Lista", "ready")}
+    <div class="floorplan-wrap">
+      <div class="floorplan" aria-label="Plano del salon de Cafe Fusiones">
+        ${zonas.map(floorZone).join("")}
+        ${mesas.map(floorTableButton).join("")}
       </div>
-      <div class="floorplan" aria-label="Plano operativo de Cafe Fusiones">
-        <div class="floor-zone floor-zone--books"><span>Intercambio<br>de libros</span></div>
-        <div class="floor-zone floor-zone--art-a"><span>Artesania</span></div>
-        <div class="floor-zone floor-zone--art-b"><span>Artesania</span></div>
-        <div class="floor-zone floor-zone--office"><span>Oficina</span></div>
-        <button class="floor-zone floor-zone--kitchen" type="button" data-open-station="Cocina"><span>Cocina</span><small>${stationPending("Cocina")} pendientes</small></button>
-        <button class="floor-zone floor-zone--bar" type="button" data-open-station="Barra"><span>Barra</span><small>${stationPending("Barra")} pendientes</small></button>
-        <div class="floor-zone floor-zone--wc"><span>SS.HH.</span></div>
-        <span class="floor-door floor-door--a">Ingreso</span>
-        <span class="floor-door floor-door--b">Ingreso</span>
-        ${realTables.map(floorTableButton).join("")}
-      </div>
+
+      <aside class="floorplan-side">
+        <div class="floorplan-legend" aria-label="Leyenda de estados">
+          <span class="floorplan-side__title">Estados</span>
+          ${legendDot("Libre", "free")}${legendDot("Ocupada", "busy")}${legendDot("Reservada", "reserved")}${legendDot("Lista", "ready")}
+        </div>
+        ${stationShortcuts()}
+      </aside>
+    </div>`;
+}
+
+// Las zonas salen del estado (state.floorZones) y se editan en Configuracion.
+// Solo las de tipo "station" son interactivas: abren su estacion.
+function floorZone(zone) {
+  const map = zone.map;
+  const style = `left:${map.x}%;top:${map.y}%;width:${map.w}%;height:${map.h}%;`;
+  // Una zona mucho mas alta que ancha (la barra, las vitrinas de artesania)
+  // no puede mostrar el nombre en horizontal: se rota.
+  const vertical = map.h > map.w * 1.8 ? " is-vertical" : "";
+  // Una zona muy baja (oficina, SS.HH.) no tiene alto para dos lineas: su
+  // nombre va en una sola linea y con letra mas chica.
+  const baja = !vertical && map.h < 5 ? " is-compact" : "";
+  const clase = `floor-zone floor-zone--${zone.type || "area"}${vertical}${baja}`;
+
+  if (zone.type === "station") {
+    const pendientes = stationPending(zone.name);
+    const titulo = `Abrir ${zone.name} · ${pendientes} pendiente${pendientes === 1 ? "" : "s"}`;
+    return `
+      <button class="${clase}" style="${style}" type="button" data-open-station="${escapeHtml(zone.name)}" title="${escapeHtml(titulo)}">
+        <span>${escapeHtml(zone.name)}</span>
+      </button>`;
+  }
+
+  return `<div class="${clase}" style="${style}" title="${escapeHtml(zone.name)}"><span>${escapeHtml(zone.name)}</span></div>`;
+}
+
+// Accesos a las estaciones, al lado del plano.
+function stationShortcuts() {
+  const estaciones = (state.floorZones || []).filter((zone) => zone.type === "station");
+  if (!estaciones.length) return "";
+
+  return `
+    <div class="floorplan-stations">
+      <span class="floorplan-side__title">Estaciones</span>
+      ${estaciones.map((zone) => {
+        const pendientes = stationPending(zone.name);
+        return `<button class="floorplan-station" type="button" data-open-station="${escapeHtml(zone.name)}">
+          <strong>${escapeHtml(zone.name)}</strong>
+          <small>${pendientes} pendiente${pendientes === 1 ? "" : "s"}</small>
+        </button>`;
+      }).join("")}
     </div>`;
 }
 
 function floorTableButton(table) {
   const tone = table.status === "Libre" ? "free" : table.status === "Reservada" ? "reserved" : "busy";
-  const map = table.map || fallbackTableMap(table.id);
+  const map = table.map;
   const total = table.items?.length ? tableTotal(table) : 0;
   const customer = customerById(table.customerId);
-  const style = `left:${map.x || 10}%;top:${map.y || 10}%;width:${Math.max(map.w || 7, 7)}%;height:${Math.max(map.h || 7, 7)}%;`;
+  const listo = table.items?.some((item) => item.status === "Listo");
+  const style = `left:${map.x}%;top:${map.y}%;width:${map.w}%;height:${map.h}%;`;
 
   return `
-    <button class="floor-table floor-table--${tone} ${map.shape === "round" ? "is-round" : ""}" style="${style}" type="button" data-table-open="${table.id}" title="${escapeHtml(table.name)} - ${escapeHtml(table.status)}">
+    <button class="floor-table floor-table--${listo ? "ready" : tone} ${map.shape === "round" ? "is-round" : ""}" style="${style}" type="button" data-table-open="${table.id}" title="${escapeHtml(table.name)} - ${escapeHtml(table.status)}">
       <strong>${escapeHtml(table.name.replace("Mesa ", ""))}</strong>
-      ${table.status === "Ocupada" ? `<small>${money(total)}</small>` : `<small>${escapeHtml(table.status)}</small>`}
+      ${table.status === "Ocupada" ? `<small>${money(total)}</small>` : ""}
       ${customer ? `<em>${escapeHtml(firstName(customer.name))}</em>` : ""}
     </button>`;
-}
-
-function fallbackTableMap(id) {
-  const fallback = {
-    M1: { x: 72, y: 44, w: 8, h: 8 }, M2: { x: 18, y: 49, w: 8, h: 8 },
-    M3: { x: 55, y: 29, w: 8, h: 11 }, M4: { x: 64, y: 29, w: 15, h: 8 },
-    M5: { x: 56, y: 43, w: 8, h: 8 }, M6: { x: 67, y: 36, w: 8, h: 8 },
-    A1: { x: 74, y: 52, w: 8, h: 8 }, A2: { x: 45, y: 52, w: 9, h: 8 },
-    A3: { x: 20, y: 36, w: 8, h: 10 }, A4: { x: 20, y: 20, w: 8, h: 10 }
-  };
-  return fallback[id] || { x: 10, y: 10, w: 8, h: 8 };
 }
 
 function operationSnapshot() {

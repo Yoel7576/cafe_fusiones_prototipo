@@ -1795,3 +1795,208 @@
   }
 }
 
+
+/* ==========================================================================
+   Editor del plano de mesas (Configuracion > Operacion > Mesas)
+   Mesas y zonas se arrastran y se redimensionan con pointer events, asi que
+   el mismo gesto sirve con mouse y con el dedo en tablet. Las medidas se
+   guardan en porcentaje: es lo que Ventas vuelve a pintar.
+   ========================================================================== */
+
+.settings-plan-modal {
+  width: min(1120px, 96vw);
+}
+
+.settings-plan-body {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  max-height: 78vh;
+  overflow: auto;
+}
+
+.plan-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.plan-toolbar p {
+  max-width: 62ch;
+  margin: 0;
+}
+
+.plan-toolbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.plan-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 230px;
+  gap: 14px;
+  align-items: start;
+}
+
+.plan-canvas {
+  --plan-height: clamp(280px, 44vh, 420px);
+  position: relative;
+  width: min(100%, calc(var(--plan-height) * 1.55));
+  height: var(--plan-height);
+  margin-inline: auto;
+  border: 1px solid #cfc3b8;
+  border-radius: 14px;
+  overflow: hidden;
+  /* Sin gestos del navegador: el arrastre es nuestro. */
+  touch-action: none;
+  background:
+    linear-gradient(90deg, rgba(86, 47, 31, .05) 1px, transparent 1px),
+    linear-gradient(rgba(86, 47, 31, .05) 1px, transparent 1px),
+    #faf7f2;
+  background-size: 22px 22px;
+}
+
+.plan-item {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border: 1px solid rgba(90, 46, 27, .3);
+  border-radius: 8px;
+  font-size: .58rem;
+  font-weight: 800;
+  line-height: 1.1;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.plan-item:active {
+  cursor: grabbing;
+}
+
+.plan-item.is-selected {
+  outline: 2px solid var(--red);
+  outline-offset: 1px;
+  z-index: 8;
+}
+
+.plan-item--zone {
+  background: rgba(255, 255, 255, .9);
+  color: var(--brown);
+  z-index: 2;
+}
+
+.plan-item--station {
+  background: #efe4d7;
+}
+
+.plan-item--door {
+  border-style: dashed;
+  color: var(--muted);
+}
+
+.plan-item--table {
+  background: #edf7ef;
+  border: 2px solid #72a47c;
+  color: #2f6b40;
+  font-size: .8rem;
+  z-index: 4;
+}
+
+.plan-item--table.is-round {
+  border-radius: 999px;
+}
+
+.plan-item > span {
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.plan-item.is-vertical > span {
+  writing-mode: vertical-rl;
+  white-space: nowrap;
+  font-size: .44rem;
+  letter-spacing: 0;
+}
+
+/* Tirador de tamano en la esquina inferior derecha. */
+.plan-handle {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 14px;
+  height: 14px;
+  border-top: 1px solid rgba(90, 46, 27, .45);
+  border-left: 1px solid rgba(90, 46, 27, .45);
+  border-bottom-right-radius: 7px;
+  background: rgba(255, 255, 255, .55);
+  cursor: nwse-resize;
+  touch-action: none;
+}
+
+.plan-item.is-selected .plan-handle {
+  background: rgba(255, 255, 255, .95);
+}
+
+.plan-item--table.is-round .plan-handle {
+  border-bottom-right-radius: 999px;
+}
+
+.plan-inspector {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.plan-inspector label {
+  display: grid;
+  gap: 5px;
+  font-size: .72rem;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.plan-inspector input,
+.plan-inspector select {
+  min-height: 42px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.plan-inspector p {
+  margin: 0;
+}
+
+@media (max-width: 860px) {
+  .plan-editor {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .plan-canvas {
+    --plan-height: min(76vw, 400px);
+  }
+  .plan-toolbar {
+    align-items: stretch;
+  }
+  .plan-toolbar__actions {
+    justify-content: flex-end;
+  }
+}

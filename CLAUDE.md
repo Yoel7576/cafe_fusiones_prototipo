@@ -19,7 +19,7 @@ extension **Live Server** de VS Code (boton "Go Live" o clic derecho > "Open wit
 Live Server" sobre `index.html`), configurada en el puerto 5501 (`.vscode/settings.json`).
 
 - Login demo: usuario `CFUSIONES`, clave `prototipo` (la misma clave se pide para anular productos).
-- Tras cambiar codigo, **Ctrl+F5**: `sw.js` cachea el app shell (network-first, cache `cafe-fusiones-modular-v8`).
+- Tras cambiar codigo, **Ctrl+F5**: `sw.js` cachea el app shell (network-first, cache `cafe-fusiones-modular-v9`).
   Si se agregan o renombran paginas, actualizar `APP_SHELL` y subir el numero de `CACHE_NAME`.
 - No hay tests, linter ni CI. La verificacion es manual en el navegador.
 
@@ -53,7 +53,8 @@ Capas compartidas:
   negocio (usuarios por perfil, mesas del plano, estaciones, empresa); `carta.js`,
   `recetas.js`, `inventario.js` y `proveedores.js` se generaron desde los documentos
   entregados (carta 2025, recetario con costos, inventario de almacen y de cocina,
-  cuadro de proveedores). Clientes, ventas y reportes arrancan vacios.
+  cuadro de proveedores). `plano.js` trae las mesas y las zonas del salon con las
+  coordenadas del plano de distribucion. Clientes, ventas y reportes arrancan vacios.
 - `js/components/` — `sidebar.js`, `topbar.js`, `toast.js`, `modal.js`, `confirm.js`,
   `useractions.js`.
 
@@ -82,17 +83,19 @@ params (`?tab=`, `?mode=`, `?station=`, `?mesa=`) y `history.replaceState`.
 
 ### Estado persistente
 
-`localStorage["cafeFusionesState"]`, esquema versionado (`VERSION = 9` en `storage.js`).
+`localStorage["cafeFusionesState"]`, esquema versionado (`VERSION = 10` en `storage.js`).
 `getState()` hidrata y **migra** el estado existente en vez de borrarlo. Claves
-principales: `tables`, `menuItems`, `recipes`, `kitchenOrders`, `salesHistory`,
+principales: `tables`, `floorZones`, `menuItems`, `recipes`, `kitchenOrders`, `salesHistory`,
 `inventory`, `inventoryMovements`, `inventoryLots`, `productionBatches`, `suppliers`,
 `purchaseOrders`, `wasteRecords`, `coffeeLots`, `customers`, `reservations`,
 `loyaltyMovements`, `users`, `branches`, `categories`, `cashBoxes`, `auditEvents`,
 `settings`, `sequences`.
 
 Cada subida de `VERSION` que cambie la data base debe resembrar los catalogos en la
-migracion (ver `migrateToV9` y las listas `V9_RESEED` / `V9_LIMPIAR`): los navegadores
-que ya abrieron el prototipo conservan el estado viejo y `getState()` no lo borra.
+migracion (ver `migrateToV9` con las listas `V9_RESEED` / `V9_LIMPIAR`, y `migrateToV10`
+para el plano): los navegadores que ya abrieron el prototipo conservan el estado viejo y
+`getState()` no lo borra. `migrateToV10` reubica las mesas segun el plano real pero
+conserva lo operativo de cada una (consumo, estado, cliente).
 
 Reglas del modelo:
 
@@ -112,6 +115,23 @@ Reglas del modelo:
 - Registros con historial **no se eliminan**: se activan/desactivan.
 - Mutar `state` y luego `saveState(state)`; `saveState` normaliza y conserva la referencia
   recibida (las paginas mantienen `const state = getState()` vivo durante la sesion).
+
+### Plano del salon
+
+`state.floorZones` guarda las zonas (cocina, barra, oficina, SS.HH., artesania,
+accesos) y cada mesa lleva `map: {x, y, w, h, shape}` en porcentaje sobre el lienzo.
+Semilla en `js/data/plano.js`, generada desde `DISTRIBUCION CAFE FUSIONES.pdf`.
+
+- **Configuracion > Operacion > Mesas** es el editor: se arrastra y se redimensiona
+  con **pointer events** (mismo gesto con mouse y con el dedo), y se renombra o
+  elimina desde el inspector lateral. Cada gesto persiste con `saveState`.
+- **Ventas > Salon** solo pinta el plano guardado; las zonas de tipo `station`
+  (Cocina, Barra) abren la pestana de Produccion filtrada por estacion.
+- Los modales **no se apilan** (`openModal` cierra el anterior): tras un
+  `confirmAction` hay que volver a abrir el editor con `openTablesModal()`.
+- Ojo con la especificidad: `.ventas-v4 button { font: inherit }` le gana a un
+  selector de una sola clase, por eso las reglas del plano van con el prefijo
+  `.floorplan`.
 
 ### Flujo operativo
 

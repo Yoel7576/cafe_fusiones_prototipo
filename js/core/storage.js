@@ -51,9 +51,10 @@ import { menuItemsSeed } from "../data/carta.js";
 import { recipesSeed } from "../data/recetas.js";
 import { inventorySeed } from "../data/inventario.js";
 import { suppliersSeed } from "../data/proveedores.js";
+import { floorZonesSeed } from "../data/plano.js";
 
 const STATE_KEY = "cafeFusionesState";
-const VERSION = 9;
+const VERSION = 10;
 
 export const MAIN_BRANCH_ID = "SUC-01";
 
@@ -206,6 +207,15 @@ function buildSuppliers() {
   return suppliersSeed.map((supplier) => clone(supplier));
 }
 
+function buildFloorZones() {
+  // Zonas del plano (cocina, barra, oficina, SS.HH., artesania, accesos).
+  // Son editables desde Configuracion > Mesas igual que las mesas.
+  return floorZonesSeed.map((zone) => ({
+    ...clone(zone),
+    branchId: zone.branchId || MAIN_BRANCH_ID
+  }));
+}
+
 function buildCoffeeLots() {
   return coffeeLotsSeed.map((lot) => ({
     ...clone(lot),
@@ -275,6 +285,7 @@ function seed() {
 
     /* ==================== RESTAURANT / VENTAS ==================== */
     tables: buildTables(),
+    floorZones: buildFloorZones(),
     menuItems: buildMenuItems(),
 
     // LEGACY: requerido temporalmente por las pantallas de Ventas actuales.
@@ -346,6 +357,7 @@ function seed() {
       reservation: 1,
       inventoryMovement: 1,
       recipe: recipesSeed.length + 1,
+      floorZone: floorZonesSeed.length + 1,
       supplier: suppliersSeed.length + 1,
       coffeeLot: coffeeLotsSeed.length + 1,
       branch: 2,
@@ -622,6 +634,7 @@ function normalizeCash(state, base) {
 // registros de la demo anterior que deben quedar vacios.
 const V9_RESEED = [
   "tables",
+  "floorZones",
   "menuItems",
   "menuCategories",
   "recipes",
@@ -686,6 +699,48 @@ function migrateToV9(next, base, saved) {
   delete next.settings.fiscalAddress;
 }
 
+/**
+ * Migracion a V10: plano del salon real.
+ *
+ * Las mesas pasan a las coordenadas del plano entregado por el cliente y se
+ * agregan las zonas (`floorZones`), que antes estaban fijas en el CSS. Se
+ * conserva lo operativo de cada mesa (consumo, estado, cliente) para no perder
+ * una atencion en curso.
+ */
+function migrateToV10(next, base, saved) {
+  if (Number(saved.__v || 0) >= 10) return;
+
+  const porId = new Map(base.tables.map((table) => [table.id, table]));
+
+  next.tables = next.tables.map((table) => {
+    const plano = porId.get(table.id);
+    if (!plano) return table;
+    return {
+      ...table,
+      name: table.name || plano.name,
+      area: plano.area,
+      seats: plano.seats,
+      map: clone(plano.map)
+    };
+  });
+
+  // Mesas del plano que no existan en el estado guardado.
+  base.tables.forEach((table) => {
+    if (!next.tables.some((item) => item.id === table.id)) {
+      next.tables.push(clone(table));
+    }
+  });
+
+  next.floorZones = clone(base.floorZones);
+
+  // Sin esto, la primera zona nueva reutilizaria el id ZON-01 de la cocina.
+  next.sequences = next.sequences || {};
+  next.sequences.floorZone = Math.max(
+    Number(next.sequences.floorZone || 0),
+    next.floorZones.length + 1
+  );
+}
+
 function hydrateState(saved = {}) {
   const base = seed();
 
@@ -714,6 +769,7 @@ function hydrateState(saved = {}) {
   const arrayKeys = [
     "branches",
     "tables",
+    "floorZones",
     "menuItems",
     "menuCategories",
     "kitchenOrders",
@@ -744,6 +800,7 @@ function hydrateState(saved = {}) {
   });
 
   migrateToV9(next, base, saved);
+  migrateToV10(next, base, saved);
 
   normalizeBranches(next, base);
   normalizeCategories(next);

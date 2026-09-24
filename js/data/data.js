@@ -13,6 +13,7 @@
 // Clientes, ventas, pedidos, reportes y auditoria arrancan VACIOS a proposito.
 
 import { menuCategoriesSeed } from "./carta.js";
+import { tablesSeed } from "./plano.js";
 
 /* ==================== ACCESO DE DEMOSTRACION ==================== */
 // Usuario unico para presentar el prototipo. Entra como Gerencia, que tiene
@@ -45,20 +46,11 @@ export const navItems = [
 export const menuCategories = ["Todos", ...menuCategoriesSeed];
 
 /* ==================== SALON ==================== */
-// Fuente: "DISTRIBUCION CAFE FUSIONES.pdf". Diez mesas: 1 a 6 en el salon
-// principal y A1 a A4 en el ambiente contiguo. La mesa 2 es redonda.
-// Las coordenadas del plano se afinan en el editor de Configuracion > Mesas.
+// Las mesas y las zonas del plano viven en js/data/plano.js, generadas desde
+// "DISTRIBUCION CAFE FUSIONES.pdf". Cafe Fusiones las reacomoda desde
+// Configuracion > Mesas.
 export const tables = [
-  { id: "M1", name: "Mesa 1", area: "Salon principal", seats: 2, status: "Libre", map: { x: 72.1, y: 45.0, w: 6.8, h: 7.0, shape: "rect" } },
-  { id: "M2", name: "Mesa 2", area: "Salon principal", seats: 2, status: "Libre", map: { x: 18.9, y: 49.0, w: 7.4, h: 7.4, shape: "round" } },
-  { id: "M3", name: "Mesa 3", area: "Salon principal", seats: 4, status: "Libre", map: { x: 55.4, y: 29.4, w: 7.2, h: 11.4, shape: "rect" } },
-  { id: "M4", name: "Mesa 4", area: "Salon principal", seats: 4, status: "Libre", map: { x: 64.2, y: 29.4, w: 14.8, h: 6.7, shape: "rect" } },
-  { id: "M5", name: "Mesa 5", area: "Salon principal", seats: 2, status: "Libre", map: { x: 56.1, y: 43.0, w: 7.3, h: 6.6, shape: "rect" } },
-  { id: "M6", name: "Mesa 6", area: "Salon principal", seats: 2, status: "Libre", map: { x: 67.6, y: 36.2, w: 7.0, h: 6.4, shape: "rect" } },
-  { id: "A1", name: "Mesa A1", area: "Salon A", seats: 4, status: "Libre", map: { x: 74.2, y: 51.2, w: 7.7, h: 7.7, shape: "rect" } },
-  { id: "A2", name: "Mesa A2", area: "Salon A", seats: 4, status: "Libre", map: { x: 45.8, y: 51.7, w: 8.6, h: 7.8, shape: "rect" } },
-  { id: "A3", name: "Mesa A3", area: "Salon A", seats: 4, status: "Libre", map: { x: 20.6, y: 36.4, w: 6.8, h: 9.7, shape: "rect" } },
-  { id: "A4", name: "Mesa A4", area: "Salon A", seats: 4, status: "Libre", map: { x: 20.8, y: 20.4, w: 6.7, h: 9.7, shape: "rect" } },
+  ...tablesSeed,
   // No es una mesa del plano: es el punto de venta para pedidos que no ocupan
   // salon (cafe en empaque, box lunch, catering y delivery).
   { id: "LLV", name: "Para llevar", area: "Sin salon", seats: 0, status: "Libre" }

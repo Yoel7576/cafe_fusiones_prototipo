@@ -93,6 +93,7 @@ function normalizeSettingsState() {
   state.users ||= [];
   state.stations ||= [];
   state.tables ||= [];
+  state.floorZones ||= [];
 
   const currentBranch = getActiveBranch(state);
 
@@ -2023,70 +2024,378 @@ function wireOperation() {
    OPERACION - MESAS
    ========================================================================== */
 
+// Estado efimero del editor de plano (no se persiste).
+const planoUi = { seleccion: null };
+
 function openTablesModal() {
-  const branchId = ui.operationBranchId;
-  const branch = branchById(state, branchId);
-  const tables = state.tables.filter((table) => table.branchId === branchId);
+  planoUi.seleccion = null;
+  const modal = openModal(planoEditorHtml());
+  wirePlanoEditor(modal);
+}
 
-  const html = `
-    <section class="modal settings-list-modal" role="dialog" aria-modal="true">
-      ${modalHeader(`Mesas · ${branch?.shortName || branch?.name || "Sucursal"}`, "Operación")}
+function planoEditorHtml() {
+  const branch = branchById(state, ui.operationBranchId);
 
-      <div class="settings-list-modal-body">
-        <div class="settings-inline-head">
-          <p>
-            Configura nombre, zona, capacidad y ubicación en el mapa de mesas.
-            También puedes agregar nuevas y editar las existentes en la sucursal activa.
-          </p>
-          <button class="button button--primary" type="button" data-new-table>
-            ${icon("plus")}<span>Nueva mesa</span>
-          </button>
-        </div>
-
-        <div class="table-wrap">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Mesa</th>
-                <th>Zona</th>
-                <th>Capacidad</th>
-                <th>Estado</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              ${tables.map((table) => `
-                <tr>
-                  <td><strong>${escapeHtml(table.name || table.id)}</strong></td>
-                  <td>${escapeHtml(table.area || "Sin zona")}</td>
-                  <td>${Number(table.seats || 0)} personas</td>
-                  <td><span class="${statusClass(table.status)}">${escapeHtml(table.status || "Libre")}</span></td>
-                  <td>
-                    <button class="mini-button" type="button" data-edit-table="${table.id}">
-                      Editar
-                    </button>
-                  </td>
-                </tr>
-              `).join("") || `
-                <tr><td colspan="5" class="text-center muted">No hay mesas configuradas.</td></tr>
-              `}
-            </tbody>
-          </table>
-        </div>
-      </div>
+  return `
+    <section class="modal settings-plan-modal" role="dialog" aria-modal="true">
+      ${modalHeader(`Mesas y plano · ${branch?.shortName || branch?.name || "Sucursal"}`, "Operación")}
+      <div class="settings-plan-body" data-plan-body>${planoEditorBody()}</div>
     </section>`;
+}
 
-  const modal = openModal(html);
+function planoEditorBody() {
+  const mesas = planoTables();
+  const zonas = planoZones();
+  const sel = planoSelected();
 
-  modal.querySelector("[data-new-table]")?.addEventListener("click", () => {
-    openTableForm();
+  return `
+    <div class="plan-toolbar">
+      <p class="muted">
+        Arrastra una mesa o una zona para moverla, y usa la esquina inferior derecha
+        para cambiarle el tamaño. Funciona con el dedo en tablet.
+      </p>
+      <div class="plan-toolbar__actions">
+        <button class="mini-button" type="button" data-plan-new-zone>Nueva zona</button>
+        <button class="button button--primary" type="button" data-plan-new-table>
+          ${icon("plus")}<span>Nueva mesa</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="plan-editor">
+      <div class="plan-canvas" data-plan-canvas>
+        ${zonas.map(planoZoneEl).join("")}
+        ${mesas.map(planoTableEl).join("")}
+      </div>
+      <aside class="plan-inspector">${planoInspector(sel)}</aside>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Mesa</th><th>Zona</th><th>Capacidad</th><th>Estado</th><th></th></tr></thead>
+        <tbody>
+          ${mesas.map((table) => `
+            <tr>
+              <td><strong>${escapeHtml(table.name || table.id)}</strong></td>
+              <td>${escapeHtml(table.area || "Sin zona")}</td>
+              <td>${Number(table.seats || 0)} personas</td>
+              <td><span class="${statusClass(table.status)}">${escapeHtml(table.status || "Libre")}</span></td>
+              <td><button class="mini-button" type="button" data-edit-table="${table.id}">Editar</button></td>
+            </tr>
+          `).join("") || `<tr><td colspan="5" class="text-center muted">No hay mesas configuradas.</td></tr>`}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function planoTables() {
+  return state.tables.filter(
+    (table) => table.branchId === ui.operationBranchId && Number(table.seats || 0) > 0 && table.map
+  );
+}
+
+function planoZones() {
+  return (state.floorZones || []).filter(
+    (zone) => !zone.branchId || zone.branchId === ui.operationBranchId
+  );
+}
+
+function planoSelected() {
+  if (!planoUi.seleccion) return null;
+  const { tipo, id } = planoUi.seleccion;
+  return tipo === "mesa"
+    ? state.tables.find((table) => table.id === id) || null
+    : (state.floorZones || []).find((zone) => zone.id === id) || null;
+}
+
+function planoStyle(map) {
+  return `left:${map.x}%;top:${map.y}%;width:${map.w}%;height:${map.h}%;`;
+}
+
+function planoSelectedClass(tipo, id) {
+  return planoUi.seleccion?.tipo === tipo && planoUi.seleccion?.id === id ? " is-selected" : "";
+}
+
+function planoTableEl(table) {
+  const redonda = table.map.shape === "round" ? " is-round" : "";
+  return `
+    <div class="plan-item plan-item--table${redonda}${planoSelectedClass("mesa", table.id)}"
+         style="${planoStyle(table.map)}" data-plan-item="mesa" data-plan-id="${table.id}"
+         role="button" tabindex="0" aria-label="${escapeHtml(table.name || table.id)}">
+      <span>${escapeHtml((table.name || table.id).replace("Mesa ", ""))}</span>
+      <i class="plan-handle" data-plan-resize aria-hidden="true"></i>
+    </div>`;
+}
+
+function planoZoneEl(zone) {
+  const vertical = zone.map.h > zone.map.w * 1.8 ? " is-vertical" : "";
+  return `
+    <div class="plan-item plan-item--zone plan-item--${zone.type || "area"}${vertical}${planoSelectedClass("zona", zone.id)}"
+         style="${planoStyle(zone.map)}" data-plan-item="zona" data-plan-id="${zone.id}"
+         role="button" tabindex="0" aria-label="${escapeHtml(zone.name)}">
+      <span>${escapeHtml(zone.name)}</span>
+      <i class="plan-handle" data-plan-resize aria-hidden="true"></i>
+    </div>`;
+}
+
+function planoInspector(elemento) {
+  if (!elemento) {
+    return `
+      <p class="eyebrow">Elemento</p>
+      <p class="muted">Toca una mesa o una zona del plano para cambiarle el nombre, el tamaño o eliminarla.</p>`;
+  }
+
+  const esMesa = planoUi.seleccion.tipo === "mesa";
+
+  return `
+    <p class="eyebrow">${esMesa ? "Mesa" : "Zona"}</p>
+    <label>Nombre
+      <input data-plan-name value="${escapeHtml(elemento.name || "")}" maxlength="40">
+    </label>
+    ${esMesa ? `
+      <label>Zona
+        <input data-plan-area value="${escapeHtml(elemento.area || "")}" placeholder="Ej. Salón principal">
+      </label>
+      <label>Capacidad
+        <input data-plan-seats type="number" min="1" max="30" step="1" value="${Number(elemento.seats || 2)}">
+      </label>
+      <label>Forma
+        <select data-plan-shape>
+          <option value="rect" ${elemento.map.shape === "round" ? "" : "selected"}>Cuadrada</option>
+          <option value="round" ${elemento.map.shape === "round" ? "selected" : ""}>Redonda</option>
+        </select>
+      </label>
+    ` : `
+      <label>Tipo
+        <select data-plan-type>
+          <option value="area" ${elemento.type === "area" ? "selected" : ""}>Ambiente</option>
+          <option value="station" ${elemento.type === "station" ? "selected" : ""}>Estación (abre su pantalla)</option>
+          <option value="door" ${elemento.type === "door" ? "selected" : ""}>Acceso</option>
+        </select>
+      </label>
+    `}
+    <button class="mini-button mini-button--danger" type="button" data-plan-delete>Eliminar</button>`;
+}
+
+/* -------------------- arrastre y redimension (pointer events) --------------------
+   Se usa pointerdown/move/up en vez de mouse o touch para que el mismo gesto
+   funcione con mouse, dedo y lapiz. Las medidas se guardan en porcentaje sobre
+   el lienzo, que es lo que Ventas vuelve a pintar.
+   ------------------------------------------------------------------------------ */
+
+function wirePlanoEditor(modal) {
+  const cuerpo = modal.querySelector("[data-plan-body]");
+  const lienzo = modal.querySelector("[data-plan-canvas]");
+  if (!lienzo) return;
+
+  const repintar = () => {
+    cuerpo.innerHTML = planoEditorBody();
+    wirePlanoEditor(modal);
+  };
+
+  lienzo.addEventListener("pointerdown", (event) => {
+    const elemento = event.target.closest("[data-plan-item]");
+    if (!elemento) return;
+
+    const tipo = elemento.dataset.planItem;
+    const id = elemento.dataset.planId;
+    const registro = tipo === "mesa"
+      ? state.tables.find((table) => table.id === id)
+      : state.floorZones.find((zone) => zone.id === id);
+    if (!registro) return;
+
+    planoUi.seleccion = { tipo, id };
+    modal.querySelector(".plan-inspector").innerHTML = planoInspector(registro);
+    wirePlanoInspector(modal, repintar);
+    lienzo.querySelectorAll(".plan-item").forEach((item) => item.classList.remove("is-selected"));
+    elemento.classList.add("is-selected");
+
+    const redimensionando = Boolean(event.target.closest("[data-plan-resize]"));
+    const caja = lienzo.getBoundingClientRect();
+    const partidaX = event.clientX;
+    const partidaY = event.clientY;
+    const base = { ...registro.map };
+
+    event.preventDefault();
+    elemento.setPointerCapture?.(event.pointerId);
+
+    const mover = (ev) => {
+      const dx = ((ev.clientX - partidaX) / caja.width) * 100;
+      const dy = ((ev.clientY - partidaY) / caja.height) * 100;
+
+      if (redimensionando) {
+        registro.map.w = redondear(acotar(base.w + dx, 3, 100 - registro.map.x));
+        registro.map.h = redondear(acotar(base.h + dy, 3, 100 - registro.map.y));
+      } else {
+        registro.map.x = redondear(acotar(base.x + dx, 0, 100 - registro.map.w));
+        registro.map.y = redondear(acotar(base.y + dy, 0, 100 - registro.map.h));
+      }
+
+      elemento.style.left = `${registro.map.x}%`;
+      elemento.style.top = `${registro.map.y}%`;
+      elemento.style.width = `${registro.map.w}%`;
+      elemento.style.height = `${registro.map.h}%`;
+    };
+
+    const soltar = () => {
+      elemento.releasePointerCapture?.(event.pointerId);
+      elemento.removeEventListener("pointermove", mover);
+      elemento.removeEventListener("pointerup", soltar);
+      elemento.removeEventListener("pointercancel", soltar);
+      saveState(state);
+    };
+
+    elemento.addEventListener("pointermove", mover);
+    elemento.addEventListener("pointerup", soltar);
+    elemento.addEventListener("pointercancel", soltar);
   });
 
-  modal.querySelectorAll("[data-edit-table]").forEach((button) => {
-    button.addEventListener("click", () => {
-      openTableForm(button.dataset.editTable);
+  wirePlanoInspector(modal, repintar);
+
+  modal.querySelector("[data-plan-new-table]")?.addEventListener("click", () => {
+    const id = uniqueTableId();
+    state.tables.push({
+      id,
+      name: `Mesa ${planoTables().length + 1}`,
+      area: "Salon principal",
+      seats: 2,
+      status: "Libre",
+      branchId: ui.operationBranchId,
+      customerId: null,
+      openedAt: null,
+      items: [],
+      map: { x: 45, y: 45, w: 8, h: 8, shape: "rect" }
     });
+    addAuditEvent(state, {
+      user: session.name, action: "Mesa creada", module: "Configuración",
+      detail: id, branchId: ui.operationBranchId
+    });
+    saveState(state);
+    planoUi.seleccion = { tipo: "mesa", id };
+    repintar();
+    showToast("Mesa agregada al plano.");
   });
+
+  modal.querySelector("[data-plan-new-zone]")?.addEventListener("click", () => {
+    // Defensa: si la secuencia viene desfasada de un estado viejo, se avanza
+    // hasta un id libre en vez de duplicar una zona existente.
+    let id = nextId(state, "floorZone", "ZON", 2);
+    while (state.floorZones.some((zone) => zone.id === id)) {
+      id = nextId(state, "floorZone", "ZON", 2);
+    }
+    state.floorZones.push({
+      id,
+      name: "Nueva zona",
+      type: "area",
+      branchId: ui.operationBranchId,
+      map: { x: 40, y: 20, w: 14, h: 8 }
+    });
+    addAuditEvent(state, {
+      user: session.name, action: "Zona creada", module: "Configuración",
+      detail: id, branchId: ui.operationBranchId
+    });
+    saveState(state);
+    planoUi.seleccion = { tipo: "zona", id };
+    repintar();
+    showToast("Zona agregada al plano.");
+  });
+
+  modal.querySelectorAll("[data-edit-table]").forEach((boton) => {
+    boton.addEventListener("click", () => openTableForm(boton.dataset.editTable));
+  });
+}
+
+function wirePlanoInspector(modal, repintar) {
+  const inspector = modal.querySelector(".plan-inspector");
+  if (!inspector) return;
+
+  const elemento = planoSelected();
+  if (!elemento) return;
+
+  const etiqueta = inspector.closest(".settings-plan-body")
+    ?.querySelector(`[data-plan-id="${cssEscape(elemento.id)}"] span`);
+
+  inspector.querySelector("[data-plan-name]")?.addEventListener("input", (event) => {
+    elemento.name = event.target.value;
+    if (etiqueta) etiqueta.textContent = (elemento.name || "").replace("Mesa ", "");
+    saveState(state);
+  });
+
+  inspector.querySelector("[data-plan-area]")?.addEventListener("input", (event) => {
+    elemento.area = event.target.value;
+    saveState(state);
+  });
+
+  inspector.querySelector("[data-plan-seats]")?.addEventListener("change", (event) => {
+    elemento.seats = Math.max(1, Number(event.target.value || 1));
+    saveState(state);
+    repintar();
+  });
+
+  inspector.querySelector("[data-plan-shape]")?.addEventListener("change", (event) => {
+    elemento.map.shape = event.target.value === "round" ? "round" : "rect";
+    saveState(state);
+    repintar();
+  });
+
+  inspector.querySelector("[data-plan-type]")?.addEventListener("change", (event) => {
+    elemento.type = event.target.value;
+    saveState(state);
+    repintar();
+  });
+
+  inspector.querySelector("[data-plan-delete]")?.addEventListener("click", async () => {
+    const esMesa = planoUi.seleccion.tipo === "mesa";
+    const nombre = elemento.name || elemento.id;
+
+    if (esMesa && elemento.items?.length) {
+      showToast("La mesa tiene consumo abierto: cobra o libera la mesa antes de eliminarla.");
+      return;
+    }
+
+    // confirmAction abre su propio modal y openModal no apila: al confirmar, el
+    // editor queda fuera del DOM, asi que despues hay que volver a abrirlo.
+    const confirmado = await confirmAction({
+      title: esMesa ? "Eliminar mesa" : "Eliminar zona",
+      message: `¿Seguro que quieres eliminar "${nombre}" del plano? Esta accion no se puede deshacer.`,
+      label: "Eliminar"
+    });
+
+    if (!confirmado) {
+      openTablesModal();
+      return;
+    }
+
+    if (esMesa) {
+      state.tables = state.tables.filter((table) => table.id !== elemento.id);
+    } else {
+      state.floorZones = state.floorZones.filter((zone) => zone.id !== elemento.id);
+    }
+
+    addAuditEvent(state, {
+      user: session.name,
+      action: esMesa ? "Mesa eliminada" : "Zona eliminada",
+      module: "Configuración",
+      detail: nombre,
+      branchId: ui.operationBranchId
+    });
+    saveState(state);
+    planoUi.seleccion = null;
+    openTablesModal();
+    showToast(esMesa ? "Mesa eliminada." : "Zona eliminada.");
+  });
+}
+
+function acotar(valor, minimo, maximo) {
+  return Math.min(Math.max(valor, minimo), Math.max(minimo, maximo));
+}
+
+function redondear(valor) {
+  return Math.round(valor * 100) / 100;
+}
+
+function cssEscape(valor) {
+  return String(valor).replace(/[^a-zA-Z0-9_-]/g, "\\$&");
 }
 
 function openTableForm(tableId = null) {
@@ -2140,45 +2449,19 @@ function openTableForm(tableId = null) {
           </select>
         </label>
 
-        <div class="span-2 settings-form-note">
-          <strong>Mapa de mesas</strong>
-          <small>
-            Ajusta la posición y tamaño en el plano para ubicar correctamente cada mesa.
-          </small>
-        </div>
-
-        <label>
-          Posición X (%)
-          <input name="mapX" type="number" min="0" max="100" step="1" value="${Number(currentMap.x ?? 15)}">
-        </label>
-
-        <label>
-          Posición Y (%)
-          <input name="mapY" type="number" min="0" max="100" step="1" value="${Number(currentMap.y ?? 18)}">
-        </label>
-
-        <label>
-          Ancho (%)
-          <input name="mapW" type="number" min="5" max="30" step="1" value="${Number(currentMap.w ?? 10)}">
-        </label>
-
-        <label>
-          Alto (%)
-          <input name="mapH" type="number" min="5" max="25" step="1" value="${Number(currentMap.h ?? 10)}">
-        </label>
-
         <label class="span-2">
           Forma
           <select name="shape">
-            <option value="rect" ${currentMap.shape === "round" ? "" : "selected"}>Rectangular</option>
+            <option value="rect" ${currentMap.shape === "round" ? "" : "selected"}>Cuadrada</option>
             <option value="round" ${currentMap.shape === "round" ? "selected" : ""}>Redonda</option>
           </select>
         </label>
 
         <div class="settings-form-note span-2">
-          <strong>Plano de mesas</strong>
+          <strong>Ubicación en el plano</strong>
           <small>
-            La ubicación visual del mapa se conserva al editar y el plano se actualiza automáticamente en ventas.
+            La posición y el tamaño se ajustan arrastrando la mesa en el plano.
+            Ventas muestra el plano guardado.
           </small>
         </div>
 
@@ -2192,11 +2475,7 @@ function openTableForm(tableId = null) {
     event.preventDefault();
 
     const data = Object.fromEntries(new FormData(event.currentTarget));
-    const mapX = Number(data.mapX ?? currentMap.x ?? 15);
-    const mapY = Number(data.mapY ?? currentMap.y ?? 18);
-    const mapW = Number(data.mapW ?? currentMap.w ?? 10);
-    const mapH = Number(data.mapH ?? currentMap.h ?? 10);
-    const shape = String(data.shape || "rect");
+    const shape = String(data.shape || "rect") === "round" ? "round" : "rect";
 
     const payload = {
       name: String(data.name || "").trim(),
@@ -2204,13 +2483,8 @@ function openTableForm(tableId = null) {
       seats: Number(data.seats || 0),
       status: data.status,
       branchId: ui.operationBranchId,
-      map: {
-        x: Math.min(Math.max(mapX, 0), 100),
-        y: Math.min(Math.max(mapY, 0), 100),
-        w: Math.min(Math.max(mapW, 5), 30),
-        h: Math.min(Math.max(mapH, 5), 25),
-        shape: shape === "round" ? "round" : "rect"
-      }
+      // La posicion se define arrastrando en el plano; aqui solo se conserva.
+      map: { ...currentMap, shape }
     };
 
     if (table) {
@@ -2236,7 +2510,7 @@ function openTableForm(tableId = null) {
     saveState(state);
     closeModal();
     showToast(table ? "Mesa actualizada." : "Mesa creada.");
-    render();
+    openTablesModal();
   });
 }
 
