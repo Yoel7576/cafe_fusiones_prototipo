@@ -150,3 +150,88 @@
 .recipe-add input { width: 110px; min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; color: var(--ink); }
 .sale-field { display: grid; gap: 8px; margin: 8px 0 14px; font-weight: 700; }
 .sale-field select, .sale-field input { width: 100%; min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; color: var(--ink); }
+
+/* ==========================================================================
+   Ficha de lote (Administracion > Trazabilidad)
+   Cubre todos los campos que muestra la ficha publica de la landing.
+   ========================================================================== */
+
+.lot-form__section {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--line);
+}
+
+.lot-form__section strong {
+    display: block;
+    color: var(--brown);
+    font-size: .95rem;
+}
+
+.lot-form__section small,
+.lot-form label > small {
+    display: block;
+    color: var(--muted);
+    font-size: .74rem;
+    font-weight: 500;
+}
+
+.lot-form label > small {
+    margin-top: 3px;
+}
+
+.lot-steps {
+    display: grid;
+    gap: 8px;
+}
+
+.lot-step {
+    display: grid;
+    grid-template-columns: 30px minmax(120px, 1fr) 150px minmax(180px, 2fr) 36px;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: #fff;
+}
+
+.lot-step__num {
+    color: var(--muted);
+    font-size: .74rem;
+    font-weight: 900;
+    text-align: center;
+}
+
+.lot-step input {
+    min-height: 38px;
+    padding: 0 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+}
+
+.lot-form__actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.trace-card__actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+@media (max-width: 860px) {
+  .lot-step {
+    grid-template-columns: 30px minmax(0, 1fr) 36px;
+  }
+  .lot-step input[data-step-text] {
+    grid-column: 2 / -1;
+  }
+}

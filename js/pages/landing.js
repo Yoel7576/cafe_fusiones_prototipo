@@ -1,7 +1,9 @@
 // Cafe Fusiones - LandingPage publica: Inicio (pages/landing.html).
-// No usa requireAuth/getState: contenido publico independiente del ERP interno.
+// No usa requireAuth: lee el estado en modo solo lectura para mostrar la carta
+// que Administracion publica, con las categorias estaticas como respaldo.
 import { renderSiteHeader, renderRecognitions, renderSiteFooter } from "../components/sitenav.js";
-import { siteMenuCategories } from "../data/site-menu.js";
+import { cartaPublica, imagenDeCategoria, siteMenuCategories } from "../data/site-data.js";
+import { escapeHtml } from "../core/utils.js";
 
 const heroImages = [
   "../assets/img/site/hero-1.webp",
@@ -44,12 +46,20 @@ function renderHero() {
   }));
 }
 
+// La vista previa muestra las categorias de la carta publicada en
+// Administracion; si no hay nada publicado, las estaticas del sitio.
 function renderMenuPreview() {
   const grid = document.getElementById("site-menu-grid");
-  grid.innerHTML = siteMenuCategories.map((cat) => `
+  const grupos = cartaPublica();
+
+  const categorias = grupos.length
+    ? grupos.map((grupo) => ({ title: grupo.titulo, image: imagenDeCategoria(grupo.titulo) }))
+    : siteMenuCategories;
+
+  grid.innerHTML = categorias.map((cat) => `
     <a class="site-menu-card" href="landing-menu.html">
-      <img src="${cat.image}" alt="${cat.title}" loading="lazy">
-      <h3>${cat.title}</h3>
+      <img src="${cat.image}" alt="${escapeHtml(cat.title)}" loading="lazy">
+      <h3>${escapeHtml(cat.title)}</h3>
     </a>
   `).join("");
 }

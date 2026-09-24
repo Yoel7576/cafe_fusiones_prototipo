@@ -2,7 +2,7 @@
 // Se llega aqui desde el buscador de landing-trazabilidad.html o directo por
 // ?codigo=... (el mismo enlace que llevaria un QR de empaque o mesa).
 import { renderSiteHeader, renderRecognitions, renderSiteFooter } from "../components/sitenav.js";
-import { findTraceableProduct } from "../data/site-traceability.js";
+import { buscarLotePublico } from "../data/site-data.js";
 import { formatDate } from "../core/utils.js";
 
 renderSiteHeader("trazabilidad", { solid: true });
@@ -14,7 +14,7 @@ const qrIcon = '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="
 
 const params = new URLSearchParams(window.location.search);
 const code = params.get("codigo");
-const product = findTraceableProduct(code);
+const product = buscarLotePublico(code);
 const root = document.getElementById("site-lote-content");
 
 document.title = product ? `${product.lotCode} | Café Fusiones` : "Ficha no encontrada | Café Fusiones";

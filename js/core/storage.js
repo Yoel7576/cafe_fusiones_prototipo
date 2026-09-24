@@ -880,6 +880,25 @@ function writeRawState(state) {
   }
 }
 
+/**
+ * Lectura de solo lectura del estado, para las paginas publicas de la landing.
+ *
+ * No pasa por requireAuth ni escribe en localStorage: la landing es publica y no
+ * debe tocar el estado del sistema. Si no hay nada guardado, devuelve el seed.
+ */
+export function readPublicState() {
+  try {
+    const raw = readRawState();
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object") return hydrateState(parsed);
+    }
+  } catch {
+    // Sin estado utilizable: se devuelve el seed.
+  }
+  return seed();
+}
+
 export function getState() {
   try {
     const raw = readRawState();

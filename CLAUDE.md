@@ -19,7 +19,7 @@ extension **Live Server** de VS Code (boton "Go Live" o clic derecho > "Open wit
 Live Server" sobre `index.html`), configurada en el puerto 5501 (`.vscode/settings.json`).
 
 - Login demo: usuario `CFUSIONES`, clave `prototipo` (la misma clave se pide para anular productos).
-- Tras cambiar codigo, **Ctrl+F5**: `sw.js` cachea el app shell (network-first, cache `cafe-fusiones-modular-v10`).
+- Tras cambiar codigo, **Ctrl+F5**: `sw.js` cachea el app shell (network-first, cache `cafe-fusiones-modular-v11`).
   Si se agregan o renombran paginas, actualizar `APP_SHELL` y subir el numero de `CACHE_NAME`.
 - No hay tests, linter ni CI. La verificacion es manual en el navegador.
 
@@ -148,6 +148,24 @@ enlazan esa hoja). Si se toca el aspecto del plano, se toca ahi, no en
 - Ojo con la especificidad: `.ventas-v4 button { font: inherit }` le gana a un
   selector de una sola clase, por eso las reglas de tipografia del plano van
   acotadas con `.floorplan`.
+
+### Landing publica
+
+La landing (`pages/landing*.html`) no tiene sesion, pero **si lee el estado**:
+`js/data/site-data.js` usa `readPublicState()` de storage.js, que hidrata sin
+escribir en localStorage ni pasar por `requireAuth()`. Es el mismo origen, asi
+que ve lo que Administracion guarda en el navegador del local.
+
+- **Trazabilidad**: `landing-trazabilidad` y `landing-lote` muestran los lotes de
+  `state.coffeeLots` con `publishWeb !== false`. La ficha completa se carga en
+  Administracion > Trazabilidad (incluye imagenes, preparaciones, conservacion y
+  los pasos del recorrido como lista editable).
+- **Carta**: `landing-menu` y la vista previa de `landing` muestran los platos con
+  `publishLanding` activo, agrupados por categoria.
+- **Respaldo**: si el navegador del visitante no tiene estado (nunca abrio el
+  sistema), se usan `site-traceability.js` y `site-menu.js`. El respaldo aplica
+  solo cuando NO hay registros; si los hay y ninguno esta publicado, la web no
+  muestra ninguno.
 
 ### Flujo operativo
 

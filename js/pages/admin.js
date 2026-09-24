@@ -5,7 +5,7 @@ import { requireAuth } from "../core/auth.js";
 import { canAccess } from "../core/router.js";
 import { renderSidebar } from "../components/sidebar.js";
 import { renderTopbar } from "../components/topbar.js";
-import { getState, saveState } from "../core/storage.js";
+import { getState, saveState, nextId, addAuditEvent } from "../core/storage.js";
 import { openModal, closeModal, closeIcon } from "../components/modal.js";
 import { showToast } from "../components/toast.js";
 import { icon, money, escapeHtml, statusClass } from "../core/utils.js";
@@ -265,12 +265,206 @@ function auditTimeline() {
     .join("");
 }
 
+/* ==========================================================================
+   TRAZABILIDAD - FICHA DE LOTE
+   El formulario cubre todos los campos que muestra la landing publica, para
+   que lo que se carga aqui sea exactamente lo que ve el cliente al escanear
+   el QR. Los pasos del recorrido son una lista editable.
+   ========================================================================== */
+
+// Lote que se esta editando (null = alta) y borrador del formulario, para que
+// agregar o quitar un paso no borre lo que el usuario ya escribio.
+const loteUi = { editandoId: null, pasos: [], borrador: null };
+
+function loteEnEdicion() {
+  return loteUi.editandoId
+    ? state.coffeeLots.find((lot) => lot.id === loteUi.editandoId) || null
+    : null;
+}
+
+function pasosDelFormulario() {
+  const lote = loteEnEdicion();
+  if (loteUi.pasos.length) return loteUi.pasos;
+  if (lote?.steps?.length) return lote.steps.map((paso) => ({ ...paso }));
+  return [{ title: "", date: "", text: "" }];
+}
+
 function coffeeLotForm() {
-  return `<form class="form-grid" data-lot-form><label>Codigo de lote<input name="code" required placeholder="AMZ-2607-02"></label><label>Origen<input name="origin" required placeholder="Provincia / finca"></label><label>Productor<input name="producer" required placeholder="Nombre del productor"></label><label>Variedad<input name="variety" required placeholder="Typica, Caturra..."></label><label>Tostado<select name="roast"><option>Ligero</option><option>Media</option><option>Oscuro</option></select></label><label>Recepcion<input name="received" type="date" required></label><label>Cantidad<input name="stock" type="number" min="0.01" step="0.01" required></label><label>Unidad<input name="unit" value="kg" required></label><label class="span-2">Notas de trazabilidad<textarea class="textarea" name="notes" placeholder="Finca, altura, proceso, perfil de taza"></textarea></label><button class="button button--primary" type="submit">Guardar lote</button></form>`;
+  const lote = { ...(loteEnEdicion() || {}), ...(loteUi.borrador || {}) };
+  const editando = Boolean(loteEnEdicion());
+  const v = (campo, porDefecto = "") => escapeHtml(String(lote?.[campo] ?? porDefecto));
+  const pasos = pasosDelFormulario();
+
+  return `
+    <form class="form-grid lot-form" data-lot-form>
+      <div class="span-2 lot-form__section">
+        <strong>Producto</strong>
+        <small>Lo que se ve primero en la ficha publica del lote.</small>
+      </div>
+
+      <label>Codigo publico *
+        <input name="code" required value="${v("code")}" placeholder="Caficultores_Valle_Huayabamba">
+        <small class="muted">Es lo que se escribe en el buscador y lo que lleva el QR.</small>
+      </label>
+      <label>Codigo de lote *
+        <input name="lotCode" required value="${v("lotCode")}" placeholder="AMZ-2608-01">
+      </label>
+      <label>Nombre del producto *
+        <input name="name" required value="${v("name")}" placeholder="Caficultores del Valle del Huayabamba">
+      </label>
+      <label>Tipo
+        <input name="type" value="${v("type", "Granos de cafe de especialidad")}">
+      </label>
+      <label class="span-2">Descripcion
+        <textarea class="textarea" name="description" placeholder="Como se usa este lote en la barra">${v("description")}</textarea>
+      </label>
+
+      <div class="span-2 lot-form__section">
+        <strong>Origen</strong>
+        <small>De donde viene el cafe y quien lo produce.</small>
+      </div>
+
+      <label>Region
+        <input name="region" value="${v("region")}" placeholder="Andes orientales de Peru">
+      </label>
+      <label>Valle
+        <input name="valley" value="${v("valley")}" placeholder="Valle del Huayabamba, Amazonas">
+      </label>
+      <label>Altitud
+        <input name="altitude" value="${v("altitude")}" placeholder="1200-1800 m s. n. m.">
+      </label>
+      <label>Productor
+        <input name="producer" value="${v("producer")}" placeholder="Nombre de la asociacion o productor">
+      </label>
+
+      <div class="span-2 lot-form__section">
+        <strong>Proceso</strong>
+      </div>
+
+      <label>Variedad
+        <input name="variety" value="${v("variety")}" placeholder="Caturra, Typica...">
+      </label>
+      <label>Tostado
+        <input name="roast" value="${v("roast")}" placeholder="Medio, artesanal">
+      </label>
+      <label>Fecha de recepcion
+        <input name="received" type="date" value="${v("received")}">
+      </label>
+      <label>Fecha de tostado
+        <input name="roastedAt" type="date" value="${v("roastedAt")}">
+      </label>
+      <label>Stock
+        <input name="stock" type="number" min="0" step="0.01" value="${Number(lote?.stock ?? 0)}">
+      </label>
+      <label>Unidad
+        <input name="unit" value="${v("unit", "kg")}">
+      </label>
+
+      <div class="span-2 lot-form__section">
+        <strong>Contenido de la ficha publica</strong>
+      </div>
+
+      <label>Imagen del producto
+        <input name="image" value="${v("image")}" placeholder="../assets/img/site/hero-3.webp">
+      </label>
+      <label>Imagen del productor
+        <input name="producerImage" value="${v("producerImage")}" placeholder="../assets/img/menu-cafe.jpg">
+      </label>
+      <label class="span-2">Preparaciones
+        <input name="preparations" value="${escapeHtml((lote?.preparations || []).join(", "))}" placeholder="Espresso, V60, Chemex">
+        <small class="muted">Separadas por comas.</small>
+      </label>
+      <label class="span-2">Recomendaciones de almacenamiento
+        <textarea class="textarea" name="storage" placeholder="Conservar en envase hermetico, fresco y seco">${v("storage")}</textarea>
+      </label>
+
+      <div class="span-2 lot-form__section lot-form__section--row">
+        <div>
+          <strong>Recorrido del cafe</strong>
+          <small>Los pasos que se muestran en la linea de tiempo de la ficha.</small>
+        </div>
+        <button class="mini-button" type="button" data-lot-add-step>Agregar paso</button>
+      </div>
+
+      <div class="span-2 lot-steps" data-lot-steps>
+        ${pasos.map(pasoHtml).join("")}
+      </div>
+
+      <label class="span-2 check-inline">
+        <input type="checkbox" name="publishWeb" ${lote.publishWeb === false ? "" : "checked"}>
+        Publicar en la web
+      </label>
+
+      <label class="span-2">Notas internas
+        <textarea class="textarea" name="notes" placeholder="Proceso, perfil de taza, observaciones">${v("notes")}</textarea>
+      </label>
+
+      <div class="span-2 lot-form__actions">
+        <button class="button button--primary" type="submit">
+          ${editando ? "Guardar cambios" : "Registrar lote"}
+        </button>
+        ${editando ? '<button class="mini-button" type="button" data-lot-cancel>Cancelar</button>' : ""}
+      </div>
+    </form>`;
+}
+
+function pasoHtml(paso, indice) {
+  return `
+    <div class="lot-step" data-lot-step="${indice}">
+      <span class="lot-step__num">${String(indice + 1).padStart(2, "0")}</span>
+      <input data-step-title placeholder="Titulo (Cultivo, Cosecha...)" value="${escapeHtml(paso.title || "")}">
+      <input data-step-date type="date" value="${escapeHtml(paso.date || "")}" title="Fecha (opcional)">
+      <input data-step-text placeholder="Que pasa en este paso" value="${escapeHtml(paso.text || "")}">
+      <button class="mini-button mini-button--danger" type="button" data-step-remove="${indice}" aria-label="Quitar paso">✕</button>
+    </div>`;
+}
+
+// Guarda lo escrito en el formulario antes de repintarlo.
+function guardarBorradorDeLote() {
+  const formulario = view.querySelector("[data-lot-form]");
+  if (!formulario) return;
+
+  const datos = Object.fromEntries(new FormData(formulario));
+  loteUi.borrador = {
+    ...datos,
+    stock: Number(datos.stock || 0),
+    publishWeb: !!datos.publishWeb,
+    preparations: String(datos.preparations || "").split(",").map((t) => t.trim()).filter(Boolean)
+  };
+  loteUi.pasos = leerPasosDelDom({ conservarVacios: true });
+}
+
+function leerPasosDelDom({ conservarVacios = false } = {}) {
+  return [...view.querySelectorAll("[data-lot-step]")]
+    .map((fila) => ({
+      title: fila.querySelector("[data-step-title]").value.trim(),
+      date: fila.querySelector("[data-step-date]").value,
+      text: fila.querySelector("[data-step-text]").value.trim()
+    }))
+    .filter((paso) => conservarVacios || paso.title || paso.text);
 }
 
 function coffeeLots() {
-  return state.coffeeLots.map((lot) => `<article class="trace-card"><div class="trace-card__head"><strong>${escapeHtml(lot.code)}</strong><span class="status status--info">${lot.stock} ${lot.unit}</span></div><p><strong>${escapeHtml(lot.origin)}</strong> · ${escapeHtml(lot.producer)}</p><p class="muted">${escapeHtml(lot.variety)} · Tostado ${lot.roast} · Recibido ${lot.received}</p><p class="muted">${escapeHtml(lot.notes || "Sin notas adicionales")}</p></article>`).join("");
+  if (!state.coffeeLots.length) {
+    return '<p class="muted">Aun no hay lotes registrados.</p>';
+  }
+
+  return state.coffeeLots.map((lot) => `
+    <article class="trace-card">
+      <div class="trace-card__head">
+        <strong>${escapeHtml(lot.lotCode || lot.code)}</strong>
+        <span class="${lot.publishWeb === false ? "status" : "status status--ok"}">
+          ${lot.publishWeb === false ? "Sin publicar" : "En la web"}
+        </span>
+      </div>
+      <p><strong>${escapeHtml(lot.name || lot.producer || "")}</strong></p>
+      <p class="muted">${escapeHtml(lot.valley || lot.origin || "Sin origen")}${lot.variety ? ` · ${escapeHtml(lot.variety)}` : ""}${lot.roast ? ` · Tostado ${escapeHtml(lot.roast)}` : ""}</p>
+      <p class="muted">${Number(lot.stock || 0)} ${escapeHtml(lot.unit || "kg")} · ${(lot.steps || []).length} pasos de recorrido</p>
+      <div class="trace-card__actions">
+        <button class="mini-button" type="button" data-lot-edit="${escapeHtml(lot.id)}">Editar</button>
+        <a class="mini-button" href="landing-lote.html?codigo=${encodeURIComponent(lot.code || lot.lotCode)}" target="_blank" rel="noopener">Ver en la web</a>
+      </div>
+    </article>`).join("");
 }
 
 function userEditor() {
@@ -360,8 +554,92 @@ function wire() {
   lotForm?.addEventListener("submit", (event) => {
     event.preventDefault();
     const d = Object.fromEntries(new FormData(event.target));
-    state.coffeeLots.unshift({ id: `LOT-CAF-${String(state.coffeeLots.length + 1).padStart(3, "0")}`, code: d.code, origin: d.origin, producer: d.producer, variety: d.variety, roast: d.roast, received: d.received, stock: Number(d.stock), unit: d.unit, notes: d.notes });
-    saveState(state); showToast("Lote de café registrado correctamente."); render();
+    const editando = loteEnEdicion();
+
+    const ficha = {
+      code: String(d.code || "").trim(),
+      lotCode: String(d.lotCode || "").trim(),
+      name: String(d.name || "").trim(),
+      type: String(d.type || "").trim(),
+      description: String(d.description || "").trim(),
+      region: String(d.region || "").trim(),
+      valley: String(d.valley || "").trim(),
+      altitude: String(d.altitude || "").trim(),
+      producer: String(d.producer || "").trim(),
+      variety: String(d.variety || "").trim(),
+      roast: String(d.roast || "").trim(),
+      received: d.received || "",
+      roastedAt: d.roastedAt || "",
+      stock: Number(d.stock || 0),
+      unit: String(d.unit || "kg").trim(),
+      image: String(d.image || "").trim(),
+      producerImage: String(d.producerImage || "").trim(),
+      preparations: String(d.preparations || "")
+        .split(",")
+        .map((texto) => texto.trim())
+        .filter(Boolean),
+      storage: String(d.storage || "").trim(),
+      steps: leerPasosDelDom(),
+      publishWeb: !!d.publishWeb,
+      notes: String(d.notes || "").trim()
+    };
+
+    if (editando) {
+      Object.assign(editando, ficha);
+    } else {
+      state.coffeeLots.unshift({
+        id: nextId(state, "coffeeLot", "LOT-CAF", 3),
+        status: "Activo",
+        ...ficha
+      });
+    }
+
+    addAuditEvent(state, {
+      user: session.name,
+      action: editando ? "Lote de cafe actualizado" : "Lote de cafe registrado",
+      module: "Administracion",
+      detail: `${ficha.lotCode || ficha.code}${ficha.publishWeb ? " · publicado en la web" : ""}`
+    });
+
+    loteUi.editandoId = null;
+    loteUi.pasos = [];
+    loteUi.borrador = null;
+    saveState(state);
+    showToast(editando ? "Lote actualizado." : "Lote de café registrado correctamente.");
+    render();
+  });
+
+  // Lista editable de pasos del recorrido.
+  view.querySelector("[data-lot-add-step]")?.addEventListener("click", () => {
+    guardarBorradorDeLote();
+    loteUi.pasos = [...loteUi.pasos, { title: "", date: "", text: "" }];
+    render();
+  });
+
+  view.querySelectorAll("[data-step-remove]").forEach((boton) => {
+    boton.addEventListener("click", () => {
+      guardarBorradorDeLote();
+      const indice = Number(boton.dataset.stepRemove);
+      const pasos = loteUi.pasos.filter((_, i) => i !== indice);
+      loteUi.pasos = pasos.length ? pasos : [{ title: "", date: "", text: "" }];
+      render();
+    });
+  });
+
+  view.querySelectorAll("[data-lot-edit]").forEach((boton) => {
+    boton.addEventListener("click", () => {
+      loteUi.editandoId = boton.dataset.lotEdit;
+      loteUi.pasos = [];
+      loteUi.borrador = null;
+      render();
+    });
+  });
+
+  view.querySelector("[data-lot-cancel]")?.addEventListener("click", () => {
+    loteUi.editandoId = null;
+    loteUi.pasos = [];
+    loteUi.borrador = null;
+    render();
   });
   const userForm = view.querySelector("[data-user-form]");
   userForm?.addEventListener("submit", (event) => {

@@ -128,7 +128,9 @@ export const loyaltyConfigSeed = {
 export const coffeeLotsSeed = [
   {
     id: "LOT-CAF-001",
+    // `code` es lo que se escribe en el buscador publico y lo que lleva el QR.
     code: "Caficultores_Valle_Huayabamba",
+    lotCode: "AMZ-2608-01",
     name: "Caficultores del Valle del Huayabamba",
     type: "Granos de cafe de especialidad",
     supplierId: "PRV-001",
@@ -136,13 +138,30 @@ export const coffeeLotsSeed = [
     region: "Andes orientales de Peru",
     valley: "Valle del Huayabamba, Amazonas",
     altitude: "1200-1800 m s. n. m.",
-    variety: "",
-    roast: "",
-    received: "",
-    roastedAt: "",
+    variety: "Caturra",
+    roast: "Medio, artesanal",
+    received: "2026-08-02",
+    roastedAt: "2026-08-05",
     stock: 25,
     unit: "kg",
     description: "Granos organicos seleccionados para las preparaciones de espresso, metodos filtrados (V60, Chemex, Prensa Francesa, etc.) y bebidas de la casa.",
+    image: "../assets/img/site/hero-3.webp",
+    producerImage: "../assets/img/menu-cafe.jpg",
+    preparations: ["Espresso", "V60", "Chemex", "Prensa Francesa", "Bebidas de la casa"],
+    storage: "Grano tostado; conservar en envase hermetico, en un lugar fresco y seco, lejos de la luz directa.",
+    steps: [
+      { title: "Cultivo", date: "", text: "En las parcelas de altura del Valle del Huayabamba, cuidadas por los caficultores aliados." },
+      { title: "Cosecha", date: "", text: "Seleccion manual de las cerezas mas maduras." },
+      { title: "Recepcion", date: "2026-08-02", text: "El lote llega y se identifica con el codigo AMZ-2608-01." },
+      { title: "Tostado", date: "2026-08-05", text: "Tueste medio y artesanal, en tandas pequenas dentro del local." },
+      { title: "Molienda", date: "", text: "Molienda ajustada a cada metodo de preparacion." },
+      { title: "Extraccion", date: "", text: "Espresso, V60, Chemex, Prensa Francesa y demas bebidas de la casa." },
+      { title: "Degustacion", date: "", text: "Servido fresco en barra, con trazabilidad hasta el productor." }
+    ],
+    // Solo los lotes publicados aparecen en la landing.
+    publishWeb: true,
+    status: "Activo",
     notes: ""
   }
 ];
+

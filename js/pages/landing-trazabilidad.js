@@ -1,9 +1,10 @@
 // Cafe Fusiones - LandingPage publica: Trazabilidad (pages/landing-trazabilidad.html).
 // Seccion nueva (no existe en cafefusiones.com): busca la trazabilidad de un producto
-// por codigo. El QR de un empaque/boleta apunta directo a landing-lote.html?codigo=...;
+// por codigo. Los lotes salen de Administracion > Trazabilidad (mismo localStorage,
+// mismo origen), en modo solo lectura. El QR de un empaque/boleta apunta directo a landing-lote.html?codigo=...;
 // escribir el mismo codigo aqui encuentra el producto y lleva a esa misma ficha.
 import { renderSiteHeader, renderRecognitions, renderSiteFooter } from "../components/sitenav.js";
-import { findTraceableProduct } from "../data/site-traceability.js";
+import { buscarLotePublico } from "../data/site-data.js";
 
 renderSiteHeader("trazabilidad", { solid: true });
 renderRecognitions();
@@ -33,7 +34,7 @@ if (initialCode) {
 }
 
 function search(code) {
-  const product = findTraceableProduct(code);
+  const product = buscarLotePublico(code);
   const cleanCode = String(code ?? "").trim();
 
   if (!cleanCode) {
