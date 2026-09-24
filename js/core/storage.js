@@ -54,7 +54,7 @@ import { suppliersSeed } from "../data/proveedores.js";
 import { floorZonesSeed } from "../data/plano.js";
 
 const STATE_KEY = "cafeFusionesState";
-const VERSION = 10;
+const VERSION = 11;
 
 export const MAIN_BRANCH_ID = "SUC-01";
 
@@ -741,6 +741,32 @@ function migrateToV10(next, base, saved) {
   );
 }
 
+/**
+ * Migracion a V11: layout ordenado del salon.
+ *
+ * El plano pasa a un lienzo 16:10 con las mesas alineadas en filas y columnas,
+ * tamanos estandar por capacidad y zonas dimensionadas para que el nombre entre
+ * completo. Se resiembran las posiciones y las zonas; lo operativo de cada mesa
+ * (consumo, estado, cliente) se conserva.
+ */
+function migrateToV11(next, base, saved) {
+  if (Number(saved.__v || 0) >= 11) return;
+
+  const porId = new Map(base.tables.map((table) => [table.id, table]));
+
+  next.tables = next.tables.map((table) => {
+    const plano = porId.get(table.id);
+    return plano ? { ...table, map: clone(plano.map) } : table;
+  });
+
+  next.floorZones = clone(base.floorZones);
+  next.sequences = next.sequences || {};
+  next.sequences.floorZone = Math.max(
+    Number(next.sequences.floorZone || 0),
+    next.floorZones.length + 1
+  );
+}
+
 function hydrateState(saved = {}) {
   const base = seed();
 
@@ -801,6 +827,7 @@ function hydrateState(saved = {}) {
 
   migrateToV9(next, base, saved);
   migrateToV10(next, base, saved);
+  migrateToV11(next, base, saved);
 
   normalizeBranches(next, base);
   normalizeCategories(next);

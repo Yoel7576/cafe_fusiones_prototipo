@@ -19,7 +19,7 @@ extension **Live Server** de VS Code (boton "Go Live" o clic derecho > "Open wit
 Live Server" sobre `index.html`), configurada en el puerto 5501 (`.vscode/settings.json`).
 
 - Login demo: usuario `CFUSIONES`, clave `prototipo` (la misma clave se pide para anular productos).
-- Tras cambiar codigo, **Ctrl+F5**: `sw.js` cachea el app shell (network-first, cache `cafe-fusiones-modular-v9`).
+- Tras cambiar codigo, **Ctrl+F5**: `sw.js` cachea el app shell (network-first, cache `cafe-fusiones-modular-v10`).
   Si se agregan o renombran paginas, actualizar `APP_SHELL` y subir el numero de `CACHE_NAME`.
 - No hay tests, linter ni CI. La verificacion es manual en el navegador.
 
@@ -56,7 +56,8 @@ Capas compartidas:
   cuadro de proveedores). `plano.js` trae las mesas y las zonas del salon con las
   coordenadas del plano de distribucion. Clientes, ventas y reportes arrancan vacios.
 - `js/components/` — `sidebar.js`, `topbar.js`, `toast.js`, `modal.js`, `confirm.js`,
-  `useractions.js`.
+  `useractions.js`, `floorplan.js` (el plano del salon, compartido por Ventas y
+  Configuracion).
 
 ### Patron de una pagina
 
@@ -83,7 +84,7 @@ params (`?tab=`, `?mode=`, `?station=`, `?mesa=`) y `history.replaceState`.
 
 ### Estado persistente
 
-`localStorage["cafeFusionesState"]`, esquema versionado (`VERSION = 10` en `storage.js`).
+`localStorage["cafeFusionesState"]`, esquema versionado (`VERSION = 11` en `storage.js`).
 `getState()` hidrata y **migra** el estado existente en vez de borrarlo. Claves
 principales: `tables`, `floorZones`, `menuItems`, `recipes`, `kitchenOrders`, `salesHistory`,
 `inventory`, `inventoryMovements`, `inventoryLots`, `productionBatches`, `suppliers`,
@@ -92,8 +93,8 @@ principales: `tables`, `floorZones`, `menuItems`, `recipes`, `kitchenOrders`, `s
 `settings`, `sequences`.
 
 Cada subida de `VERSION` que cambie la data base debe resembrar los catalogos en la
-migracion (ver `migrateToV9` con las listas `V9_RESEED` / `V9_LIMPIAR`, y `migrateToV10`
-para el plano): los navegadores que ya abrieron el prototipo conservan el estado viejo y
+migracion (ver `migrateToV9` con las listas `V9_RESEED` / `V9_LIMPIAR`, y
+`migrateToV10` / `migrateToV11` para el plano): los navegadores que ya abrieron el prototipo conservan el estado viejo y
 `getState()` no lo borra. `migrateToV10` reubica las mesas segun el plano real pero
 conserva lo operativo de cada una (consumo, estado, cliente).
 
@@ -120,18 +121,33 @@ Reglas del modelo:
 
 `state.floorZones` guarda las zonas (cocina, barra, oficina, SS.HH., artesania,
 accesos) y cada mesa lleva `map: {x, y, w, h, shape}` en porcentaje sobre el lienzo.
-Semilla en `js/data/plano.js`, generada desde `DISTRIBUCION CAFE FUSIONES.pdf`.
+Semilla en `js/data/plano.js`.
 
-- **Configuracion > Operacion > Mesas** es el editor: se arrastra y se redimensiona
-  con **pointer events** (mismo gesto con mouse y con el dedo), y se renombra o
-  elimina desde el inspector lateral. Cada gesto persiste con `saveState`.
+El plano es **un solo componente** usado por las dos pantallas:
+`js/components/floorplan.js` + `css/components/floorplan.css` (ambas paginas
+enlazan esa hoja). Si se toca el aspecto del plano, se toca ahi, no en
+`pages/ventas.css` ni en `pages/configuracion.css`.
+
+- Lienzo **16:10**, ancho completo del panel. `max-height` lo achica manteniendo
+  la proporcion cuando la pantalla es baja, para que nunca quede cortado.
+- Todo se alinea a una **grilla de 2.5** (`PLANO_GRID`): el editor hace snap al
+  mover y al redimensionar.
+- Las mesas tienen **tamano estandar por capacidad** (`TAMANOS_MESA`): 2 personas
+  cuadrada chica, 4 cuadrada mediana, 6 o mas rectangular. No se redimensionan a
+  mano; cambiar la capacidad reajusta el tamano (`normalizarMapaMesa`).
+- **Configuracion > Operacion > Mesas** es el editor: arrastre y redimension con
+  **pointer events** (mismo gesto con mouse y con el dedo). El tirador aparece
+  solo en el elemento seleccionado.
 - **Ventas > Salon** solo pinta el plano guardado; las zonas de tipo `station`
   (Cocina, Barra) abren la pestana de Produccion filtrada por estacion.
 - Los modales **no se apilan** (`openModal` cierra el anterior): tras un
   `confirmAction` hay que volver a abrir el editor con `openTablesModal()`.
+- **`saveState` reemplaza los objetos de los arrays** (llama a `hydrateState`).
+  Un handler no puede quedarse con una referencia a un registro entre eventos:
+  hay que volver a buscarlo por id en cada uno.
 - Ojo con la especificidad: `.ventas-v4 button { font: inherit }` le gana a un
-  selector de una sola clase, por eso las reglas del plano van con el prefijo
-  `.floorplan`.
+  selector de una sola clase, por eso las reglas de tipografia del plano van
+  acotadas con `.floorplan`.
 
 ### Flujo operativo
 

@@ -1,0 +1,365 @@
+/* ==========================================================================
+   Cafe Fusiones - Plano del salon (compartido)
+   Lo enlazan pages/ventas.html y pages/configuracion.html, para que el plano
+   se vea igual en Ventas > Salon y en el editor de Configuracion > Mesas.
+
+   Todo se posiciona en porcentaje sobre un lienzo 16:10. El muro perimetral es
+   el borde del propio lienzo.
+
+   Nota de especificidad: `.ventas-v4 button { font: inherit }` (0,1,1) le gana
+   a un selector de una sola clase, por eso las reglas que tocan tipografia van
+   acotadas con `.floorplan`.
+   ========================================================================== */
+
+.floorplan-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 200px;
+  gap: 16px;
+  align-items: start;
+}
+
+.floorplan {
+  position: relative;
+  width: 100%;
+  /* Proporcion fija: el plano ocupa todo el ancho disponible del panel. Si no
+     hay alto suficiente (1366x768), `max-height` lo achica manteniendo la
+     proporcion, para que nunca quede cortado por el borde de la pantalla. */
+  aspect-ratio: 16 / 10;
+  max-height: calc(100dvh - 380px);
+  min-height: 280px;
+  margin-inline: auto;
+  /* Muro perimetral del local. */
+  border: 3px solid #cdbfb2;
+  border-radius: 10px;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgba(86, 47, 31, .045) 1px, transparent 1px),
+    linear-gradient(rgba(86, 47, 31, .045) 1px, transparent 1px),
+    #fcfaf7;
+  background-size: 6.25% 10%;
+}
+
+/* --------------------------------------------------------------------------
+   Piezas del plano
+   -------------------------------------------------------------------------- */
+
+.floor-item {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 2px;
+  overflow: hidden;
+  text-align: center;
+}
+
+.floorplan .floor-item__name {
+  font-size: .6rem;
+  font-weight: 800;
+  line-height: 1.15;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+
+.floorplan .floor-item small {
+  font-size: .56rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+/* --- Zonas: ambientes con relleno muy sutil y borde punteado --------------- */
+
+.floor-item--zone {
+  border: 1px dashed #cfc2b5;
+  border-radius: 6px;
+  background: rgba(120, 96, 78, .05);
+  color: #7a6757;
+  z-index: 2;
+}
+
+/* --- Estaciones: mismo lenguaje, tinte algo mas marcado -------------------- */
+
+.floor-item--station {
+  border-style: solid;
+  border-color: #d8c3a8;
+  background: #f1e6d6;
+  color: var(--brown);
+}
+
+.floorplan .floor-item--station small {
+  color: #8a7256;
+}
+
+.floorplan--editable .floor-item--station,
+button.floor-item--station {
+  cursor: pointer;
+}
+
+button.floor-item--station:hover {
+  background: #e9dac4;
+  border-color: #c9ab86;
+}
+
+/* --- Accesos: abertura en el muro, no una cajita --------------------------- */
+
+.floor-item--door {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #a3917f;
+  z-index: 3;
+}
+
+.floor-item--door::before {
+  content: "";
+  position: absolute;
+  inset: auto 0 -6px;
+  height: 6px;
+  border-radius: 3px;
+  /* Tapa el muro: ahi esta el vano. */
+  background: #fcfaf7;
+  box-shadow: 0 0 0 1px #e2d6c9;
+}
+
+.floorplan .floor-item--door .floor-item__name {
+  position: relative;
+  font-size: .52rem;
+  letter-spacing: .06em;
+}
+
+/* --- Mesas: relleno suave del color de estado ------------------------------ */
+
+.floor-item--table {
+  border: 1.5px solid transparent;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(64, 37, 24, .07);
+  transition: transform .15s ease, box-shadow .15s ease;
+  z-index: 5;
+}
+
+.floor-item--table.is-round {
+  border-radius: 999px;
+}
+
+.floorplan .floor-item__code {
+  font-size: .95rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.floorplan .floor-item__meta {
+  max-width: 100%;
+  font-size: .52rem;
+  font-weight: 600;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: .85;
+}
+
+.floor-item--table.is-free {
+  background: #e9f5ec;
+  border-color: #8cbb97;
+  color: #2f6b40;
+}
+
+.floor-item--table.is-busy {
+  background: #fdf1da;
+  border-color: #dcae5c;
+  color: #7a5215;
+}
+
+.floor-item--table.is-reserved {
+  background: #e9f0fb;
+  border-color: #90aad4;
+  color: #3f6194;
+}
+
+.floor-item--table.is-ready {
+  background: #fce8ea;
+  border-color: #cf6b74;
+  color: #8e1e28;
+}
+
+button.floor-item--table {
+  cursor: pointer;
+}
+
+button.floor-item--table:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(64, 37, 24, .16);
+}
+
+button.floor-item--table:focus-visible,
+button.floor-item--station:focus-visible {
+  outline: 3px solid rgba(221, 51, 54, .25);
+  outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   Panel lateral: leyenda y accesos a estaciones
+   -------------------------------------------------------------------------- */
+
+.floorplan-side {
+  display: grid;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.floorplan-side__title {
+  display: block;
+  margin-bottom: 8px;
+  font-size: .66rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--muted);
+}
+
+.floor-legend {
+  display: grid;
+  gap: 7px;
+}
+
+.floor-legend__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: .78rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.floor-legend__dot {
+  width: 11px;
+  height: 11px;
+  border: 1.5px solid transparent;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.floor-legend__dot.is-free { background: #e9f5ec; border-color: #8cbb97; }
+.floor-legend__dot.is-busy { background: #fdf1da; border-color: #dcae5c; }
+.floor-legend__dot.is-reserved { background: #e9f0fb; border-color: #90aad4; }
+.floor-legend__dot.is-ready { background: #fce8ea; border-color: #cf6b74; }
+
+.floorplan-stations {
+  display: grid;
+  gap: 7px;
+}
+
+.floorplan-station {
+  display: grid;
+  gap: 2px;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  text-align: left;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.floorplan-station:hover {
+  background: var(--cream);
+}
+
+.floorplan-station small {
+  color: var(--muted);
+  font-size: .72rem;
+}
+
+/* --------------------------------------------------------------------------
+   Modo editor
+   -------------------------------------------------------------------------- */
+
+.floorplan--editable {
+  /* El arrastre lo maneja el JS, no el navegador. */
+  touch-action: none;
+}
+
+.floorplan--editable .floor-item {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.floorplan--editable .floor-item:active {
+  cursor: grabbing;
+}
+
+.floor-item.is-selected {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+  /* El tirador asoma fuera de la caja: sin esto lo recorta `overflow: hidden`. */
+  overflow: visible;
+  z-index: 9;
+}
+
+/* El tirador solo aparece en el elemento seleccionado, como un punto en la
+   esquina y fuera del texto. */
+.floor-item__handle {
+  display: none;
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  width: 11px;
+  height: 11px;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: var(--red);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .25);
+  cursor: nwse-resize;
+  touch-action: none;
+}
+
+.floor-item.is-selected .floor-item__handle {
+  display: block;
+}
+
+/* --------------------------------------------------------------------------
+   Pantallas chicas
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 920px) {
+  .floorplan-wrap {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .floorplan-side {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .floorplan {
+    /* Mas alto que ancho en movil: las mesas siguen siendo tocables. */
+    aspect-ratio: 4 / 3;
+  }
+  .floorplan .floor-item__name {
+    font-size: .46rem;
+    letter-spacing: 0;
+  }
+  .floorplan .floor-item small {
+    display: none;
+  }
+  .floorplan .floor-item__code {
+    font-size: .78rem;
+  }
+  .floorplan-side {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .floor-item--table,
+  button.floor-item--table:hover {
+    transition: none;
+    transform: none;
+  }
+}

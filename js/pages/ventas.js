@@ -8,6 +8,7 @@ import { renderTopbar } from "../components/topbar.js";
 import { getState, saveState, nextId, addAuditEvent } from "../core/storage.js";
 import { openModal, closeModal, closeIcon } from "../components/modal.js";
 import { showToast } from "../components/toast.js";
+import { zonaHtml, mesaHtml, lienzoHtml, leyendaHtml } from "../components/floorplan.js";
 import {
   icon,
   money,
@@ -206,9 +207,9 @@ function salonSection() {
               ${["Todos", "Libre", "Ocupada", "Reservada"].map((status) => `<option value="${status}" ${ui.tableStatus === status ? "selected" : ""}>${status}</option>`).join("")}
             </select>
           </label>
-          <div class="salon-mode-switch" role="group" aria-label="Tipo de vista">
-            <button type="button" class="mini-button ${ui.salonMode === "map" ? "is-active" : ""}" data-salon-mode="map">Plano</button>
-            <button type="button" class="mini-button ${ui.salonMode === "list" ? "is-active" : ""}" data-salon-mode="list">Lista</button>
+          <div class="segmented salon-mode-switch" role="group" aria-label="Tipo de vista">
+            <button type="button" class="${ui.salonMode === "map" ? "is-active" : ""}" aria-pressed="${ui.salonMode === "map"}" data-salon-mode="map">Plano</button>
+            <button type="button" class="${ui.salonMode === "list" ? "is-active" : ""}" aria-pressed="${ui.salonMode === "list"}" data-salon-mode="list">Lista</button>
           </div>
         </div>
       </div>
@@ -220,10 +221,6 @@ function salonSection() {
 // Indicador compacto del salon: una sola linea, sin tarjeta alta.
 function miniKpi(label, value) {
   return `<span class="salon-stat"><b>${escapeHtml(String(value))}</b>${escapeHtml(label)}</span>`;
-}
-
-function legendDot(label, tone) {
-  return `<span class="legend-item"><i class="legend-dot legend-dot--${tone}"></i>${escapeHtml(label)}</span>`;
 }
 
 function filteredTables() {
@@ -245,46 +242,27 @@ function floorPlan(tables) {
 
   const zonas = (state.floorZones || []).filter((zone) => zone.map);
 
+  const piezas = [
+    ...zonas.map((zone) => zonaHtml(zone, {
+      pending: zone.type === "station" ? stationPending(zone.name) : null
+    })),
+    ...mesas.map((table) => mesaHtml(table, {
+      total: table.items?.length ? tableTotal(table) : 0
+    }))
+  ].join("");
+
   return `
     <div class="floorplan-wrap">
-      <div class="floorplan" aria-label="Plano del salon de Cafe Fusiones">
-        ${zonas.map(floorZone).join("")}
-        ${mesas.map(floorTableButton).join("")}
-      </div>
+      ${lienzoHtml(piezas)}
 
       <aside class="floorplan-side">
-        <div class="floorplan-legend" aria-label="Leyenda de estados">
+        <div>
           <span class="floorplan-side__title">Estados</span>
-          ${legendDot("Libre", "free")}${legendDot("Ocupada", "busy")}${legendDot("Reservada", "reserved")}${legendDot("Lista", "ready")}
+          <div class="floor-legend">${leyendaHtml()}</div>
         </div>
         ${stationShortcuts()}
       </aside>
     </div>`;
-}
-
-// Las zonas salen del estado (state.floorZones) y se editan en Configuracion.
-// Solo las de tipo "station" son interactivas: abren su estacion.
-function floorZone(zone) {
-  const map = zone.map;
-  const style = `left:${map.x}%;top:${map.y}%;width:${map.w}%;height:${map.h}%;`;
-  // Una zona mucho mas alta que ancha (la barra, las vitrinas de artesania)
-  // no puede mostrar el nombre en horizontal: se rota.
-  const vertical = map.h > map.w * 1.8 ? " is-vertical" : "";
-  // Una zona muy baja (oficina, SS.HH.) no tiene alto para dos lineas: su
-  // nombre va en una sola linea y con letra mas chica.
-  const baja = !vertical && map.h < 5 ? " is-compact" : "";
-  const clase = `floor-zone floor-zone--${zone.type || "area"}${vertical}${baja}`;
-
-  if (zone.type === "station") {
-    const pendientes = stationPending(zone.name);
-    const titulo = `Abrir ${zone.name} · ${pendientes} pendiente${pendientes === 1 ? "" : "s"}`;
-    return `
-      <button class="${clase}" style="${style}" type="button" data-open-station="${escapeHtml(zone.name)}" title="${escapeHtml(titulo)}">
-        <span>${escapeHtml(zone.name)}</span>
-      </button>`;
-  }
-
-  return `<div class="${clase}" style="${style}" title="${escapeHtml(zone.name)}"><span>${escapeHtml(zone.name)}</span></div>`;
 }
 
 // Accesos a las estaciones, al lado del plano.
@@ -293,32 +271,18 @@ function stationShortcuts() {
   if (!estaciones.length) return "";
 
   return `
-    <div class="floorplan-stations">
+    <div>
       <span class="floorplan-side__title">Estaciones</span>
-      ${estaciones.map((zone) => {
-        const pendientes = stationPending(zone.name);
-        return `<button class="floorplan-station" type="button" data-open-station="${escapeHtml(zone.name)}">
-          <strong>${escapeHtml(zone.name)}</strong>
-          <small>${pendientes} pendiente${pendientes === 1 ? "" : "s"}</small>
-        </button>`;
-      }).join("")}
+      <div class="floorplan-stations">
+        ${estaciones.map((zone) => {
+          const pendientes = stationPending(zone.name);
+          return `<button class="floorplan-station" type="button" data-open-station="${escapeHtml(zone.name)}">
+            <strong>${escapeHtml(zone.name)}</strong>
+            <small>${pendientes} pendiente${pendientes === 1 ? "" : "s"}</small>
+          </button>`;
+        }).join("")}
+      </div>
     </div>`;
-}
-
-function floorTableButton(table) {
-  const tone = table.status === "Libre" ? "free" : table.status === "Reservada" ? "reserved" : "busy";
-  const map = table.map;
-  const total = table.items?.length ? tableTotal(table) : 0;
-  const customer = customerById(table.customerId);
-  const listo = table.items?.some((item) => item.status === "Listo");
-  const style = `left:${map.x}%;top:${map.y}%;width:${map.w}%;height:${map.h}%;`;
-
-  return `
-    <button class="floor-table floor-table--${listo ? "ready" : tone} ${map.shape === "round" ? "is-round" : ""}" style="${style}" type="button" data-table-open="${table.id}" title="${escapeHtml(table.name)} - ${escapeHtml(table.status)}">
-      <strong>${escapeHtml(table.name.replace("Mesa ", ""))}</strong>
-      ${table.status === "Ocupada" ? `<small>${money(total)}</small>` : ""}
-      ${customer ? `<em>${escapeHtml(firstName(customer.name))}</em>` : ""}
-    </button>`;
 }
 
 function operationSnapshot() {
@@ -533,7 +497,10 @@ function renderSaleModal() {
           <section class="pos-products">
             <div class="pos-products__top">
               <div><h3>Carta</h3><span class="muted">Productos reales de Cafe Fusiones</span></div>
-              <input class="input" type="search" placeholder="Buscar producto" value="${escapeHtml(saleUi.productSearch)}" data-product-search>
+              <label class="pos-search" aria-label="Buscar producto en la carta">
+                <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+                <input type="search" placeholder="Buscar producto" value="${escapeHtml(saleUi.productSearch)}" data-product-search>
+              </label>
             </div>
             ${categoryTabs()}
             <div class="product-picker product-picker--v4">

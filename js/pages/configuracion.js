@@ -32,6 +32,16 @@ import { openModal, closeModal, closeIcon } from "../components/modal.js";
 import { confirmAction } from "../components/confirm.js";
 import { showToast } from "../components/toast.js";
 import { icon, escapeHtml, statusClass } from "../core/utils.js";
+import {
+  zonaHtml,
+  mesaHtml,
+  lienzoHtml,
+  snapPlano,
+  tamanoMesa,
+  normalizarMapaMesa,
+  acotar,
+  PLANO_GRID
+} from "../components/floorplan.js";
 
 const session = requireAuth();
 const state = getState();
@@ -2051,8 +2061,9 @@ function planoEditorBody() {
   return `
     <div class="plan-toolbar">
       <p class="muted">
-        Arrastra una mesa o una zona para moverla, y usa la esquina inferior derecha
-        para cambiarle el tamaño. Funciona con el dedo en tablet.
+        Arrastra una mesa o una zona para moverla. Al seleccionarla aparece un punto
+        en la esquina para cambiarle el tamaño. Todo se alinea solo a la cuadrícula.
+        Funciona con el dedo en tablet.
       </p>
       <div class="plan-toolbar__actions">
         <button class="mini-button" type="button" data-plan-new-zone>Nueva zona</button>
@@ -2063,10 +2074,10 @@ function planoEditorBody() {
     </div>
 
     <div class="plan-editor">
-      <div class="plan-canvas" data-plan-canvas>
-        ${zonas.map(planoZoneEl).join("")}
-        ${mesas.map(planoTableEl).join("")}
-      </div>
+      ${lienzoHtml(
+        zonas.map(planoZoneEl).join("") + mesas.map(planoTableEl).join(""),
+        { editable: true }
+      )}
       <aside class="plan-inspector">${planoInspector(sel)}</aside>
     </div>
 
@@ -2108,34 +2119,16 @@ function planoSelected() {
     : (state.floorZones || []).find((zone) => zone.id === id) || null;
 }
 
-function planoStyle(map) {
-  return `left:${map.x}%;top:${map.y}%;width:${map.w}%;height:${map.h}%;`;
-}
-
 function planoSelectedClass(tipo, id) {
-  return planoUi.seleccion?.tipo === tipo && planoUi.seleccion?.id === id ? " is-selected" : "";
+  return planoUi.seleccion?.tipo === tipo && planoUi.seleccion?.id === id;
 }
 
 function planoTableEl(table) {
-  const redonda = table.map.shape === "round" ? " is-round" : "";
-  return `
-    <div class="plan-item plan-item--table${redonda}${planoSelectedClass("mesa", table.id)}"
-         style="${planoStyle(table.map)}" data-plan-item="mesa" data-plan-id="${table.id}"
-         role="button" tabindex="0" aria-label="${escapeHtml(table.name || table.id)}">
-      <span>${escapeHtml((table.name || table.id).replace("Mesa ", ""))}</span>
-      <i class="plan-handle" data-plan-resize aria-hidden="true"></i>
-    </div>`;
+  return mesaHtml(table, { editable: true, selected: planoSelectedClass("mesa", table.id) });
 }
 
 function planoZoneEl(zone) {
-  const vertical = zone.map.h > zone.map.w * 1.8 ? " is-vertical" : "";
-  return `
-    <div class="plan-item plan-item--zone plan-item--${zone.type || "area"}${vertical}${planoSelectedClass("zona", zone.id)}"
-         style="${planoStyle(zone.map)}" data-plan-item="zona" data-plan-id="${zone.id}"
-         role="button" tabindex="0" aria-label="${escapeHtml(zone.name)}">
-      <span>${escapeHtml(zone.name)}</span>
-      <i class="plan-handle" data-plan-resize aria-hidden="true"></i>
-    </div>`;
+  return zonaHtml(zone, { editable: true, selected: planoSelectedClass("zona", zone.id) });
 }
 
 function planoInspector(elemento) {
@@ -2207,7 +2200,7 @@ function wirePlanoEditor(modal) {
     planoUi.seleccion = { tipo, id };
     modal.querySelector(".plan-inspector").innerHTML = planoInspector(registro);
     wirePlanoInspector(modal, repintar);
-    lienzo.querySelectorAll(".plan-item").forEach((item) => item.classList.remove("is-selected"));
+    lienzo.querySelectorAll(".floor-item").forEach((item) => item.classList.remove("is-selected"));
     elemento.classList.add("is-selected");
 
     const redimensionando = Boolean(event.target.closest("[data-plan-resize]"));
@@ -2223,12 +2216,15 @@ function wirePlanoEditor(modal) {
       const dx = ((ev.clientX - partidaX) / caja.width) * 100;
       const dy = ((ev.clientY - partidaY) / caja.height) * 100;
 
+      // Todo cae en la grilla del plano, para que quede alineado sin puntería.
       if (redimensionando) {
-        registro.map.w = redondear(acotar(base.w + dx, 3, 100 - registro.map.x));
-        registro.map.h = redondear(acotar(base.h + dy, 3, 100 - registro.map.y));
+        // Las mesas no se redimensionan a mano: su tamaño sale de la capacidad.
+        if (tipo === "mesa") return;
+        registro.map.w = acotar(snapPlano(base.w + dx), PLANO_GRID * 2, 100 - registro.map.x);
+        registro.map.h = acotar(snapPlano(base.h + dy), PLANO_GRID * 2, 100 - registro.map.y);
       } else {
-        registro.map.x = redondear(acotar(base.x + dx, 0, 100 - registro.map.w));
-        registro.map.y = redondear(acotar(base.y + dy, 0, 100 - registro.map.h));
+        registro.map.x = acotar(snapPlano(base.x + dx), 0, 100 - registro.map.w);
+        registro.map.y = acotar(snapPlano(base.y + dy), 0, 100 - registro.map.h);
       }
 
       elemento.style.left = `${registro.map.x}%`;
@@ -2264,7 +2260,7 @@ function wirePlanoEditor(modal) {
       customerId: null,
       openedAt: null,
       items: [],
-      map: { x: 45, y: 45, w: 8, h: 8, shape: "rect" }
+      map: { x: 45, y: 45, ...tamanoMesa(2), shape: "rect" }
     });
     addAuditEvent(state, {
       user: session.name, action: "Mesa creada", module: "Configuración",
@@ -2288,7 +2284,7 @@ function wirePlanoEditor(modal) {
       name: "Nueva zona",
       type: "area",
       branchId: ui.operationBranchId,
-      map: { x: 40, y: 20, w: 14, h: 8 }
+      map: { x: 40, y: 20, w: 15, h: 7.5 }
     });
     addAuditEvent(state, {
       user: session.name, action: "Zona creada", module: "Configuración",
@@ -2309,42 +2305,66 @@ function wirePlanoInspector(modal, repintar) {
   const inspector = modal.querySelector(".plan-inspector");
   if (!inspector) return;
 
-  const elemento = planoSelected();
-  if (!elemento) return;
+  // IMPORTANTE: `saveState` normaliza el estado y reemplaza los objetos de los
+  // arrays, asi que guardar una referencia aqui la deja obsoleta en el segundo
+  // evento. Por eso cada handler vuelve a buscar el registro por id.
+  if (!planoSelected()) return;
 
-  const etiqueta = inspector.closest(".settings-plan-body")
-    ?.querySelector(`[data-plan-id="${cssEscape(elemento.id)}"] span`);
+  const registro = () => planoSelected();
+
+  const pintarEtiqueta = (texto) => {
+    const elemento = registro();
+    if (!elemento) return;
+    const caja = inspector.closest(".settings-plan-body")
+      ?.querySelector(`[data-plan-id="${cssEscape(elemento.id)}"]`);
+    const destino = caja?.querySelector(".floor-item__name, .floor-item__code");
+    if (destino) destino.textContent = String(texto || "").replace(/^Mesa\s+/i, "");
+  };
 
   inspector.querySelector("[data-plan-name]")?.addEventListener("input", (event) => {
+    const elemento = registro();
+    if (!elemento) return;
     elemento.name = event.target.value;
-    if (etiqueta) etiqueta.textContent = (elemento.name || "").replace("Mesa ", "");
+    pintarEtiqueta(elemento.name);
     saveState(state);
   });
 
   inspector.querySelector("[data-plan-area]")?.addEventListener("input", (event) => {
+    const elemento = registro();
+    if (!elemento) return;
     elemento.area = event.target.value;
     saveState(state);
   });
 
   inspector.querySelector("[data-plan-seats]")?.addEventListener("change", (event) => {
+    const elemento = registro();
+    if (!elemento) return;
     elemento.seats = Math.max(1, Number(event.target.value || 1));
+    // El tamaño de una mesa lo define su capacidad, no el arrastre.
+    elemento.map = normalizarMapaMesa(elemento);
     saveState(state);
     repintar();
   });
 
   inspector.querySelector("[data-plan-shape]")?.addEventListener("change", (event) => {
-    elemento.map.shape = event.target.value === "round" ? "round" : "rect";
+    const elemento = registro();
+    if (!elemento) return;
+    elemento.map = { ...elemento.map, shape: event.target.value === "round" ? "round" : "rect" };
     saveState(state);
     repintar();
   });
 
   inspector.querySelector("[data-plan-type]")?.addEventListener("change", (event) => {
+    const elemento = registro();
+    if (!elemento) return;
     elemento.type = event.target.value;
     saveState(state);
     repintar();
   });
 
   inspector.querySelector("[data-plan-delete]")?.addEventListener("click", async () => {
+    const elemento = registro();
+    if (!elemento) return;
     const esMesa = planoUi.seleccion.tipo === "mesa";
     const nombre = elemento.name || elemento.id;
 
@@ -2384,14 +2404,6 @@ function wirePlanoInspector(modal, repintar) {
     openTablesModal();
     showToast(esMesa ? "Mesa eliminada." : "Zona eliminada.");
   });
-}
-
-function acotar(valor, minimo, maximo) {
-  return Math.min(Math.max(valor, minimo), Math.max(minimo, maximo));
-}
-
-function redondear(valor) {
-  return Math.round(valor * 100) / 100;
 }
 
 function cssEscape(valor) {
