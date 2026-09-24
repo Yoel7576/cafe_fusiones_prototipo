@@ -1,0 +1,264 @@
+/* Cafe Fusiones - layout/site-shell.css
+   Cascara compartida de las paginas publicas (landing-*.html): header, footer y
+   reconocimientos. Replica paleta/tipografia reales de cafefusiones.com:
+   Oswald (titulos, mayusculas), Cabin (texto), Open Sans (nav), rojo #A91418,
+   fondo oscuro #141313, tinta #383733. Vive en su propio namespace (.site-page)
+   para no tocar las variables del ERP interno. */
+
+.site-page {
+  --site-red: #a91418;
+  --site-red-dark: #841014;
+  --site-ink: #383733;
+  --site-muted: #777777;
+  --site-dark: #141313;
+  --site-dark-muted: #606060;
+  --site-line: #e8e6e1;
+  --site-cream: #faf8f5;
+  --site-font-display: "Oswald", "Segoe UI", sans-serif;
+  --site-font-body: "Cabin", "Segoe UI", sans-serif;
+  --site-font-nav: "Open Sans", "Segoe UI", sans-serif;
+  background: #fff;
+  color: var(--site-ink);
+  font-family: var(--site-font-body);
+}
+.site-page h1, .site-page h2, .site-page h3 {
+  font-family: var(--site-font-display);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .01em;
+  color: var(--site-ink);
+}
+.site-page p { color: var(--site-muted); }
+.site-page a { color: inherit; text-decoration: none; }
+.site-page img, .site-page svg { display: block; max-width: 100%; }
+.site-page button { font: inherit; cursor: pointer; }
+.site-page .sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.site-container { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+.site-skip-link {
+  position: absolute;
+  top: -48px;
+  left: 12px;
+  z-index: 100;
+  padding: 10px 16px;
+  border-radius: 4px;
+  background: var(--site-dark);
+  color: #fff;
+  font-weight: 700;
+  transition: top .18s ease;
+}
+.site-skip-link:focus { top: 12px; }
+
+/* --- Header --- */
+.site-header {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 40;
+  background: transparent;
+  transition: background .25s ease, box-shadow .25s ease;
+}
+.site-header.is-scrolled,
+.site-header.is-solid {
+  background: rgba(12, 12, 13, .94);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .18);
+}
+.site-header__inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  min-height: 78px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 24px;
+}
+.site-brand { display: flex; align-items: center; gap: 10px; }
+.site-brand img { height: 40px; width: auto; }
+.site-nav { display: flex; align-items: center; gap: 26px; }
+.site-nav a {
+  color: #fff;
+  font-family: var(--site-font-nav);
+  font-weight: 700;
+  font-size: .78rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.site-nav a:hover { color: var(--site-red); }
+.site-nav a.is-active { color: var(--site-red); }
+.site-nav-toggle {
+  display: none;
+  width: 42px;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, .4);
+  border-radius: 4px;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+}
+.site-nav-toggle svg {
+  width: 20px; height: 20px;
+  fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round;
+}
+
+/* --- Titular de pagina (paginas sin hero fotografico) --- */
+.site-pagehead {
+  padding: 168px 0 56px;
+  background: var(--site-dark);
+  color: #fff;
+  text-align: center;
+}
+.site-pagehead h1 { color: #fff; font-size: clamp(1.8rem, 4vw, 2.6rem); }
+.site-pagehead p { color: rgba(255, 255, 255, .68); max-width: 560px; margin: 10px auto 0; }
+
+/* --- Secciones --- */
+.site-section { padding: 72px 0; }
+.site-section--muted { background: var(--site-cream); }
+.site-section--dark { background: var(--site-dark); color: #fff; }
+.site-section--dark h2, .site-section--dark h3 { color: #fff; }
+.site-section--dark p { color: rgba(255, 255, 255, .7); }
+.site-section__head { max-width: 680px; margin: 0 auto 36px; text-align: center; }
+.site-section__head h2 { font-size: clamp(1.5rem, 3vw, 2rem); }
+.site-section__head p { margin-top: 10px; }
+
+.site-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 26px;
+  border-radius: 2px;
+  background: var(--site-red);
+  color: #fff;
+  font-family: var(--site-font-display);
+  font-weight: 500;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  transition: background .18s ease, transform .18s ease;
+}
+.site-button:hover { background: var(--site-red-dark); transform: translateY(-1px); }
+.site-button--ghost {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, .5);
+  color: #fff;
+}
+.site-button--ghost:hover { background: rgba(255, 255, 255, .12); }
+
+/* --- Reconocimientos (bloque compartido, igual que en el sitio real) --- */
+.site-recognitions { padding: 40px 0; text-align: center; border-top: 1px solid var(--site-line); }
+.site-recognitions h2 { font-size: 1.1rem; margin-bottom: 18px; }
+.site-recognitions__row { display: flex; align-items: center; justify-content: center; gap: 24px; flex-wrap: wrap; }
+.site-recognitions__row img { height: 52px; width: auto; filter: grayscale(20%); }
+
+/* --- Grid de categorias del menu (compartida entre Inicio y Menu) --- */
+.site-menu-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.site-menu-card {
+  position: relative;
+  isolation: isolate;
+  min-height: 190px;
+  display: flex;
+  align-items: flex-end;
+  padding: 18px;
+  border-radius: 2px;
+  overflow: hidden;
+  color: #fff;
+  transition: transform .2s ease;
+}
+.site-menu-card:hover { transform: translateY(-3px); }
+.site-menu-card img {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.site-menu-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, .62));
+}
+.site-menu-card h3 {
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 400;
+}
+.site-menu-grid--lg .site-menu-card { min-height: 260px; }
+@media (max-width: 900px) {
+  .site-menu-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  .site-menu-grid { grid-template-columns: 1fr; }
+}
+
+/* --- Footer --- */
+.site-footer { background: var(--site-dark); color: var(--site-dark-muted); padding: 40px 0 22px; }
+.site-footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.site-footer__brand { display: flex; align-items: center; gap: 10px; color: #fff; }
+.site-footer__brand img { height: 34px; }
+.site-footer__address { font-size: .84rem; }
+.site-footer__social { display: flex; gap: 14px; }
+.site-footer__social a {
+  width: 38px; height: 38px;
+  display: inline-grid; place-items: center;
+  border: 1px solid rgba(255, 255, 255, .18);
+  border-radius: 50%;
+  color: #fff;
+}
+.site-footer__social a:hover { background: var(--site-red); border-color: var(--site-red); }
+.site-footer__social svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+.site-footer__legal {
+  max-width: 1180px;
+  margin: 22px auto 0;
+  padding: 18px 24px 0;
+  border-top: 1px solid rgba(255, 255, 255, .08);
+  font-size: .76rem;
+}
+
+/* --- Toast (la landing no carga js/components/toast al mismo tiempo que el ERP) --- */
+.toast-root { position: fixed; right: 20px; bottom: 20px; z-index: 200; display: grid; gap: 10px; }
+.toast { padding: 12px 18px; border-radius: 4px; background: var(--site-dark); color: #fff; font-weight: 700; font-size: .88rem; box-shadow: 0 12px 30px rgba(0,0,0,.25); }
+
+/* --- Responsive --- */
+@media (max-width: 780px) {
+  .site-nav {
+    position: absolute;
+    top: 100%; left: 0; right: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    padding: 8px 24px 18px;
+    background: rgba(12, 12, 13, .98);
+    transform: translateY(-8px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .18s ease, transform .18s ease;
+  }
+  .site-nav a { width: 100%; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,.08); }
+  .site-nav.is-open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .site-nav-toggle { display: inline-flex; }
+  .site-section { padding: 52px 0; }
+  .site-pagehead { padding: 140px 0 44px; }
+}

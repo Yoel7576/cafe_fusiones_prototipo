@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#141313">
+    <meta name="description" content="Contacto de Café Fusiones: Jr. Ortiz Arrieta 779, Chachapoyas. info@cafefusiones.com, +51 990 285 862.">
+    <title>Contacto | Café Fusiones</title>
+    <link rel="icon" href="../assets/img/logo_cafe_fusiones.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;700&family=Cabin:wght@400;500;600;700&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/base/reset.css">
+    <link rel="stylesheet" href="../css/layout/site-shell.css">
+    <link rel="stylesheet" href="../css/pages/landing-contacto.css">
+    <script type="module" src="../js/pages/landing-contacto.js"></script>
+  </head>
+  <body data-page="landing-contacto" class="site-page">
+    <a class="site-skip-link" href="#contenido">Saltar al contenido</a>
+    <header id="site-header"></header>
+
+    <main id="contenido">
+      <section class="site-pagehead">
+        <div class="site-container">
+          <h1>Contacto</h1>
+          <p>Nos encontramos en Jr. Ortiz Arrieta 779 - Chachapoyas · Email: info@cafefusiones.com · Tel: +51 990 285 862</p>
+        </div>
+      </section>
+
+      <section class="site-section">
+        <div class="site-container site-contact-grid">
+          <form class="site-form" id="site-contact-form" novalidate>
+            <div class="site-form__row">
+              <label class="site-field">
+                <span>Nombre</span>
+                <input id="contact-name" name="name" type="text" autocomplete="name" required>
+              </label>
+              <label class="site-field">
+                <span>Email</span>
+                <input id="contact-email" name="email" type="email" autocomplete="email" required>
+              </label>
+            </div>
+            <label class="site-field">
+              <span>Asunto</span>
+              <input id="contact-subject" name="subject" type="text" required>
+            </label>
+            <label class="site-field">
+              <span>Mensaje</span>
+              <textarea id="contact-message" name="message" rows="5" required></textarea>
+            </label>
+            <button class="site-button" type="submit">Enviar</button>
+          </form>
+          <aside class="site-contact-info">
+            <h2>Horario de Atención</h2>
+            <p class="site-contact-info__reserve">Para reservaciones llamar a 990 285 862</p>
+            <ul>
+              <li><span>Lunes a Sábado</span><strong>6:45am – 10:30pm</strong></li>
+              <li><span>Domingos y Feriados</span><strong>7am a 11am · 6pm a 10pm</strong></li>
+            </ul>
+          </aside>
+        </div>
+      </section>
+
+      <section class="site-section site-section--muted">
+        <div class="site-container">
+          <div class="site-section__head">
+            <h2>Testimonios</h2>
+          </div>
+          <div class="site-testimonials" id="site-testimonials"></div>
+        </div>
+      </section>
+
+      <section class="site-recognitions" id="site-recognitions"></section>
+    </main>
+
+    <footer class="site-footer" id="site-footer"></footer>
+    <div id="toast-root" class="toast-root" aria-live="polite"></div>
+  </body>
+</html>

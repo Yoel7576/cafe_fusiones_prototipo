@@ -1,0 +1,204 @@
+/* Cafe Fusiones - pages/landing-lote.css
+   Ficha publica de un lote de cafe (estructura inspirada en fichas de trazabilidad
+   tipo QR de terceros, adaptada a la linea de diseno de Cafe Fusiones: rojo #A91418,
+   fondo oscuro #141313, Oswald + Cabin). */
+
+/* --- Hero: preparaciones + ficha principal --- */
+.site-lote-hero {
+  padding: 150px 0 60px;
+  background: var(--site-dark);
+  color: #fff;
+}
+.site-lote-hero__grid {
+  display: grid;
+  grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
+  gap: 32px;
+  align-items: start;
+}
+.site-lote-preps {
+  padding: 26px;
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: 2px;
+}
+.site-lote-preps h2 { color: #fff; font-size: 1rem; margin-bottom: 4px; }
+.site-lote-preps p { color: rgba(255, 255, 255, .6); font-size: .82rem; margin-bottom: 16px; }
+.site-lote-preps ul { display: grid; gap: 10px; }
+.site-lote-preps li {
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 2px;
+  background: rgba(255, 255, 255, .04);
+  color: rgba(255, 255, 255, .88);
+  font-family: var(--site-font-nav);
+  font-size: .84rem;
+  font-weight: 700;
+}
+
+.site-lote-card {
+  padding: 32px;
+  background: #fff;
+  border-radius: 2px;
+  color: var(--site-ink);
+}
+.site-lote-card .eyebrow { display: block; margin-bottom: 6px; }
+.site-lote-card h1 { font-size: clamp(1.7rem, 3.4vw, 2.3rem); color: var(--site-ink); }
+.site-lote-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0 24px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: #e9f5ee;
+  color: #2f6b4f;
+  font-family: var(--site-font-nav);
+  font-size: .78rem;
+  font-weight: 700;
+}
+.site-lote-badge svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.4; }
+.site-lote-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 24px;
+  margin-bottom: 26px;
+}
+.site-lote-facts span { display: block; font-family: var(--site-font-nav); font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; color: var(--site-muted); }
+.site-lote-facts strong { display: block; margin-top: 4px; font-family: var(--site-font-display); font-weight: 400; font-size: 1.02rem; }
+.site-lote-card .site-button { border: 0; }
+
+/* --- Origen (imagen + region + productor) --- */
+.site-lote-origin { padding: 72px 0; }
+.site-lote-origin__grid {
+  display: grid;
+  grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+  gap: 40px;
+  align-items: center;
+}
+.site-lote-origin img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 2px; }
+.site-lote-origin__producer { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 16px; align-items: center; margin-top: 22px; }
+.site-lote-origin__producer img { aspect-ratio: 1; border-radius: 50%; }
+.site-lote-origin__producer h3 { font-size: 1rem; }
+.site-lote-origin dl { display: grid; gap: 10px; }
+.site-lote-origin dl div { display: flex; gap: 8px; }
+.site-lote-origin dt { font-family: var(--site-font-nav); font-weight: 700; color: var(--site-red); font-size: .84rem; }
+.site-lote-origin dd { font-size: .92rem; }
+
+/* --- Recorrido (timeline en zigzag) --- */
+.site-lote-timeline { padding: 72px 0; background: var(--site-cream); }
+.site-lote-steps { position: relative; max-width: 900px; margin: 0 auto; }
+.site-lote-steps::before {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0; left: 50%;
+  width: 2px;
+  background: var(--site-line);
+  transform: translateX(-1px);
+}
+.site-lote-step {
+  position: relative;
+  width: calc(50% - 32px);
+  margin-bottom: 34px;
+  padding: 18px 20px;
+  background: #fff;
+  border: 1px solid var(--site-line);
+  border-radius: 2px;
+}
+.site-lote-step::after {
+  content: "";
+  position: absolute;
+  top: 22px;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--site-red);
+  box-shadow: 0 0 0 4px var(--site-cream);
+}
+.site-lote-step--left { margin-left: 0; }
+.site-lote-step--left::after { right: -38px; }
+.site-lote-step--right { margin-left: calc(50% + 32px); }
+.site-lote-step--right::after { left: -38px; }
+.site-lote-step__num { font-family: var(--site-font-display); font-size: .8rem; color: var(--site-red); font-weight: 700; }
+.site-lote-step h3 { font-size: 1.02rem; margin: 4px 0 6px; }
+.site-lote-step time { display: block; margin-bottom: 4px; font-family: var(--site-font-nav); font-size: .74rem; color: var(--site-muted); }
+.site-lote-step p { line-height: 1.55; font-size: .92rem; }
+
+/* --- Datos tecnicos --- */
+.site-lote-datasheet { padding: 72px 0; }
+.site-lote-datasheet__box {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px;
+  background: var(--site-cream);
+  border-radius: 2px;
+}
+.site-lote-verified {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 26px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--site-line);
+}
+.site-lote-verified__check {
+  width: 34px; height: 34px;
+  flex: 0 0 auto;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: #2f6b4f;
+  color: #fff;
+}
+.site-lote-verified__check svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.6; }
+.site-lote-verified strong { display: block; font-family: var(--site-font-display); text-transform: uppercase; font-size: .96rem; }
+.site-lote-verified p { font-size: .84rem; }
+.site-lote-datagrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px 32px;
+}
+.site-lote-datagrid span { display: block; font-family: var(--site-font-nav); font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--site-muted); }
+.site-lote-datagrid strong { display: block; margin-top: 3px; font-family: var(--site-font-display); font-weight: 400; }
+.site-lote-qr {
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid var(--site-line);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.site-lote-qr__mark {
+  width: 56px; height: 56px;
+  flex: 0 0 auto;
+  display: grid; place-items: center;
+  border: 1px solid var(--site-line);
+  border-radius: 2px;
+  background: #fff;
+  color: var(--site-ink);
+}
+.site-lote-qr__mark svg { width: 32px; height: 32px; }
+.site-lote-qr span { display: block; font-family: var(--site-font-nav); font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--site-muted); }
+.site-lote-qr strong { display: block; margin-top: 3px; font-family: var(--site-font-display); font-weight: 400; }
+
+/* --- No encontrado --- */
+.site-lote-notfound {
+  padding: 200px 24px 120px;
+  text-align: center;
+  max-width: 520px;
+  margin: 0 auto;
+}
+.site-lote-notfound h1 { font-size: 1.6rem; margin-bottom: 12px; }
+.site-lote-notfound p { margin-bottom: 24px; line-height: 1.6; }
+
+@media (max-width: 900px) {
+  .site-lote-hero__grid,
+  .site-lote-origin__grid { grid-template-columns: 1fr; gap: 24px; }
+  .site-lote-origin img { aspect-ratio: 16 / 9; }
+  .site-lote-steps::before { left: 18px; }
+  .site-lote-step,
+  .site-lote-step--left,
+  .site-lote-step--right { width: auto; margin-left: 46px; margin-right: 0; }
+  .site-lote-step--left::after,
+  .site-lote-step--right::after { left: -34px; right: auto; }
+}
+@media (max-width: 560px) {
+  .site-lote-facts { grid-template-columns: 1fr; }
+  .site-lote-datagrid { grid-template-columns: 1fr; }
+}

@@ -3,199 +3,59 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#5A2E1B">
-    <meta name="description" content="Cafe Fusiones - cafeteria en Chachapoyas. Carta, ubicacion y trazabilidad de nuestro cafe, del productor amazonico a tu taza.">
-    <title>Cafe Fusiones | Chachapoyas</title>
+    <meta name="theme-color" content="#141313">
+    <meta name="description" content="Café Fusiones - cafetería en Chachapoyas. Hacemos de tu estadía una fusión de mística, aroma y sabor.">
+    <title>Café Fusiones | Chachapoyas</title>
     <link rel="icon" href="../assets/img/logo_cafe_fusiones.png" type="image/png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="preload" href="../assets/img/cafe-hero.webp" as="image">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;700&family=Cabin:wght@400;500;600;700&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="preload" href="../assets/img/site/hero-1.webp" as="image">
     <link rel="stylesheet" href="../css/base/reset.css">
-    <link rel="stylesheet" href="../css/base/variables.css">
-    <link rel="stylesheet" href="../css/base/typography.css">
-    <link rel="stylesheet" href="../css/components/buttons.css">
-    <link rel="stylesheet" href="../css/components/forms.css">
-    <link rel="stylesheet" href="../css/components/cards.css">
+    <link rel="stylesheet" href="../css/layout/site-shell.css">
     <link rel="stylesheet" href="../css/pages/landing.css">
-    <link rel="stylesheet" href="../css/base/theme-min.css">
     <script type="module" src="../js/pages/landing.js"></script>
   </head>
-  <body data-page="landing" class="landing-page">
-    <a class="skip-link" href="#contenido">Saltar al contenido</a>
-
-    <header class="landing-header" id="landing-header">
-      <div class="landing-header__inner">
-        <a class="landing-brand" href="#inicio">
-          <img class="landing-brand__mark" src="../assets/img/logo_cafe_fusiones.png" alt="">
-          <span>Café Fusiones</span>
-        </a>
-        <nav class="landing-nav" id="landing-nav" aria-label="Navegación principal">
-          <a href="#nosotros">Nosotros</a>
-          <a href="#menu">Menú</a>
-          <a href="#trazabilidad">Trazabilidad</a>
-          <a href="#galeria">Galería</a>
-          <a href="#ubicacion">Ubicación</a>
-          <a href="#contacto">Contacto</a>
-        </nav>
-        <div class="landing-header__actions">
-          <button class="landing-nav-toggle" id="landing-nav-toggle" type="button" aria-expanded="false" aria-controls="landing-nav" aria-label="Abrir menú">
-            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
-          </button>
-        </div>
-      </div>
-    </header>
+  <body data-page="landing" class="site-page">
+    <a class="site-skip-link" href="#contenido">Saltar al contenido</a>
+    <header id="site-header"></header>
 
     <main id="contenido">
-      <section class="landing-hero" id="inicio">
-        <div class="landing-hero__overlay"></div>
-        <div class="landing-hero__content">
-          <p class="eyebrow eyebrow--light">Café Fusiones · Chachapoyas, Amazonas</p>
-          <h1>Hacemos de tu estadía una fusión de mística, aroma y sabor</h1>
-          <p class="landing-hero__lead">Cafetería de especialidad en el corazón de Chachapoyas, con café cultivado en los valles de Amazonas y una carta pensada para desayunos, almuerzos y sobremesas largas.</p>
-          <div class="landing-hero__actions">
-            <a class="button button--primary button--xl" href="#menu">Ver el menú</a>
-            <a class="button button--secondary button--xl" href="#trazabilidad">Conoce la trazabilidad</a>
+      <section class="site-hero" id="site-hero">
+        <div class="site-hero__track" id="site-hero-track"></div>
+        <div class="site-hero__overlay"></div>
+        <div class="site-hero__content">
+          <h1>Hacemos de tu estadía<br>una fusión de mística, aroma y sabor.</h1>
+          <a class="site-button" href="landing-menu.html">Ir al menú</a>
+          <p class="site-hero__address">Estamos en: Jr. Ortiz Arrieta 779 - Chachapoyas</p>
+        </div>
+        <div class="site-hero__dots" id="site-hero-dots"></div>
+      </section>
+
+      <section class="site-section" id="menu">
+        <div class="site-container">
+          <div class="site-section__head">
+            <h2>Nuestro Menú</h2>
+            <p>Pregunte por nuestras opciones Veganas, Vegetarianas y Libres de Gluten</p>
+          </div>
+          <div class="site-menu-grid" id="site-menu-grid"></div>
+        </div>
+      </section>
+
+      <section class="site-timetable">
+        <div class="site-container site-timetable__inner">
+          <h2>Horario de Atención</h2>
+          <p class="site-timetable__reserve">Para reservaciones llamar a 990 285 862</p>
+          <div class="site-timetable__grid">
+            <div><span>Lunes a Sábado</span><strong>6:45am – 10:30pm</strong></div>
+            <div><span>Domingos y Feriados</span><strong>7am a 11am · 6pm a 10pm</strong></div>
           </div>
         </div>
       </section>
 
-      <section class="landing-section" id="nosotros">
-        <div class="landing-container landing-grid-2">
-          <div class="landing-media">
-            <img src="../assets/img/menu-cafe.jpg" alt="Café servido en Café Fusiones">
-          </div>
-          <div class="landing-copy">
-            <p class="eyebrow">Nosotros</p>
-            <h2>Una cafetería con raíces amazónicas</h2>
-            <p>Nacimos en Chachapoyas para acercar el café de los valles de Amazonas a la mesa de cada visitante. Cada taza se prepara con insumos frescos, recetas propias y el mismo cuidado con el que los productores locales cultivan el grano.</p>
-            <p>Trabajamos con opciones veganas, vegetarianas y libres de gluten en gran parte de la carta, para que cualquiera encuentre su lugar en nuestras mesas.</p>
-            <div class="landing-stats">
-              <div><strong>1,200–1,800</strong><span>msnm de altura del café que usamos</span></div>
-              <div><strong>9</strong><span>categorías en la carta</span></div>
-              <div><strong>100%</strong><span>tueste artesanal en el local</span></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="landing-section landing-section--muted" id="menu">
-        <div class="landing-container">
-          <div class="landing-section__head">
-            <p class="eyebrow">Carta</p>
-            <h2>Algo para cada momento del día</h2>
-            <p class="landing-section__lead">Desde el primer café de la mañana hasta el postre de la tarde. Marcamos con etiquetas las opciones vegana (V), vegetariana (VG) y sin gluten (SG).</p>
-          </div>
-          <div class="landing-menu-grid" id="landing-menu-grid"></div>
-        </div>
-      </section>
-
-      <section class="landing-section" id="trazabilidad">
-        <div class="landing-container">
-          <div class="landing-section__head">
-            <p class="eyebrow">Trazabilidad</p>
-            <h2>Del valle de Huayabamba a tu taza</h2>
-            <p class="landing-section__lead">Cada lote de café que servimos se identifica y se sigue desde el productor hasta la barra. Así es el recorrido de nuestro café de origen amazónico.</p>
-          </div>
-          <div class="landing-trace-grid">
-            <div class="timeline" id="landing-trace-timeline"></div>
-            <aside class="trace-card landing-trace-card">
-              <p class="eyebrow">Lote destacado</p>
-              <h3>AMZ-2608-01</h3>
-              <ol>
-                <li><b>Origen:</b> Valle del Huayabamba, Amazonas</li>
-                <li><b>Altitud:</b> 1200–1800 msnm</li>
-                <li><b>Variedad:</b> Caturra</li>
-                <li><b>Tueste:</b> Medio</li>
-                <li><b>Productor:</b> Productor local asociado</li>
-              </ol>
-              <p class="landing-trace-note">Pregunta en barra por el lote en uso: nuestro equipo puede contarte de qué productor y valle viene tu café.</p>
-            </aside>
-          </div>
-        </div>
-      </section>
-
-      <section class="landing-section landing-section--muted" id="galeria">
-        <div class="landing-container">
-          <div class="landing-section__head">
-            <p class="eyebrow">Galería</p>
-            <h2>El local, en imágenes</h2>
-          </div>
-          <div class="landing-gallery" id="landing-gallery"></div>
-        </div>
-      </section>
-
-      <section class="landing-section" id="ubicacion">
-        <div class="landing-container landing-grid-2">
-          <div class="landing-media">
-            <img src="../assets/img/opening-hours.webp" alt="Horario de atención">
-          </div>
-          <div class="landing-copy">
-            <p class="eyebrow">Ubicación y horario</p>
-            <h2>Te esperamos en Chachapoyas</h2>
-            <ul class="landing-info-list">
-              <li><b>Dirección</b><span>Jr. Ortiz Arrieta 779, Chachapoyas</span></li>
-              <li><b>Lunes a sábado</b><span>6:45 a. m. – 10:30 p. m.</span></li>
-              <li><b>Domingos</b><span>7:00 a. m. – 11:00 a. m. y 6:00 p. m. – 10:00 p. m.</span></li>
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      <section class="landing-section landing-section--muted" id="contacto">
-        <div class="landing-container landing-grid-2">
-          <div class="landing-copy">
-            <p class="eyebrow">Contacto</p>
-            <h2>Escríbenos</h2>
-            <p>¿Consultas, reservas para grupos o alianzas con productores? Déjanos tu mensaje y te respondemos a la brevedad.</p>
-            <ul class="landing-info-list landing-info-list--compact">
-              <li><b>Dirección</b><span>Jr. Ortiz Arrieta 779, Chachapoyas</span></li>
-            </ul>
-          </div>
-          <form class="landing-form" id="landing-contact-form" novalidate>
-            <label class="field">
-              <span>Nombre</span>
-              <span class="field__control"><input id="contact-name" name="name" type="text" autocomplete="name" required></span>
-            </label>
-            <label class="field">
-              <span>Correo</span>
-              <span class="field__control"><input id="contact-email" name="email" type="email" autocomplete="email" required></span>
-            </label>
-            <label class="field">
-              <span>Mensaje</span>
-              <span class="field__control field__control--textarea"><textarea id="contact-message" name="message" rows="4" required></textarea></span>
-            </label>
-            <button class="button button--primary button--block" type="submit">
-              <span>Enviar mensaje</span>
-              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4Z"/></svg>
-            </button>
-          </form>
-        </div>
-      </section>
+      <section class="site-recognitions" id="site-recognitions"></section>
     </main>
 
-    <footer class="landing-footer">
-      <div class="landing-container landing-footer__inner">
-        <div class="landing-footer__brand">
-          <img src="../assets/img/logo_cafe_fusiones.png" alt="">
-          <div>
-            <strong>Café Fusiones</strong>
-            <p>Jr. Ortiz Arrieta 779, Chachapoyas, Amazonas.</p>
-          </div>
-        </div>
-        <nav class="landing-footer__nav" aria-label="Enlaces del sitio">
-          <a href="#nosotros">Nosotros</a>
-          <a href="#menu">Menú</a>
-          <a href="#trazabilidad">Trazabilidad</a>
-          <a href="#galeria">Galería</a>
-          <a href="#ubicacion">Ubicación</a>
-          <a href="#contacto">Contacto</a>
-        </nav>
-        <a class="landing-footer__staff" href="login.html">Personal · Acceder al sistema</a>
-      </div>
-      <p class="landing-footer__legal">© 2026 Café Fusiones. Prototipo de demostración.</p>
-    </footer>
-
-    <div id="toast-root" class="toast-root" aria-live="polite"></div>
+    <footer class="site-footer" id="site-footer"></footer>
   </body>
 </html>

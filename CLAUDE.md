@@ -14,15 +14,12 @@ No hay backend, ni build, ni dependencias npm: es HTML + CSS + JavaScript con
 
 ## Ejecutar
 
-```
-iniciar-demo.bat          # levanta py/python -m http.server en 127.0.0.1:5360 y abre el navegador
-```
-
-Se **requiere** un servidor local: los modulos ES no cargan con `file://`. VS Code
-Live Server esta configurado en el puerto 5501 (`.vscode/settings.json`) como alternativa.
+Se **requiere** un servidor local: los modulos ES no cargan con `file://`. Usar la
+extension **Live Server** de VS Code (boton "Go Live" o clic derecho > "Open with
+Live Server" sobre `index.html`), configurada en el puerto 5501 (`.vscode/settings.json`).
 
 - Login demo: usuario `CFUSIONES`, clave `prototipo` (la misma clave se pide para anular productos).
-- Tras cambiar codigo, **Ctrl+F5**: `sw.js` cachea el app shell (network-first, cache `cafe-fusiones-modular-v5`).
+- Tras cambiar codigo, **Ctrl+F5**: `sw.js` cachea el app shell (network-first, cache `cafe-fusiones-modular-v8`).
   Si se agregan o renombran paginas, actualizar `APP_SHELL` y subir el numero de `CACHE_NAME`.
 - No hay tests, linter ni CI. La verificacion es manual en el navegador.
 

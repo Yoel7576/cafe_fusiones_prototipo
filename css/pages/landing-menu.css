@@ -1,0 +1,3 @@
+/* Cafe Fusiones - pages/landing-menu.css (usa el grid compartido de site-shell.css) */
+
+.site-pagehead p { color: var(--site-red); font-family: var(--site-font-nav); font-weight: 700; text-transform: none; }

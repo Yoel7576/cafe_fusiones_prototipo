@@ -1,0 +1,104 @@
+/* Cafe Fusiones - pages/landing-trazabilidad.css */
+
+.site-trace-intro {
+  max-width: 760px;
+  margin: 0 auto;
+  text-align: center;
+  display: grid;
+  gap: 14px;
+}
+.site-trace-intro h2 { font-size: 1.4rem; }
+.site-trace-intro p { line-height: 1.7; }
+
+/* --- Buscador --- */
+.site-trace-search { max-width: 620px; margin: 0 auto 8px; }
+.site-trace-search__row {
+  display: flex;
+  gap: 10px;
+}
+.site-trace-search__row input {
+  flex: 1;
+  min-width: 0;
+  min-height: 50px;
+  padding: 0 16px;
+  border: 1px solid var(--site-line);
+  border-radius: 2px;
+  background: #fff;
+  color: var(--site-ink);
+  font-family: var(--site-font-body);
+  font-size: .95rem;
+}
+.site-trace-search__row input:focus-visible { outline: 2px solid var(--site-red); outline-offset: 1px; }
+.site-trace-search__row .site-button { flex: 0 0 auto; border: 0; }
+.site-trace-example {
+  display: block;
+  margin: 12px auto 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--site-muted);
+  font-size: .82rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.site-trace-example:hover { color: var(--site-red); }
+.site-trace-example code {
+  font-family: var(--site-font-nav);
+  font-weight: 700;
+  color: var(--site-ink);
+}
+.site-trace-search__message {
+  min-height: 20px;
+  margin-top: 14px;
+  text-align: center;
+  font-size: .86rem;
+  font-weight: 700;
+}
+.site-trace-search__message.is-error { color: var(--site-red); }
+
+/* --- Resultado: tarjeta clicable hacia la ficha completa --- */
+.site-trace-result { max-width: 620px; margin: 28px auto 0; scroll-margin-top: 110px; }
+.site-trace-found {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid var(--site-line);
+  border-radius: 2px;
+  transition: border-color .18s ease, transform .18s ease;
+}
+.site-trace-found:hover { border-color: var(--site-red); transform: translateY(-1px); }
+.site-trace-found img { width: 72px; height: 72px; object-fit: cover; border-radius: 2px; }
+.site-trace-found__copy h3 { font-size: 1rem; margin: 2px 0; }
+.site-trace-found__copy p { font-size: .84rem; color: var(--site-muted); }
+.site-trace-found__cta {
+  font-family: var(--site-font-nav);
+  font-size: .8rem;
+  font-weight: 700;
+  color: var(--site-red);
+  white-space: nowrap;
+}
+
+/* --- Origen / aliados (contenido fijo) --- */
+.site-trace-origin {
+  display: grid;
+  grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
+  gap: 56px;
+  align-items: center;
+}
+.site-trace-origin .site-media img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 2px; }
+.site-trace-origin h2 { font-size: 1.2rem; margin-bottom: 8px; }
+.site-trace-origin p { line-height: 1.7; }
+
+@media (max-width: 900px) {
+  .site-trace-origin { grid-template-columns: 1fr; gap: 28px; }
+  .site-trace-origin .site-media img { aspect-ratio: 16 / 9; }
+}
+@media (max-width: 560px) {
+  .site-trace-search__row { flex-direction: column; }
+  .site-trace-found { grid-template-columns: 56px minmax(0, 1fr); }
+  .site-trace-found__cta { grid-column: 1 / -1; }
+  .site-trace-found img { width: 56px; height: 56px; }
+}

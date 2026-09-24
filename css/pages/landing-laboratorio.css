@@ -1,0 +1,27 @@
+/* Cafe Fusiones - pages/landing-laboratorio.css */
+
+.site-lab-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
+  gap: 56px;
+  align-items: center;
+}
+.site-lab-grid--reverse { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); }
+.site-lab-grid--reverse .site-media { order: -1; }
+.site-lab-copy { display: grid; gap: 14px; }
+.site-lab-copy h2 { font-size: clamp(1.4rem, 2.6vw, 1.9rem); }
+.site-lab-copy p { line-height: 1.7; }
+.site-lab-copy .site-button { margin-top: 8px; justify-self: start; }
+.site-media img {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border-radius: 2px;
+}
+
+@media (max-width: 900px) {
+  .site-lab-grid,
+  .site-lab-grid--reverse { grid-template-columns: 1fr; gap: 28px; }
+  .site-lab-grid--reverse .site-media { order: 0; }
+  .site-media img { aspect-ratio: 16 / 9; }
+}

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#141313">
+    <meta name="description" content="Trazabilidad del café de Café Fusiones: busca el código de tu lote y conoce su origen, productor y proceso.">
+    <title>Trazabilidad | Café Fusiones</title>
+    <link rel="icon" href="../assets/img/logo_cafe_fusiones.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;700&family=Cabin:wght@400;500;600;700&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/base/reset.css">
+    <link rel="stylesheet" href="../css/layout/site-shell.css">
+    <link rel="stylesheet" href="../css/pages/landing-trazabilidad.css">
+    <script type="module" src="../js/pages/landing-trazabilidad.js"></script>
+  </head>
+  <body data-page="landing-trazabilidad" class="site-page">
+    <a class="site-skip-link" href="#contenido">Saltar al contenido</a>
+    <header id="site-header"></header>
+
+    <main id="contenido">
+      <section class="site-pagehead">
+        <div class="site-container">
+          <h1>Trazabilidad</h1>
+          <p>De la chacra amazónica a tu taza: así es el camino de nuestro café.</p>
+        </div>
+      </section>
+
+      <section class="site-section">
+        <div class="site-container site-trace-intro">
+          <h2>¿Qué es la trazabilidad?</h2>
+          <p>Es poder seguir el camino de tu café: desde la chacra donde se cultivó, pasando por el tueste, hasta la taza que tienes en las manos. En Café Fusiones creemos que saber de dónde viene lo que tomas es parte de la experiencia, y una forma de reconocer el trabajo de los caficultores amazónicos que lo hacen posible.</p>
+          <p>Por eso cada producto que servimos tiene un código propio. Puedes encontrarlo en el empaque, en tu boleta o escaneando el código QR de la mesa, y buscarlo aquí abajo para conocer su origen, su productor y el proceso que siguió antes de llegar a ti.</p>
+        </div>
+      </section>
+
+      <section class="site-section site-section--muted" id="buscar">
+        <div class="site-container">
+          <div class="site-section__head">
+            <h2>Busca la trazabilidad de tu café</h2>
+            <p>Ingresa el código del producto. El QR es solo un atajo: escribirlo aquí lleva al mismo resultado.</p>
+          </div>
+
+          <form class="site-trace-search" id="site-trace-search">
+            <div class="site-trace-search__row">
+              <label class="sr-only" for="trace-code">Código de producto</label>
+              <input id="trace-code" name="code" type="text" placeholder="Ej. Caficultores_Valle_Huayabamba" autocomplete="off">
+              <button class="site-button" type="submit">Buscar</button>
+            </div>
+            <button class="site-trace-example" type="button" id="site-trace-example">Probar con el ejemplo: <code>Caficultores_Valle_Huayabamba</code></button>
+            <p class="site-trace-search__message" id="site-trace-message" role="status" aria-live="polite"></p>
+          </form>
+
+          <div class="site-trace-result" id="site-trace-result" hidden></div>
+        </div>
+      </section>
+
+      <section class="site-section">
+        <div class="site-container site-trace-origin">
+          <div class="site-media">
+            <img src="../assets/img/site/hero-3.webp" alt="Café de origen amazónico">
+          </div>
+          <div>
+            <h2>Aliados productores</h2>
+            <p>Nuestros proveedores son nuestros aliados estratégicos, y buscamos retribuirlos de manera justa. Trabajamos directamente con organizaciones comunales como la <strong>Cooperativa Agraria Rodríguez de Mendoza</strong> y la <strong>ACP Bosque Berlín</strong>. Participamos como co-productores de los insumos que utilizamos, con la finalidad de asegurar, mantener y apoyar la calidad y mejora continua en nuestros aliados.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="site-recognitions" id="site-recognitions"></section>
+    </main>
+
+    <footer class="site-footer" id="site-footer"></footer>
+  </body>
+</html>

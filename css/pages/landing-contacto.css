@@ -1,0 +1,67 @@
+/* Cafe Fusiones - pages/landing-contacto.css */
+
+.site-contact-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(240px, .8fr);
+  gap: 48px;
+  align-items: start;
+}
+.site-form { display: grid; gap: 16px; }
+.site-form__row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.site-field { display: grid; gap: 6px; color: var(--site-muted); font-family: var(--site-font-nav); font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.site-field input,
+.site-field textarea {
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 1px solid var(--site-line);
+  border-radius: 2px;
+  background: #fff;
+  color: var(--site-ink);
+  font-family: var(--site-font-body);
+  font-size: .95rem;
+}
+.site-field textarea { min-height: 120px; resize: vertical; }
+.site-field input:focus-visible,
+.site-field textarea:focus-visible { outline: 2px solid var(--site-red); outline-offset: 1px; }
+.site-form .site-button { justify-self: start; border: 0; }
+
+.site-contact-info {
+  padding: 26px;
+  background: var(--site-cream);
+  border-radius: 2px;
+}
+.site-contact-info h2 { font-size: 1.1rem; }
+.site-contact-info__reserve { margin: 8px 0 20px; font-size: .86rem; }
+.site-contact-info ul { display: grid; gap: 16px; }
+.site-contact-info li span { display: block; font-family: var(--site-font-nav); font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--site-red); }
+.site-contact-info li strong { display: block; margin-top: 4px; font-family: var(--site-font-display); font-weight: 400; }
+
+.site-testimonials {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+.site-testimonial {
+  padding: 22px;
+  background: #fff;
+  border: 1px solid var(--site-line);
+  border-radius: 2px;
+}
+.site-testimonial p { line-height: 1.6; font-style: italic; }
+.site-testimonial cite {
+  display: block;
+  margin-top: 14px;
+  font-style: normal;
+  font-family: var(--site-font-nav);
+  font-size: .78rem;
+  font-weight: 700;
+  color: var(--site-red);
+}
+
+@media (max-width: 900px) {
+  .site-contact-grid { grid-template-columns: 1fr; gap: 28px; }
+  .site-testimonials { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .site-form__row { grid-template-columns: 1fr; }
+}

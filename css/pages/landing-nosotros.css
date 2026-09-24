@@ -1,0 +1,39 @@
+/* Cafe Fusiones - pages/landing-nosotros.css */
+
+.site-story-grid {
+  display: grid;
+  grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
+  gap: 56px;
+  align-items: center;
+}
+.site-media img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 2px; }
+.site-story-copy { display: grid; gap: 28px; }
+.site-story-copy h2 { font-size: 1.3rem; margin-bottom: 10px; }
+.site-story-copy p,
+.site-story-single p { line-height: 1.7; }
+
+.site-story-single { max-width: 760px; margin: 0 auto; text-align: center; }
+.site-story-single h2 { font-size: 1.3rem; margin: 0 0 10px; }
+.site-story-single h2 + p { margin-bottom: 32px; }
+.site-story-tagline {
+  margin-top: 24px;
+  font-family: var(--site-font-display);
+  font-style: italic;
+  font-size: 1.15rem;
+  color: var(--site-ink);
+}
+
+.site-values-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px 48px;
+}
+.site-values-grid h2 { font-size: 1.1rem; margin-bottom: 10px; }
+.site-values-grid p { line-height: 1.7; }
+.site-story-cta { margin-top: 40px; text-align: center; }
+
+@media (max-width: 900px) {
+  .site-story-grid { grid-template-columns: 1fr; gap: 28px; }
+  .site-media img { aspect-ratio: 16 / 9; }
+  .site-values-grid { grid-template-columns: 1fr; }
+}

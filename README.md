@@ -17,14 +17,17 @@ Esta version (V3) incorpora la 4ta ronda de mejoras del jefe:
   Ayuda y Cerrar sesion** al menu lateral (ahora funcionales).
 
 ## Como ejecutar
-1. Doble clic en **`iniciar-demo.bat`** (levanta un servidor local en el puerto 5360).
-2. Se abre en `http://127.0.0.1:5360/`.
+1. Abre la carpeta en VS Code y usa la extension **Live Server** (boton "Go Live" o
+   clic derecho sobre `index.html` > "Open with Live Server").
+2. Se abre en el puerto `5501` (configurado en `.vscode/settings.json`). Enlaces:
+   - Landing (sitio publico): http://127.0.0.1:5501/pages/landing.html
+   - Sistema (staff): http://127.0.0.1:5501/pages/login.html
 3. Usuario: **CFUSIONES** — Clave: **prototipo** (tambien es la contrasena para anular productos).
 
 > La tipografia Inter se carga desde Google Fonts (requiere internet la primera vez).
 
-> Es una PWA con modulos ES: usa el servidor local (el `.bat`). Si ves una version
-> anterior, presiona **Ctrl+F5**.
+> Es una PWA con modulos ES nativos: **requiere** un servidor local, no carga con
+> `file://`. Si ves una version anterior, presiona **Ctrl+F5**.
 
 ## Estructura de carpetas
 
@@ -33,7 +36,6 @@ Cafe_Fusiones_MODULAR/
 ├── index.html                  (redirige al login)
 ├── manifest.webmanifest
 ├── sw.js                       (service worker, cache network-first)
-├── iniciar-demo.bat
 ├── assets/
 │   ├── img/                    (logo, hero, fotos)
 │   ├── icons/
