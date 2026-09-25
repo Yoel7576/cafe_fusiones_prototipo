@@ -151,13 +151,6 @@
   .category-list {grid-template-columns: repeat(2, minmax(0, 1fr));}
 }
 
-/* --- MODULAR: alta de nuevo usuario en filas apiladas (mejora del jefe) --- */
-.admin-user-form { display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 22px; padding-top: 22px; border-top: 1px solid var(--line); }
-.admin-user-form h3 { color: var(--brown); font-family: var(--font-sans); font-size: 1rem; }
-.admin-user-form label { display: grid; gap: 8px; color: var(--muted); font-size: .86rem; font-weight: 800; }
-.admin-user-form input, .admin-user-form select { width: 100%; min-height: 44px; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; color: var(--ink); font-family: var(--font-sans); }
-.admin-user-form .button { justify-self: start; }
-@media (max-width: 720px) { .admin-user-form .button { width: 100%; } }
 
 /* --- V3: gestion de platos + recetas --- */
 .check-inline { display: flex; flex-direction: row; align-items: center; gap: 10px; font-weight: 600; }

@@ -195,13 +195,12 @@ export const HELP_TOPICS = [
     section: "modulos",
     module: "admin",
     title: "Administración",
-    summary: "Carta, recetas, categorías, trazabilidad, usuarios e historial.",
+    summary: "Carta, recetas, categorías, trazabilidad e historial.",
     steps: [
       "Gestión de carta: platos, precios, estación (Cocina o Barra), foto y publicación en la web.",
       "Recetas: insumos y cantidades de cada plato; calcula costo y margen.",
       "Categorías: catálogos de carta, carta pública, inventario y gastos.",
       "Trazabilidad: lotes de café y sus páginas públicas en la web.",
-      "Usuarios: altas y estado de los usuarios.",
       "Historial: registro de auditoría, 20 movimientos por página."
     ]
   },

@@ -1,6 +1,7 @@
 // Cafe Fusiones - Administracion (solo la logica de esta pantalla).
-// Mejoras del jefe: alta de usuario en FILAS (no dos columnas), y "Lote de cafe" +
-// "Trazabilidad de cafe" agrupados en un solo bloque. Usuarios y roles se mantienen.
+// Mejoras del jefe: "Lote de cafe" + "Trazabilidad de cafe" agrupados en un
+// solo bloque. Los usuarios se administran
+// en Configuracion > Usuarios y permisos.
 import { requireAuth } from "../core/auth.js";
 import { canAccess } from "../core/router.js";
 import { renderSidebar } from "../components/sidebar.js";
@@ -29,7 +30,6 @@ const adminTabs = [
   { id: "recetas", label: "Recetas" },
   { id: "categorias", label: "Categorías" },
   { id: "trazabilidad", label: "Trazabilidad" },
-  { id: "usuarios", label: "Usuarios" },
   { id: "historial", label: "Historial" }
 ];
 const params = new URLSearchParams(location.search);
@@ -178,16 +178,6 @@ function renderAdminTabContent(tabId) {
             <div class="traceability-list" style="margin-top:18px;">${coffeeLots()}</div>
           </section>
         `}
-      `;
-    case "usuarios":
-      return `
-        <section class="panel">
-          <div class="panel__header panel__header--wrap">
-            <div><p class="eyebrow">Usuarios</p><h2>Usuarios y roles</h2></div>
-            <button class="button button--primary" type="button" data-new-user>${icon("plus")}<span>Nuevo usuario</span></button>
-          </div>
-          ${userEditor()}
-        </section>
       `;
     case "historial":
       return `
@@ -1436,47 +1426,6 @@ function coffeeLots() {
     </article>`).join("");
 }
 
-function userEditor() {
-  const rows = state.users.map((user, index) => `
-    <div class="admin-row">
-      <div><strong>${escapeHtml(user.name)}</strong><p class="muted">${user.role}</p></div>
-      <span class="${statusClass(user.status)}">${user.status}</span>
-      <div><button class="mini-button" type="button" data-toggle-user="${index}">${user.status === "Activo" ? "Desactivar" : "Activar"}</button></div>
-    </div>`).join("");
-  return `<div class="admin-list">${rows}</div>`;
-}
-
-function openUserModal() {
-  const modalHtml = `
-    <section class="modal modal--small" role="dialog" aria-modal="true">
-      <div class="modal__header">
-        <div><p class="eyebrow">Usuarios</p><h2>Nuevo usuario</h2></div>
-        <button class="icon-button" type="button" data-close-modal aria-label="Cerrar">${closeIcon}</button>
-      </div>
-      <form class="form-grid" data-user-form style="padding:20px;">
-        <label>Nombre<input name="name" required placeholder="Nombre del usuario"></label>
-        <label>Rol<select name="role"><option>Administrador</option><option>Cajero</option><option>Cocina</option><option>Operaciones</option></select></label>
-        <div class="confirm-actions span-2">
-          <button class="button" type="button" data-close-modal>Cancelar</button>
-          <button class="button button--primary" type="submit">Guardar usuario</button>
-        </div>
-      </form>
-    </section>
-  `;
-
-  const modal = openModal(modalHtml);
-  const form = modal.querySelector("[data-user-form]");
-  form?.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const d = Object.fromEntries(new FormData(form));
-    state.users.push({ name: d.name, role: d.role, status: "Activo" });
-    saveState(state);
-    closeModal();
-    showToast("Usuario agregado.");
-    render();
-  });
-}
-
 function wireRecipeRows(root) {
   root.querySelectorAll("[data-recipe-view]").forEach((b) => b.addEventListener("click", () => openRecipeView(b.dataset.recipeView)));
   root.querySelectorAll("[data-recipe-edit]").forEach((b) => b.addEventListener("click", () => openRecipeEditor(b.dataset.recipeEdit)));
@@ -1639,19 +1588,4 @@ function wire() {
     loteUi.borrador = null;
     render();
   });
-  const userForm = view.querySelector("[data-user-form]");
-  userForm?.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const d = Object.fromEntries(new FormData(event.target));
-    state.users.push({ name: d.name, role: d.role, status: "Activo" });
-    saveState(state); showToast("Usuario agregado."); render();
-  });
-
-  const newUserButton = view.querySelector("[data-new-user]");
-  newUserButton?.addEventListener("click", () => openUserModal());
-
-  view.querySelectorAll("[data-toggle-user]").forEach((b) => b.addEventListener("click", () => {
-    const user = state.users[Number(b.dataset.toggleUser)];
-    if (user) { user.status = user.status === "Activo" ? "Inactivo" : "Activo"; saveState(state); showToast("Estado de usuario actualizado."); render(); }
-  }));
 }
