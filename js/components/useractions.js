@@ -33,24 +33,9 @@ export function openSettings() {
   });
 }
 
+// La ayuda ya no es un modal: es la pantalla pages/ayuda.html.
 export function openHelp() {
-  const html = `
-    <section class="modal modal--small" role="dialog" aria-modal="true" aria-labelledby="ht">
-      <div class="modal__header"><div><p class="eyebrow">Soporte</p><h2 id="ht">Ayuda</h2></div><button class="icon-button" type="button" data-close-modal aria-label="Cerrar">${closeIcon}</button></div>
-      <div class="help-body" style="padding:16px 20px 20px;">
-        <p><strong>Acceso demo:</strong> usuario <code>CFUSIONES</code>, clave <code>prototipo</code>.</p>
-        <ul>
-          <li><strong>Ventas:</strong> gestiona mesas, toma pedidos y cobra (precuenta, efectivo o POS).</li>
-          <li><strong>Caja:</strong> abre/cierra turno, registra ingresos y egresos, imprime reportes.</li>
-          <li><strong>Inventario:</strong> registra insumos, mermas y edita el stock.</li>
-          <li><strong>Clientes:</strong> base de clientes y reservas.</li>
-          <li><strong>Reportes:</strong> ventas, mozos, platos, stock y exportacion.</li>
-          <li><strong>Administracion:</strong> platos, recetas, categorias, trazabilidad y usuarios.</li>
-        </ul>
-        <p class="muted">Para anular un producto de una mesa se pide la clave del cajero (<code>prototipo</code>).</p>
-      </div>
-    </section>`;
-  openModal(html);
+  window.location.href = "ayuda.html";
 }
 
 export async function logout() {

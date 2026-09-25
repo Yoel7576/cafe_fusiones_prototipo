@@ -1,6 +1,6 @@
 /* ==========================================================================
    Cafe Fusiones - css/pages/configuracion.css
-   Configuración general / Sucursales / Categorías / Usuarios / Operación
+   Configuración general / Sucursales / Usuarios / Sistema
    Compatible con pages/configuracion.html + js/pages/configuracion.js
    ========================================================================== */
 
@@ -66,7 +66,7 @@
    CABECERA
    ========================================================================== */
 
-/* Titulo + selector de sucursal arriba, tarjetas de resumen debajo */
+/* Titulo + selector de sucursal activa */
 .settings-module-head {
   padding: 16px 18px;
   display: grid;
@@ -1808,4 +1808,281 @@
 .settings-v2 .eyebrow,
 .settings-v2 .data-table th {
   color: #111111 !important;
+}
+
+/* ==========================================================================
+   JERARQUIA TIPOGRAFICA: negrita solo en titulos y valores clave; etiquetas,
+   pestanas, cabeceras de tabla y textos de apoyo en peso normal o medio.
+   Va acotada a .settings-page para ganarle a theme-min.css y a los
+   componentes compartidos sin tocar las demas pantallas.
+   ========================================================================== */
+
+/* Titulos: se quedan en negrita */
+.settings-page .settings-module-head h2,
+.settings-page .settings-toolbar h2,
+.settings-page .settings-summary-card h2,
+.settings-page .settings-operation-head h2,
+.settings-page .settings-category-list .panel__header h2,
+.settings-page .panel__header h2,
+.settings-page .modal__header h2 {
+  font-weight: 700 !important;
+}
+
+.settings-page .settings-branch-card h3 {
+  font-weight: 650 !important;
+}
+
+/* Texto base del modulo en peso normal */
+.settings-page .settings-v2,
+.settings-page .settings-v2 p,
+.settings-page .settings-v2 td,
+.settings-page .settings-v2 dt,
+.settings-page .settings-v2 small,
+.settings-page .settings-v2 .muted,
+.settings-page .settings-v2 .panel__muted {
+  font-weight: 400 !important;
+}
+
+/* Pestanas: medio; la activa un poco mas firme */
+.settings-page .settings-tab strong {
+  font-weight: 500 !important;
+}
+
+.settings-page .settings-tab.is-active strong {
+  font-weight: 600 !important;
+}
+
+/* Indicadores: etiqueta liviana, valor en negrita */
+.settings-page .settings-kpi > span,
+.settings-page .settings-mini-stats span {
+  font-weight: 500 !important;
+  letter-spacing: .04em;
+}
+
+.settings-page .settings-kpi > strong,
+.settings-page .settings-mini-stats strong {
+  font-weight: 700 !important;
+}
+
+/* Selector de sucursal activa */
+.settings-page .settings-active-branch > span {
+  font-weight: 400 !important;
+}
+
+.settings-page .settings-active-branch select {
+  font-weight: 600 !important;
+}
+
+/* Tablas: cabecera media, celdas normales, nombre principal semi negrita */
+.settings-page .data-table th {
+  font-weight: 600 !important;
+  letter-spacing: .03em;
+}
+
+.settings-page .data-table td strong {
+  font-weight: 600 !important;
+}
+
+.settings-page .status,
+.settings-page .settings-pill {
+  font-weight: 500 !important;
+}
+
+/* Resumenes (General): dato en semi negrita, rotulo normal */
+.settings-page .settings-summary-list dd {
+  font-weight: 600 !important;
+}
+
+/* Formularios y modales: etiquetas medias, valores normales */
+.settings-page .settings-modal-body label,
+.settings-page .settings-permission-grid label,
+.settings-page .settings-branch-checks span,
+.settings-page .settings-printer-fields label > span,
+.settings-page .settings-operation-head label > span,
+.settings-page .plan-inspector label {
+  font-weight: 500 !important;
+}
+
+.settings-page .settings-modal-body input,
+.settings-page .settings-modal-body select,
+.settings-page .settings-modal-body textarea {
+  font-weight: 400 !important;
+}
+
+/* Subtitulos internos de tarjetas y modales (strong sueltos) */
+.settings-page .settings-v2 strong,
+.settings-page .modal strong {
+  font-weight: 600;
+}
+
+/* Botones: medio-alto, sin llegar al 800 */
+.settings-page .button,
+.settings-page .mini-button,
+.settings-page .settings-scope-buttons button {
+  font-weight: 600 !important;
+}
+
+/* ==========================================================================
+   SISTEMA (antes Operacion)
+   Tarjetas sin iconos, titulo al tamano del menu, todo en fondo blanco y el
+   boton de cada tarjeta centrado. Cada boton abre una sub-vista en la misma
+   pagina (?vista=), no un modal.
+   ========================================================================== */
+
+.settings-page .settings-module-head,
+.settings-page .settings-operation-card,
+.settings-page .settings-operation-card footer,
+.settings-page .settings-check-row,
+.settings-page .settings-form-note {
+  background: #ffffff !important;
+}
+
+.settings-page .settings-form-note {
+  border-color: var(--line);
+}
+
+.settings-operation-card header {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  padding: 18px 18px 8px;
+}
+
+.settings-page .settings-operation-card h3 {
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.settings-page .settings-operation-card header strong {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.settings-operation-card > p {
+  padding: 0 18px 16px;
+}
+
+.settings-operation-card footer {
+  justify-content: center;
+  padding: 12px 14px;
+}
+
+/* Sub-vistas de Sistema */
+.settings-subpage-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+}
+
+.settings-subpage-head h2 {
+  margin: 2px 0 0;
+  font-size: 20px !important;
+  font-weight: 700 !important;
+}
+
+.settings-subpage-head .eyebrow {
+  margin: 0;
+  font-size: 12px;
+}
+
+.settings-back {
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid #e6e6e8;
+  border-radius: 10px;
+  background: #fff;
+  color: #111111;
+  font: inherit;
+  font-size: .95rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.settings-back:hover {
+  background: #f4f4f5;
+}
+
+.settings-subpage {
+  padding: 18px;
+}
+
+.settings-subpage .settings-plan-body {
+  max-height: none;
+  overflow: visible;
+  padding: 0;
+}
+
+.settings-subpage .settings-inline-head {
+  margin-bottom: 14px;
+}
+
+.settings-subpage .settings-inline-head p,
+.settings-subpage .settings-check-row small,
+.settings-subpage .settings-station-list small {
+  font-size: 13px;
+}
+
+.settings-subpage .settings-check-row strong,
+.settings-subpage .settings-station-list strong {
+  font-size: 15px;
+}
+
+.settings-subpage .settings-check-row {
+  padding: 14px;
+}
+
+.settings-subpage .settings-station-list > article {
+  padding: 12px 14px;
+}
+
+.settings-subpage .settings-printer-fields h3 {
+  margin-top: 8px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.settings-subpage .settings-printer-fields label > span {
+  font-size: 14px;
+}
+
+.settings-subpage .settings-printer-fields input {
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font: inherit;
+  font-size: 14px;
+}
+
+.settings-subpage-form {
+  display: grid;
+  gap: 16px;
+  max-width: 760px;
+}
+
+.settings-subpage-form > .muted {
+  margin: 0;
+  font-size: 13px;
+}
+
+.settings-subpage-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 6px;
+}
+
+@media (max-width: 560px) {
+  .settings-subpage-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .settings-subpage-actions {
+    flex-direction: column-reverse;
+  }
 }

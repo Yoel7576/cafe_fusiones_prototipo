@@ -151,7 +151,7 @@
 .cart-scroll,
 .category-strip,
 .sales-tabs {
-  scrollbar-color: rgba(86, 47, 31, .22) transparent;
+  scrollbar-color: rgba(17, 17, 17, .22) transparent;
 }
 
 .pos-products::-webkit-scrollbar,
@@ -170,7 +170,7 @@
 .cart-scroll::-webkit-scrollbar-thumb,
 .category-strip::-webkit-scrollbar-thumb,
 .sales-tabs::-webkit-scrollbar-thumb {
-  background: rgba(86, 47, 31, .20);
+  background: rgba(17, 17, 17, .20);
   border-radius: 999px;
 }
 
@@ -321,6 +321,8 @@
 .sale-modal--v4 {
   width:min(1460px,96vw);
   max-width:none;
+  /* Usa casi todo el alto de la pantalla para mostrar mas productos. */
+  max-height:calc(100dvh - 24px);
 }
 
 .sale-v4-head {
@@ -355,12 +357,14 @@
 
 .sale-modal__body--pos {
   display:grid;
-  grid-template-columns:210px minmax(380px,1fr) 330px;
+  /* Carta + pedido: la mesa ya viene elegida desde el salon. */
+  grid-template-columns:minmax(380px,1fr) 340px;
   gap:0;
   padding:0;
   /* El alto se calcula contra la pantalla (cabecera del modal + barra de canal),
      para que el modal entre completo incluso en 768px de alto. */
-  height:min(620px, calc(100dvh - 210px));
+  /* 24px de margen + cabecera del modal y barra Local/Cliente (~200px). */
+  height:calc(100dvh - 24px - 200px);
   min-height:360px;
 }
 
@@ -386,10 +390,27 @@
 }
 
 /* Solo la lista de productos scrollea; el buscador y las categorias quedan fijos. */
+/* La cabecera y la franja de categorias no se encogen: la franja tiene
+   overflow horizontal y, sin esto, la lista de productos (que ocupa todo el
+   alto libre) la aplastaba hasta dejarla en 0px. */
+.pos-products > .pos-products__top,
+.pos-products > .category-strip {
+  flex:0 0 auto;
+}
+
+.pos-products > .category-strip {
+  overflow-x:auto;
+  overflow-y:hidden;
+}
+
 .pos-products .product-picker {
   flex:1 1 auto;
   min-height:0;
+  /* modals.css limita .sale-modal .product-picker a 220px; aqui la lista
+     ocupa todo el alto libre de la columna. */
+  max-height:none;
   overflow-y:auto;
+  align-content:start;
 }
 
 .pos-search {
@@ -426,7 +447,7 @@
 
 .pos-search:focus-within {
   border-color:var(--brown);
-  box-shadow:0 0 0 3px rgba(86,47,31,.08);
+  box-shadow:0 0 0 3px rgba(17, 17, 17, .08);
 }
 
 .pos-ticket {
@@ -571,7 +592,7 @@
 }
 
 .product-line--v4:hover {
-  border-color:rgba(90,46,27,.45);
+  border-color:rgba(17, 17, 17, .45);
   background:#fffdf9;
 }
 
@@ -1125,7 +1146,7 @@
 
 @media(max-width:1100px) {
   .sale-modal__body--pos {
-    grid-template-columns:190px 1fr 300px;
+    grid-template-columns:1fr 300px;
   }
   .product-picker--v4 {
     grid-template-columns:1fr;
@@ -1306,4 +1327,262 @@
   .salon-head__controls select {
     width: 100%;
   }
+}
+
+/* ==========================================================================
+   COLORES DEL MODULO VENTAS (salon, tomar pedido y produccion)
+   Las tres pantallas cargan esta hoja y comparten data-page="ventas".
+   - Texto en negro: las variables de marca que pintaban texto en marron o
+     gris calido pasan a negro.
+   - Bordes y fondos suaves en gris neutro, no crema ni marron.
+   - Lo seleccionado (pestanas, filtros, categorias, mesa elegida) en rojo
+     con letra blanca.
+   El prefijo body[data-page="ventas"] sube la especificidad para ganarle a
+   ventas-pedido.css, ventas-kds.css y theme-min.css, que cargan despues.
+   ========================================================================== */
+
+body[data-page="ventas"] {
+  --brown: #111111;
+  --brown-2: #111111;
+  --ink: #111111;
+  --muted: #111111;
+  --line: #e6e6e8;
+  --cream: #f4f4f5;
+  --cream-2: #fafafa;
+}
+
+/* El menu lateral y la barra inferior conservan la paleta de marca: se les
+   devuelven los valores originales de variables.css. */
+body[data-page="ventas"] .sidebar,
+body[data-page="ventas"] .bottom-nav {
+  --brown: #5a2e1b;
+  --brown-2: #3d2115;
+  --ink: #261c17;
+  --muted: #74665e;
+  --line: #e7d9cb;
+  --cream: #f5efe6;
+  --cream-2: #fff9f1;
+}
+
+/* --- Seleccionado: rojo con letra blanca --------------------------------- */
+
+body[data-page="ventas"] .sales-tab.is-active,
+body[data-page="ventas"] .salon-mode-switch button.is-active,
+body[data-page="ventas"] .content .segmented button.is-active,
+body[data-page="ventas"] .category-strip button.is-active,
+body[data-page="ventas"] .pos-table-choice.is-selected,
+body[data-page="ventas"] .order-category-button.is-active,
+body[data-page="ventas"] .kds-filter-button.is-active,
+body[data-page="ventas"] .mini-button--primary {
+  border-color: var(--red) !important;
+  background: var(--red) !important;
+  color: #fff !important;
+}
+
+body[data-page="ventas"] .kds-station-tab.is-active > span,
+body[data-page="ventas"] .order-production-flow span.is-active {
+  border-color: var(--red);
+  background: var(--red);
+  color: #fff;
+}
+
+/* Contadores dentro de una pestana activa */
+body[data-page="ventas"] .sales-tab.is-active b,
+body[data-page="ventas"] .order-category-button.is-active > span {
+  background: rgba(255, 255, 255, .22);
+  color: #fff;
+}
+
+body[data-page="ventas"] .pos-table-choice.is-selected small,
+body[data-page="ventas"] .order-category-button.is-active small {
+  color: #fff;
+}
+
+/* Pestanas sin seleccionar: letra negra sobre fondo blanco */
+body[data-page="ventas"] .sales-tab:not(.is-active),
+body[data-page="ventas"] .content .segmented button:not(.is-active) {
+  color: #111111;
+}
+
+body[data-page="ventas"] .sales-tab:not(.is-active):hover {
+  background: #f4f4f5;
+}
+
+/* Foco del buscador en gris oscuro, no marron */
+body[data-page="ventas"] .pos-search:focus-within {
+  border-color: #111111;
+  box-shadow: 0 0 0 3px rgba(17, 17, 17, .08);
+}
+
+/* Cajas de filtro y selects con borde gris */
+body[data-page="ventas"] .content select,
+body[data-page="ventas"] .content input:not([type="checkbox"]):not([type="radio"]) {
+  border-color: #d9d9dd;
+  color: #111111;
+}
+
+body[data-page="ventas"] .topbar .search-box {
+  border-color: #d9d9dd;
+}
+
+/* Fondos: blanco, sin los tintes dorados ni crema de la paleta anterior */
+body[data-page="ventas"],
+body[data-page="ventas"].kds-page,
+body[data-page="ventas"].order-entry-page {
+  background: #ffffff;
+}
+
+body[data-page="ventas"] .kds-header-main {
+  background: #ffffff;
+}
+
+body[data-page="ventas"] .product-card__media {
+  background: #f4f4f5;
+}
+
+/* ==========================================================================
+   SALON > LISTA: tabla compacta, una fila por mesa
+   Columnas de ancho acotado; en pantallas angostas la tabla se desplaza en
+   horizontal dentro de su caja, nunca toda la pagina.
+   ========================================================================== */
+
+body[data-page="ventas"] .salon-table-list {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid #e6e6e8;
+  border-radius: 10px;
+  scrollbar-width: thin;
+}
+
+body[data-page="ventas"] .salon-list-table {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+}
+
+body[data-page="ventas"] .salon-list-table th,
+body[data-page="ventas"] .salon-list-table td {
+  padding: 9px 12px;
+  font-size: .88rem;
+  line-height: 1.3;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+body[data-page="ventas"] .salon-list-table th {
+  background: #f5f5f6;
+  color: #111111;
+  font-size: .76rem;
+  font-weight: 600;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+}
+
+body[data-page="ventas"] .salon-list-table td {
+  font-weight: 400;
+}
+
+body[data-page="ventas"] .salon-list-table td strong {
+  font-weight: 600;
+}
+
+body[data-page="ventas"] .salon-list-table tbody tr:hover td {
+  background: #fafafa;
+}
+
+/* Columnas cortas centradas; la de acciones a la derecha */
+body[data-page="ventas"] .salon-list-table th:nth-child(3),
+body[data-page="ventas"] .salon-list-table td:nth-child(3),
+body[data-page="ventas"] .salon-list-table th:nth-child(6),
+body[data-page="ventas"] .salon-list-table td:nth-child(6) {
+  text-align: center;
+}
+
+body[data-page="ventas"] .salon-list-table th:last-child,
+body[data-page="ventas"] .salon-list-table td:last-child {
+  text-align: right;
+}
+
+body[data-page="ventas"] .salon-list-table .table-actions {
+  display: inline-flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+/* .ventas-v4 button { font: inherit } agrandaba estos botones */
+body[data-page="ventas"] .salon-list-table .mini-button {
+  min-height: 32px;
+  margin: 0;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: .82rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   TOMAR PEDIDO > tarjetas del pedido (columna derecha)
+   modals.css fuerza .cart-item { padding: 16px 0 !important } y dos columnas:
+   el texto tocaba el borde y cantidad y total quedaban apretados al lado del
+   nombre. Aqui: relleno interno y dos filas (nombre + quitar / cantidad + total).
+   ========================================================================== */
+
+.sale-modal .cart-item.cart-item--v4 {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 10px !important;
+  padding: 12px 14px !important;
+  border: 1px solid #e6e6e8;
+  border-radius: 10px;
+}
+
+.sale-modal .cart-item--v4 .cart-item__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.sale-modal .cart-item--v4 .cart-item__copy {
+  min-width: 0;
+  gap: 3px;
+}
+
+.sale-modal .cart-item--v4 .cart-item__copy strong {
+  font-size: .95rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.sale-modal .cart-item--v4 .cart-item__copy small,
+.sale-modal .cart-item--v4 .cart-item__copy span {
+  font-size: .78rem;
+  color: #4a4a4a;
+}
+
+.sale-modal .cart-item--v4 .cart-delete {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.sale-modal .cart-item--v4 .cart-delete:hover {
+  background: #fdecea;
+}
+
+.sale-modal .cart-item--v4 .cart-item__bottom {
+  margin-top: 0;
+  gap: 12px;
+}
+
+.sale-modal .cart-item--v4 .cart-item__bottom > strong {
+  font-size: .95rem;
+  font-weight: 600;
+  white-space: nowrap;
 }

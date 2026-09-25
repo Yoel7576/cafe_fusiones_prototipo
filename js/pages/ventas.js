@@ -68,7 +68,7 @@ function init() {
   renderSidebar("ventas", session.role);
   renderTopbar({
     title: "Ventas",
-    eyebrow: "Restaurant",
+    eyebrow: "",
     searchPlaceholder: "Buscar mesa, cliente o pedido",
     onSearch: (query) => {
       ui.search = query || "";
@@ -303,26 +303,52 @@ function operationSnapshot() {
     <button class="button button--secondary button--block" type="button" data-go-kds>${icon("chef")}<span>Ver produccion</span></button>`;
 }
 
+// Vista Lista: una tabla compacta con una fila por mesa. Las columnas tienen
+// ancho acotado y la tabla se desplaza en horizontal en pantallas angostas.
 function tablesList(tables) {
-  return `<div class="table-map salon-table-list">${tables.map(tableTile).join("") || emptyState("No hay mesas con ese filtro.")}</div>`;
+  if (!tables.length) return emptyState("No hay mesas con ese filtro.");
+
+  return `
+    <div class="table-wrap salon-table-list">
+      <table class="data-table salon-list-table">
+        <thead>
+          <tr>
+            <th>Mesa</th>
+            <th>Zona</th>
+            <th>Asientos</th>
+            <th>Estado</th>
+            <th>Cliente</th>
+            <th>Items</th>
+            <th>Consumo</th>
+            <th>Tiempo</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>${tables.map(tableRow).join("")}</tbody>
+      </table>
+    </div>`;
 }
 
-function tableTile(table) {
+function tableRow(table) {
   const busy = table.status === "Ocupada";
-  const cls = table.status === "Libre" ? "is-free" : busy ? "is-busy" : "";
-  const total = tableTotal(table);
   const customer = customerById(table.customerId);
+  const items = (table.items || []).reduce((sum, item) => sum + Number(item.qty || 0), 0);
   const actions = busy
-    ? `<div class="tile-actions"><button class="mini-button" type="button" data-add-sale="${table.id}">Agregar</button><button class="mini-button mini-button--danger" type="button" data-charge="${table.id}">Cobrar</button></div>`
+    ? `<button class="mini-button" type="button" data-add-sale="${table.id}">Agregar</button><button class="mini-button mini-button--danger" type="button" data-charge="${table.id}">Cobrar</button>`
     : `<button class="mini-button" type="button" data-new-order="${table.id}">Tomar pedido</button>`;
 
-  return `<article class="table-tile ${cls}" data-table-card="${table.id}">
-    <div class="table-tile__head"><strong>${escapeHtml(table.name)}</strong><span class="${statusClass(table.status)}">${table.status}</span></div>
-    <span class="muted">${table.seats} asientos · ${escapeHtml(table.area)}</span>
-    ${customer ? `<span class="muted">${escapeHtml(customer.name)} · ${escapeHtml(customer.level || "Cliente")}</span>` : ""}
-    <span class="muted">${busy ? `${table.items.reduce((sum, item) => sum + Number(item.qty || 0), 0)} items · ${money(total)}` : "Disponible"}</span>
-    ${actions}
-  </article>`;
+  return `
+    <tr data-table-card="${table.id}">
+      <td><strong>${escapeHtml(table.name)}</strong></td>
+      <td>${escapeHtml(table.area || "—")}</td>
+      <td>${Number(table.seats || 0)}</td>
+      <td><span class="${statusClass(table.status)}">${escapeHtml(table.status || "Libre")}</span></td>
+      <td>${customer ? escapeHtml(customer.name) : "—"}</td>
+      <td>${busy ? items : "—"}</td>
+      <td>${busy ? money(tableTotal(table)) : "—"}</td>
+      <td>${busy && table.openedAt ? `${minutesSince(table.openedAt)} min` : "—"}</td>
+      <td><div class="table-actions">${actions}</div></td>
+    </tr>`;
 }
 
 function wireSalon() {
@@ -453,15 +479,12 @@ function firstLocalArea() {
 
 function renderSaleModal() {
   const table = state.tables.find((item) => item.id === saleUi.tableId);
-  const areas = [...new Set(state.tables.filter((item) => item.seats > 0).map((item) => item.area))];
-  const areaTables = state.tables.filter((item) => item.seats > 0 && item.area === saleUi.area);
   const existing = saleUi.mode === "add" && table ? table.items : [];
 
   const html = `
     <section class="modal sale-modal sale-modal--v4" role="dialog" aria-modal="true" aria-labelledby="sale-title">
       <div class="modal__header">
         <div>
-          <p class="eyebrow">Venta / Atencion</p>
           <h2 id="sale-title">${saleUi.mode === "add" ? `Agregar a ${escapeHtml(table?.name || "pedido")}` : "Tomar pedido"}</h2>
         </div>
         <button class="icon-button" type="button" data-close-modal aria-label="Cerrar pedido">${closeIcon}</button>
@@ -482,19 +505,6 @@ function renderSaleModal() {
         </div>
 
         <div class="sale-modal__body sale-modal__body--pos">
-          <aside class="pos-context">
-            <div class="pos-context__head"><h3>${saleUi.channel === "Local" ? "Mesa" : "Delivery"}</h3></div>
-            ${saleUi.channel === "Local" ? `
-              <label class="sale-field"><span>Salon / espacio</span>
-                <select data-area>${areas.map((area) => `<option value="${escapeHtml(area)}" ${area === saleUi.area ? "selected" : ""}>${escapeHtml(area)}</option>`).join("")}</select>
-              </label>
-              <div class="pos-table-picker">
-                ${areaTables.map((item) => `<button class="pos-table-choice ${item.id === saleUi.tableId ? "is-selected" : ""} ${item.status === "Reservada" ? "is-reserved" : ""}" type="button" data-select-table="${item.id}"><strong>${escapeHtml(item.name.replace("Mesa ", ""))}</strong><small>${escapeHtml(item.status)}</small></button>`).join("")}
-              </div>
-            ` : `<div class="delivery-card"><strong>Venta delivery</strong><span>Se enviara a la cola de produccion sin ocupar una mesa.</span></div>`}
-            ${selectedCustomerCard()}
-          </aside>
-
           <section class="pos-products">
             <div class="pos-products__top">
               <div><h3>Carta</h3><span class="muted">Productos reales de Cafe Fusiones</span></div>
@@ -527,12 +537,6 @@ function renderSaleModal() {
     </section>`;
 
   wireSaleModal(openModal(html));
-}
-
-function selectedCustomerCard() {
-  const customer = customerById(saleUi.customerId);
-  if (!customer) return `<div class="customer-mini customer-mini--empty"><span>Cliente</span><strong>Consumidor final</strong><small>La venta tambien puede realizarse sin registro.</small></div>`;
-  return `<div class="customer-mini"><span>Cliente frecuente</span><strong>${escapeHtml(customer.name)}</strong><small>${escapeHtml(customer.level || "Cliente")} · ${Number(customer.points || 0)} puntos · ${Number(customer.visits || 0)} visitas</small></div>`;
 }
 
 function categoryTabs() {

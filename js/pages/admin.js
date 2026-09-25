@@ -5,8 +5,18 @@ import { requireAuth } from "../core/auth.js";
 import { canAccess } from "../core/router.js";
 import { renderSidebar } from "../components/sidebar.js";
 import { renderTopbar } from "../components/topbar.js";
-import { getState, saveState, nextId, addAuditEvent } from "../core/storage.js";
+import {
+  getState,
+  saveState,
+  nextId,
+  addAuditEvent,
+  activeBranches,
+  branchById,
+  categoriesByScope,
+  CATEGORY_SCOPES
+} from "../core/storage.js";
 import { openModal, closeModal, closeIcon } from "../components/modal.js";
+import { confirmAction } from "../components/confirm.js";
 import { showToast } from "../components/toast.js";
 import { icon, money, escapeHtml, statusClass, matchesSearch } from "../core/utils.js";
 
@@ -22,7 +32,24 @@ const adminTabs = [
   { id: "usuarios", label: "Usuarios" },
   { id: "historial", label: "Historial" }
 ];
-let activeAdminTab = "carta";
+const params = new URLSearchParams(location.search);
+let activeAdminTab = adminTabs.some((tab) => tab.id === params.get("tab")) ? params.get("tab") : "carta";
+// Lote que se esta editando (null = alta) y borrador del formulario, para que
+// agregar o quitar un paso no borre lo que el usuario ya escribio.
+const loteUi = { editandoId: null, pasos: [], borrador: null };
+// Historial: tabla paginada para no hacer un scroll infinito.
+const HISTORY_PAGE_SIZE = 20;
+const historyUi = { page: 1 };
+
+// Sub-vista de Trazabilidad (?vista=): registro de lotes o paginas publicadas.
+const traceUi = {
+  vista: params.get("vista") === "paginas" ? "paginas" : "lotes",
+  filtro: "publicadas"
+};
+// Tipo de categoria visible en la pestana Categorias (?scope=).
+const categoryUi = {
+  scope: CATEGORY_SCOPES.some((scope) => scope.id === params.get("scope")) ? params.get("scope") : CATEGORY_SCOPES[0].id
+};
 
 // Respaldo para recetas sin plato (preparaciones base): `section` viene de la semilla.
 const RECIPE_CATEGORIES = [
@@ -101,6 +128,7 @@ if (session && canAccess(session.role, "admin")) {
 }
 
 function render() {
+  closeLotMenu();
   view.innerHTML = `
     <div class="view-stack admin-view">
       <div class="admin-tabbar" role="tablist" aria-label="Administracion">
@@ -122,13 +150,7 @@ function render() {
 function renderAdminTabContent(tabId) {
   switch (tabId) {
     case "categorias":
-      return `
-        <section class="panel category-panel">
-          <div class="panel__header"><h2>Categorias</h2><span class="status status--info">${state.menuCategories.length - 1}</span></div>
-          <form class="category-form" data-category-form><label>Nueva categoria<input name="category" required placeholder="Nombre de categoria"></label><button class="button button--secondary" type="submit">Agregar categoria</button></form>
-          <div class="category-list">${state.menuCategories.filter((c) => c !== "Todos").map((c) => `<span class="category-pill">${escapeHtml(c)}</span>`).join("")}</div>
-        </section>
-      `;
+      return renderCategories();
     case "recetas":
       return `
         <section class="panel admin-toolbar">
@@ -147,12 +169,15 @@ function renderAdminTabContent(tabId) {
       `;
     case "trazabilidad":
       return `
-        <section class="panel">
-          <div class="panel__header"><h2>Trazabilidad del café</h2><span class="status status--ok">Lotes</span></div>
-          <p class="muted" style="margin-bottom:14px;">Registro de lotes, origen y recorrido del café desde la recepción hasta la preparación.</p>
-          ${coffeeLotForm()}
-          <div class="traceability-list" style="margin-top:18px;">${coffeeLots()}</div>
-        </section>
+        ${traceSubtabs()}
+        ${traceUi.vista === "paginas" ? publishedPages() : `
+          <section class="panel">
+            <div class="panel__header"><h2>Trazabilidad del café</h2><span class="status status--ok">Lotes</span></div>
+            <p class="muted" style="margin-bottom:14px;">Registro de lotes, origen y recorrido del café desde la recepción hasta la preparación.</p>
+            ${coffeeLotForm()}
+            <div class="traceability-list" style="margin-top:18px;">${coffeeLots()}</div>
+          </section>
+        `}
       `;
     case "usuarios":
       return `
@@ -166,9 +191,9 @@ function renderAdminTabContent(tabId) {
       `;
     case "historial":
       return `
-        <section class="panel">
-          <div class="panel__header"><h2>Bitacora</h2><span class="status">Auditoria</span></div>
-          <div class="timeline">${auditTimeline()}</div>
+        <section class="panel admin-history">
+          <div class="panel__header"><h2>Bitácora</h2><span class="status">Auditoría</span></div>
+          ${auditTable()}
         </section>
       `;
     case "carta":
@@ -195,6 +220,284 @@ function renderAdminTabContent(tabId) {
 /* ==========================================================================
    GESTION DE CARTA: el plato une venta (sistema), publicacion (landing) y receta
    ========================================================================== */
+
+/* ==========================================================================
+   CATEGORIAS
+   Catalogo dinamico por tipo (carta, landing, inventario, gastos). Antes vivia
+   en Configuracion; se administra aqui junto a la lista de la carta.
+   ========================================================================== */
+
+function renderCategories() {
+  const categories = categoriesByScope(state, categoryUi.scope, { activeOnly: false });
+  const menuList = categoryList();
+
+  return `
+    <section class="panel admin-cat-toolbar">
+      <h2>Categorías</h2>
+      <button class="button button--primary" type="button" data-new-category>
+        ${icon("plus")}<span>Nueva categoría</span>
+      </button>
+    </section>
+
+    <nav class="panel admin-subtabs" aria-label="Tipos de categoría">
+      ${CATEGORY_SCOPES.map((scope) => `
+        <button
+          class="admin-subtab ${categoryUi.scope === scope.id ? "is-active" : ""}"
+          type="button"
+          data-category-scope="${scope.id}"
+        >
+          ${escapeHtml(scope.label)}
+        </button>
+      `).join("")}
+    </nav>
+
+    <section class="panel admin-cat-list">
+      <div class="panel__header">
+        <h2>Categorías configuradas</h2>
+        <span class="status status--info">${categories.length} registro(s)</span>
+      </div>
+      ${categories.length ? `
+        <div class="table-wrap">
+          <table class="data-table admin-cat-table">
+            <thead>
+              <tr><th>Orden</th><th>Categoría</th><th>Aplica en</th><th>Estado</th><th></th></tr>
+            </thead>
+            <tbody>
+              ${categories.map((category, index) => categoryRow(category, index, categories.length)).join("")}
+            </tbody>
+          </table>
+        </div>
+      ` : `
+        <div class="admin-cat-empty">
+          <strong>No hay categorías creadas</strong>
+          <p>Crea la primera categoría para ${escapeHtml(scopeLabel(categoryUi.scope).toLowerCase())}.</p>
+          <button class="button button--primary" type="button" data-new-category>Crear primera categoría</button>
+        </div>
+      `}
+    </section>
+
+    <section class="panel category-panel">
+      <div class="panel__header">
+        <h2>Categorías de la carta</h2>
+        <span class="status status--info">${menuList.length}</span>
+      </div>
+      <p class="muted admin-cat-note">Lista que usan Ventas, las recetas y la landing para agrupar los platos.</p>
+      <form class="category-form" data-category-form><label>Nueva categoria<input name="category" required placeholder="Nombre de categoria"></label><button class="button button--secondary" type="submit">Agregar categoria</button></form>
+      <div class="category-list">${menuList.map((c) => `<span class="category-pill">${escapeHtml(c)}</span>`).join("")}</div>
+    </section>
+  `;
+}
+
+function categoryRow(category, index, total) {
+  const active = category.status !== "Inactiva";
+  return `
+    <tr>
+      <td>
+        <div class="admin-cat-order">
+          <button class="icon-button" type="button" data-move-category="${category.id}" data-direction="-1" ${index === 0 ? "disabled" : ""} aria-label="Subir categoría">↑</button>
+          <button class="icon-button" type="button" data-move-category="${category.id}" data-direction="1" ${index === total - 1 ? "disabled" : ""} aria-label="Bajar categoría">↓</button>
+        </div>
+      </td>
+      <td>
+        <strong>${escapeHtml(category.name)}</strong>
+        ${category.code ? `<br><small class="muted">${escapeHtml(category.code)}</small>` : ""}
+      </td>
+      <td>${escapeHtml(categoryBranchesLabel(category))}</td>
+      <td><span class="${statusClass(active ? "Activa" : "Inactiva")}">${active ? "Activa" : "Inactiva"}</span></td>
+      <td>
+        <div class="table-actions">
+          <button class="mini-button" type="button" data-edit-category="${category.id}">Editar</button>
+          <button class="mini-button" type="button" data-toggle-category="${category.id}">${active ? "Desactivar" : "Activar"}</button>
+        </div>
+      </td>
+    </tr>`;
+}
+
+function wireCategories() {
+  view.querySelectorAll("[data-category-scope]").forEach((button) => {
+    button.addEventListener("click", () => {
+      categoryUi.scope = button.dataset.categoryScope;
+      const url = new URL(location.href);
+      url.searchParams.set("tab", "categorias");
+      url.searchParams.set("scope", categoryUi.scope);
+      history.replaceState({}, "", url);
+      render();
+    });
+  });
+
+  view.querySelectorAll("[data-new-category]").forEach((button) => {
+    button.addEventListener("click", () => openCategoryModal());
+  });
+  view.querySelectorAll("[data-edit-category]").forEach((button) => {
+    button.addEventListener("click", () => openCategoryModal(button.dataset.editCategory));
+  });
+  view.querySelectorAll("[data-toggle-category]").forEach((button) => {
+    button.addEventListener("click", () => toggleCategory(button.dataset.toggleCategory));
+  });
+  view.querySelectorAll("[data-move-category]").forEach((button) => {
+    button.addEventListener("click", () => moveCategory(button.dataset.moveCategory, Number(button.dataset.direction || 0)));
+  });
+}
+
+function openCategoryModal(categoryId = null) {
+  const category = categoryId ? state.categories.find((item) => item.id === categoryId) : null;
+  const scope = category?.scope || categoryUi.scope;
+  const branchIds = Array.isArray(category?.branchIds) && category.branchIds.length ? category.branchIds : ["ALL"];
+  const appliesAll = branchIds.includes("ALL");
+
+  const modal = openModal(`
+    <section class="modal admin-cat-modal" role="dialog" aria-modal="true">
+      <div class="modal__header">
+        <div><p class="eyebrow">Categorías</p><h2>${category ? "Editar categoría" : "Nueva categoría"}</h2></div>
+        <button class="icon-button" type="button" data-close-modal aria-label="Cerrar">${closeIcon}</button>
+      </div>
+      <form class="form-grid admin-cat-form" data-scoped-category-form>
+        <label>Tipo de categoría
+          <select name="scope">
+            ${CATEGORY_SCOPES.map((item) => `<option value="${item.id}" ${scope === item.id ? "selected" : ""}>${escapeHtml(item.label)}</option>`).join("")}
+          </select>
+        </label>
+        <label>Nombre *<input name="name" value="${escapeHtml(category?.name || "")}" placeholder="Ej. Cafés" required></label>
+        <label>Código <span class="muted">(opcional)</span><input name="code" value="${escapeHtml(category?.code || "")}" placeholder="Ej. CAF"></label>
+        <label>Orden<input name="order" type="number" min="0" step="1" value="${Number(category?.order ?? nextCategoryOrder(scope))}"></label>
+        <label class="admin-cat-check span-2">
+          <input name="allBranches" type="checkbox" value="1" ${appliesAll ? "checked" : ""} data-all-category-branches>
+          <span>
+            <strong>Disponible en todas las sucursales</strong>
+            <small class="muted">Desmarca esta opción únicamente si la categoría pertenece a sedes específicas.</small>
+          </span>
+        </label>
+        <div class="admin-cat-branches span-2" data-category-branches ${appliesAll ? "hidden" : ""}>
+          ${activeBranches(state).map((branch) => `
+            <label><input type="checkbox" name="branchIds" value="${branch.id}" ${branchIds.includes(branch.id) ? "checked" : ""}><span>${escapeHtml(branch.name)}</span></label>
+          `).join("")}
+        </div>
+        <div class="confirm-actions span-2">
+          <button class="button" type="button" data-close-modal>Cancelar</button>
+          <button class="button button--primary" type="submit">${category ? "Guardar cambios" : "Crear categoría"}</button>
+        </div>
+      </form>
+    </section>`);
+
+  const form = modal.querySelector("[data-scoped-category-form]");
+  const allBranches = modal.querySelector("[data-all-category-branches]");
+  const branchBox = modal.querySelector("[data-category-branches]");
+  allBranches?.addEventListener("change", () => { if (branchBox) branchBox.hidden = allBranches.checked; });
+
+  form?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const nextScope = String(data.get("scope") || "").trim();
+    const name = String(data.get("name") || "").trim();
+    if (!name) { showToast("Ingresa el nombre de la categoría."); return; }
+
+    // Se vuelve a buscar por id: saveState reemplaza los objetos del array.
+    const current = categoryId ? state.categories.find((item) => item.id === categoryId) : null;
+    const duplicate = state.categories.find((item) =>
+      item.id !== current?.id && item.scope === nextScope && normalizeText(item.name) === normalizeText(name));
+    if (duplicate) { showToast("Ya existe una categoría con ese nombre en este tipo."); return; }
+
+    let selectedBranches = ["ALL"];
+    if (data.get("allBranches") !== "1") {
+      selectedBranches = data.getAll("branchIds").filter(Boolean);
+      if (!selectedBranches.length) { showToast("Selecciona al menos una sucursal o marca 'todas'."); return; }
+    }
+
+    const payload = {
+      scope: nextScope,
+      name,
+      code: String(data.get("code") || "").trim().toUpperCase(),
+      order: Number(data.get("order") || 0),
+      branchIds: selectedBranches,
+      updatedAt: new Date().toISOString()
+    };
+
+    if (current) {
+      Object.assign(current, payload);
+    } else {
+      state.categories.push({ id: nextId(state, "category", "CAT", 4), ...payload, status: "Activa", createdAt: new Date().toISOString() });
+    }
+
+    categoryUi.scope = nextScope;
+    addAuditEvent(state, {
+      user: session.name,
+      action: current ? "Categoría actualizada" : "Categoría creada",
+      module: "Administracion",
+      detail: `${scopeLabel(nextScope)} · ${name}`
+    });
+    saveState(state);
+    closeModal();
+    showToast(current ? "Categoría actualizada." : "Categoría creada.");
+    render();
+  });
+}
+
+async function toggleCategory(categoryId) {
+  const category = state.categories.find((item) => item.id === categoryId);
+  if (!category) return;
+  const active = category.status !== "Inactiva";
+
+  if (active) {
+    const ok = await confirmAction({
+      title: "Desactivar categoría",
+      message: "Los registros históricos conservarán su categoría, pero ya no estará disponible para nuevas asignaciones.",
+      label: "Desactivar"
+    });
+    if (!ok) return;
+  }
+
+  const target = state.categories.find((item) => item.id === categoryId);
+  if (!target) return;
+  target.status = active ? "Inactiva" : "Activa";
+  target.updatedAt = new Date().toISOString();
+  addAuditEvent(state, {
+    user: session.name,
+    action: active ? "Categoría desactivada" : "Categoría activada",
+    module: "Administracion",
+    detail: target.name
+  });
+  saveState(state);
+  showToast(active ? "Categoría desactivada." : "Categoría activada.");
+  render();
+}
+
+function moveCategory(categoryId, direction) {
+  if (!direction) return;
+  const list = categoriesByScope(state, categoryUi.scope, { activeOnly: false });
+  const index = list.findIndex((category) => category.id === categoryId);
+  const targetIndex = index + direction;
+  if (index < 0 || targetIndex < 0 || targetIndex >= list.length) return;
+
+  // Se renumera toda la lista y se intercambian las dos posiciones.
+  list.forEach((category, position) => { category.order = (position + 1) * 10; });
+  const a = list[index];
+  const b = list[targetIndex];
+  [a.order, b.order] = [b.order, a.order];
+
+  saveState(state);
+  render();
+}
+
+function scopeLabel(scopeId) {
+  return CATEGORY_SCOPES.find((scope) => scope.id === scopeId)?.label || "Categorías";
+}
+
+function categoryBranchesLabel(category) {
+  const ids = Array.isArray(category.branchIds) ? category.branchIds : ["ALL"];
+  if (ids.includes("ALL")) return "Todas las sucursales";
+  const names = ids.map((id) => branchById(state, id)?.shortName || branchById(state, id)?.name).filter(Boolean);
+  return names.join(", ") || "Sin sucursal";
+}
+
+function nextCategoryOrder(scope) {
+  const list = categoriesByScope(state, scope, { activeOnly: false });
+  if (!list.length) return 10;
+  return Math.max(...list.map((category) => Number(category.order || 0))) + 10;
+}
+
+function normalizeText(value) {
+  return String(value || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
+}
 
 function isDirectPlato(plato) {
   return plato.inventoryMode === "direct" && Boolean(plato.inventoryItemId);
@@ -623,21 +926,72 @@ function openRecipeEditor(id) {
 }
 
 // La bitacora se arma con los eventos reales que registra addAuditEvent().
-function auditTimeline() {
+function auditDate(event) {
+  if (!event.at) return "—";
+  const date = new Date(event.at);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
+function auditTable() {
   const events = state.auditEvents || [];
 
   if (!events.length) {
     return '<p class="muted">Aun no hay movimientos registrados. Las acciones sensibles del sistema apareceran aqui.</p>';
   }
 
-  return events
-    .slice(0, 40)
-    .map((event) => {
-      const time = event.time || String(event.at || "").slice(11, 16) || "--:--";
-      const detail = event.detail ? ` · ${escapeHtml(event.detail)}` : "";
-      return `<div class="timeline-item"><time>${escapeHtml(time)}</time><p><strong>${escapeHtml(event.user || "Sistema")}</strong><br><span class="muted">${escapeHtml(event.action || "")} · ${escapeHtml(event.module || "")}${detail}</span></p></div>`;
-    })
-    .join("");
+  const pages = Math.max(1, Math.ceil(events.length / HISTORY_PAGE_SIZE));
+  historyUi.page = Math.min(Math.max(1, historyUi.page), pages);
+  const start = (historyUi.page - 1) * HISTORY_PAGE_SIZE;
+  const rows = events.slice(start, start + HISTORY_PAGE_SIZE);
+
+  return `
+    <div class="table-wrap">
+      <table class="data-table admin-history-table">
+        <thead><tr><th>Fecha</th><th>Hora</th><th>Usuario</th><th>Acción</th><th>Módulo</th><th>Detalle</th></tr></thead>
+        <tbody>
+          ${rows.map((event) => `
+            <tr>
+              <td>${auditDate(event)}</td>
+              <td>${escapeHtml(event.time || String(event.at || "").slice(11, 16) || "--:--")}</td>
+              <td><strong>${escapeHtml(event.user || "Sistema")}</strong></td>
+              <td>${escapeHtml(event.action || "")}</td>
+              <td>${escapeHtml(event.module || "")}</td>
+              <td>${escapeHtml(event.detail || "—")}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+    ${historyPager(events.length, pages, start, rows.length)}`;
+}
+
+// Numeros de pagina visibles: primera, ultima y las vecinas de la actual.
+function historyPageNumbers(current, pages) {
+  const nums = [...new Set([1, pages, current - 1, current, current + 1])]
+    .filter((n) => n >= 1 && n <= pages)
+    .sort((a, b) => a - b);
+  const out = [];
+  nums.forEach((n, index) => {
+    if (index && n - nums[index - 1] > 1) out.push("…");
+    out.push(n);
+  });
+  return out;
+}
+
+function historyPager(total, pages, start, shown) {
+  const page = historyUi.page;
+  return `
+    <nav class="admin-pager" aria-label="Paginación del historial">
+      <span class="admin-pager__info">Mostrando ${start + 1}–${start + shown} de ${total}</span>
+      <div class="admin-pager__buttons">
+        <button type="button" data-history-page="${page - 1}" ${page === 1 ? "disabled" : ""} aria-label="Página anterior">‹ Anterior</button>
+        ${historyPageNumbers(page, pages).map((n) => n === "…"
+          ? '<span class="admin-pager__gap">…</span>'
+          : `<button type="button" class="${n === page ? "is-active" : ""}" data-history-page="${n}" ${n === page ? 'aria-current="page"' : ""}>${n}</button>`).join("")}
+        <button type="button" data-history-page="${page + 1}" ${page === pages ? "disabled" : ""} aria-label="Página siguiente">Siguiente ›</button>
+      </div>
+    </nav>`;
 }
 
 /* ==========================================================================
@@ -646,10 +1000,6 @@ function auditTimeline() {
    que lo que se carga aqui sea exactamente lo que ve el cliente al escanear
    el QR. Los pasos del recorrido son una lista editable.
    ========================================================================== */
-
-// Lote que se esta editando (null = alta) y borrador del formulario, para que
-// agregar o quitar un paso no borre lo que el usuario ya escribio.
-const loteUi = { editandoId: null, pasos: [], borrador: null };
 
 function loteEnEdicion() {
   return loteUi.editandoId
@@ -819,6 +1169,250 @@ function leerPasosDelDom({ conservarVacios = false } = {}) {
     .filter((paso) => conservarVacios || paso.title || paso.text);
 }
 
+/* ==========================================================================
+   TRAZABILIDAD - PAGINAS PUBLICADAS
+   Cada lote con publishWeb activo es una pagina en landing-lote.html?codigo=.
+   Desde aqui se ven todas, se abren, se editan y se publican o retiran.
+   ========================================================================== */
+
+function traceSubtabs() {
+  return `
+    <nav class="panel admin-subtabs" aria-label="Trazabilidad">
+      <button class="admin-subtab ${traceUi.vista === "lotes" ? "is-active" : ""}" type="button" data-trace-vista="lotes">
+        Registro de lotes
+      </button>
+      <button class="admin-subtab ${traceUi.vista === "paginas" ? "is-active" : ""}" type="button" data-trace-vista="paginas">
+        Páginas publicadas
+      </button>
+    </nav>`;
+}
+
+function setTraceVista(vista) {
+  traceUi.vista = vista;
+  const url = new URL(location.href);
+  url.searchParams.set("tab", "trazabilidad");
+  url.searchParams.set("vista", vista);
+  history.replaceState({}, "", url);
+  render();
+}
+
+function isLotPublished(lot) {
+  return lot.publishWeb !== false;
+}
+
+function lotPageUrl(lot) {
+  return `landing-lote.html?codigo=${encodeURIComponent(lot.code || lot.lotCode || lot.id)}`;
+}
+
+function formatLotDate(iso) {
+  if (!iso) return "—";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleDateString("es-PE", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+function publishedPages() {
+  const publicadas = state.coffeeLots.filter(isLotPublished);
+  const sinPublicar = state.coffeeLots.filter((lot) => !isLotPublished(lot));
+  const lista = traceUi.filtro === "publicadas" ? publicadas : sinPublicar;
+
+  return `
+    <section class="panel admin-pages">
+      <div class="panel__header panel__header--wrap">
+        <h2>Páginas de trazabilidad</h2>
+        <a class="button button--secondary" href="landing-trazabilidad.html" target="_blank" rel="noopener">Ver listado público</a>
+      </div>
+      <p class="muted admin-cat-note">Cada lote publicado tiene su propia página en la web. Retirar una página no borra el lote: solo deja de mostrarse.</p>
+
+      <div class="admin-pages__filters" role="group" aria-label="Filtrar páginas">
+        <button class="admin-subtab ${traceUi.filtro === "publicadas" ? "is-active" : ""}" type="button" data-pages-filter="publicadas">En la web</button>
+        <button class="admin-subtab ${traceUi.filtro === "sin-publicar" ? "is-active" : ""}" type="button" data-pages-filter="sin-publicar">Sin publicar</button>
+      </div>
+
+      ${lista.length ? `
+        <div class="table-wrap">
+          <table class="data-table admin-pages-table">
+            <thead>
+              <tr><th>Lote</th><th>Origen</th><th>Contenido</th><th>Actualizado</th><th>Acciones</th></tr>
+            </thead>
+            <tbody>
+              ${lista.map(publishedPageRow).join("")}
+            </tbody>
+          </table>
+        </div>
+      ` : `
+        <div class="admin-cat-empty">
+          <strong>${traceUi.filtro === "publicadas" ? "No hay páginas publicadas" : "Todos los lotes están publicados"}</strong>
+          <p>${traceUi.filtro === "publicadas" ? "Publica un lote para que aparezca en la web." : "No hay lotes retirados de la web."}</p>
+        </div>
+      `}
+    </section>`;
+}
+
+function publishedPageRow(lot) {
+  const faltantes = [
+    !lot.image && "imagen",
+    !lot.description && "descripción",
+    !(lot.steps || []).length && "recorrido"
+  ].filter(Boolean);
+
+  return `
+    <tr>
+      <td>
+        <strong>${escapeHtml(lot.name || lot.lotCode || lot.code)}</strong>
+        <br><small class="muted">${escapeHtml(lot.lotCode || lot.code || "")}</small>
+      </td>
+      <td>${escapeHtml([lot.valley || lot.origin, lot.region].filter(Boolean).join(", ") || "Sin origen")}</td>
+      <td>
+        ${(lot.steps || []).length} pasos
+        ${faltantes.length ? `<br><small class="admin-pages__warn">Falta: ${escapeHtml(faltantes.join(", "))}</small>` : ""}
+      </td>
+      <td>${formatLotDate(lot.updatedAt)}</td>
+      <td>
+        <button
+          class="icon-button admin-row-menu__trigger"
+          type="button"
+          data-lot-menu="${escapeHtml(lot.id)}"
+          aria-haspopup="menu"
+          aria-expanded="false"
+          aria-label="Acciones de ${escapeHtml(lot.name || lot.lotCode || lot.code)}"
+        >⋯</button>
+      </td>
+    </tr>`;
+}
+
+function wirePublishedPages() {
+  view.querySelectorAll("[data-trace-vista]").forEach((boton) => {
+    boton.addEventListener("click", () => setTraceVista(boton.dataset.traceVista));
+  });
+
+  view.querySelectorAll("[data-pages-filter]").forEach((boton) => {
+    boton.addEventListener("click", () => {
+      traceUi.filtro = boton.dataset.pagesFilter;
+      render();
+    });
+  });
+
+  view.querySelectorAll("[data-lot-menu]").forEach((boton) => {
+    boton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const abierto = boton.getAttribute("aria-expanded") === "true";
+      closeLotMenu();
+      if (!abierto) openLotMenu(boton);
+    });
+  });
+}
+
+/* Menu de acciones de una pagina. Se pinta en <body> con position: fixed para
+   que el scroll horizontal de la tabla no lo recorte. */
+function openLotMenu(boton) {
+  const id = boton.dataset.lotMenu;
+  const lot = state.coffeeLots.find((item) => item.id === id);
+  if (!lot) return;
+  const publicado = isLotPublished(lot);
+
+  const menu = document.createElement("div");
+  menu.className = "admin-row-menu";
+  menu.setAttribute("role", "menu");
+  menu.innerHTML = `
+    ${publicado ? `<a role="menuitem" href="${lotPageUrl(lot)}" target="_blank" rel="noopener" data-menu-action="ver">Ver página</a>` : ""}
+    <button role="menuitem" type="button" data-menu-action="copiar">Copiar enlace</button>
+    <button role="menuitem" type="button" data-menu-action="editar">Editar</button>
+    ${publicado
+      ? `<button role="menuitem" type="button" class="is-danger" data-menu-action="eliminar">Eliminar</button>`
+      : `<button role="menuitem" type="button" data-menu-action="publicar">Publicar</button>`}
+  `;
+  document.body.appendChild(menu);
+
+  const rect = boton.getBoundingClientRect();
+  const ancho = menu.offsetWidth;
+  const alto = menu.offsetHeight;
+  const abajo = rect.bottom + 6 + alto <= window.innerHeight;
+  menu.style.top = `${abajo ? rect.bottom + 6 : rect.top - alto - 6}px`;
+  menu.style.left = `${Math.max(8, rect.right - ancho)}px`;
+  boton.setAttribute("aria-expanded", "true");
+
+  menu.addEventListener("click", (event) => {
+    const item = event.target.closest("[data-menu-action]");
+    if (!item) return;
+    const accion = item.dataset.menuAction;
+    closeLotMenu();
+    if (accion === "copiar") copyLotLink(id);
+    if (accion === "editar") editLot(id);
+    if (accion === "eliminar") setLotPublished(id, false);
+    if (accion === "publicar") setLotPublished(id, true);
+  });
+
+  menu.querySelector("[role='menuitem']")?.focus();
+  setTimeout(() => {
+    document.addEventListener("click", closeLotMenu);
+    document.addEventListener("keydown", closeLotMenuOnEscape);
+    window.addEventListener("scroll", closeLotMenu, true);
+    window.addEventListener("resize", closeLotMenu);
+  });
+}
+
+function closeLotMenu() {
+  document.querySelectorAll(".admin-row-menu").forEach((menu) => menu.remove());
+  view.querySelectorAll("[data-lot-menu][aria-expanded='true']").forEach((boton) => boton.setAttribute("aria-expanded", "false"));
+  document.removeEventListener("click", closeLotMenu);
+  document.removeEventListener("keydown", closeLotMenuOnEscape);
+  window.removeEventListener("scroll", closeLotMenu, true);
+  window.removeEventListener("resize", closeLotMenu);
+}
+
+function closeLotMenuOnEscape(event) {
+  if (event.key === "Escape") closeLotMenu();
+}
+
+async function copyLotLink(id) {
+  const lot = state.coffeeLots.find((item) => item.id === id);
+  if (!lot) return;
+  const enlace = new URL(lotPageUrl(lot), location.href).href;
+  try {
+    await navigator.clipboard.writeText(enlace);
+    showToast("Enlace copiado.");
+  } catch {
+    showToast(enlace);
+  }
+}
+
+function editLot(id) {
+  loteUi.editandoId = id;
+  loteUi.pasos = [];
+  loteUi.borrador = null;
+  setTraceVista("lotes");
+  view.querySelector("[data-lot-form]")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+// "Eliminar" retira la pagina de la web; el lote y su ficha se conservan
+// (los registros con historial no se borran).
+async function setLotPublished(id, publicar) {
+  if (!publicar) {
+    const ok = await confirmAction({
+      title: "Eliminar página",
+      message: "La página del lote deja de mostrarse en la web. El lote y su ficha se conservan y puedes volver a publicarla desde \"Sin publicar\".",
+      label: "Eliminar"
+    });
+    if (!ok) return;
+  }
+
+  // Se vuelve a buscar por id: saveState reemplaza los objetos del array.
+  const target = state.coffeeLots.find((item) => item.id === id);
+  if (!target) return;
+  target.publishWeb = publicar;
+  target.updatedAt = new Date().toISOString();
+  addAuditEvent(state, {
+    user: session.name,
+    action: publicar ? "Página de lote publicada" : "Página de lote eliminada de la web",
+    module: "Administracion",
+    detail: target.lotCode || target.code
+  });
+  saveState(state);
+  showToast(publicar ? "Página publicada." : "Página eliminada de la web.");
+  render();
+}
+
 function coffeeLots() {
   if (!state.coffeeLots.length) {
     return '<p class="muted">Aun no hay lotes registrados.</p>';
@@ -914,6 +1508,11 @@ function wire() {
   view.querySelectorAll("[data-admin-tab]").forEach((button) => {
     button.addEventListener("click", () => {
       activeAdminTab = button.dataset.adminTab;
+      const url = new URL(location.href);
+      url.searchParams.set("tab", activeAdminTab);
+      if (activeAdminTab !== "categorias") url.searchParams.delete("scope");
+      if (activeAdminTab !== "trazabilidad") url.searchParams.delete("vista");
+      history.replaceState({}, "", url);
       render();
     });
   });
@@ -942,6 +1541,7 @@ function wire() {
     if (!c || state.menuCategories.includes(c)) { showToast("La categoria ya existe o esta vacia."); return; }
     state.menuCategories.push(c); saveState(state); showToast("Categoria agregada."); render();
   });
+  wireCategories();
   const lotForm = view.querySelector("[data-lot-form]");
   lotForm?.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -972,6 +1572,7 @@ function wire() {
         .filter(Boolean),
       storage: String(d.storage || "").trim(),
       steps: leerPasosDelDom(),
+      updatedAt: new Date().toISOString(),
       publishWeb: !!d.publishWeb,
       notes: String(d.notes || "").trim()
     };
@@ -1019,11 +1620,16 @@ function wire() {
   });
 
   view.querySelectorAll("[data-lot-edit]").forEach((boton) => {
+    boton.addEventListener("click", () => editLot(boton.dataset.lotEdit));
+  });
+
+  wirePublishedPages();
+
+  view.querySelectorAll("[data-history-page]").forEach((boton) => {
     boton.addEventListener("click", () => {
-      loteUi.editandoId = boton.dataset.lotEdit;
-      loteUi.pasos = [];
-      loteUi.borrador = null;
+      historyUi.page = Number(boton.dataset.historyPage);
       render();
+      view.querySelector(".admin-history")?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   });
 

@@ -90,3 +90,385 @@
 .report-range-caption strong {
   color: var(--brown);
 }
+
+/* ==========================================================================
+   SUBMENU DE REPORTES (Balance, Desempeno, Ventas, Clientes, Stock)
+   Mismo tamano de letra que el menu lateral; la opcion activa en rojo con
+   letra blanca y cajas con radio de 10px.
+   ========================================================================== */
+
+.report-subtabs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.report-subtab {
+  flex: 0 0 auto;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: #111111;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.report-subtab:hover {
+  border-color: #e6e6e8;
+  background: #f7f7f8;
+}
+
+.report-subtab.is-active {
+  border-color: var(--red);
+  background: var(--red);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 6px 16px rgba(184, 30, 45, .18);
+}
+
+.report-section {
+  overflow: hidden;
+}
+
+.report-section .table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  margin-top: 10px;
+}
+
+.report-section .data-table {
+  min-width: 720px;
+}
+
+/* Paginacion del stock */
+.report-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.report-pager__info {
+  color: #4a4a4a;
+  font-size: .88rem;
+}
+
+.report-pager__buttons {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.report-pager__buttons button {
+  min-width: 40px;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid #e6e6e8;
+  border-radius: 10px;
+  background: #fff;
+  color: #111111;
+  font: inherit;
+  font-size: .9rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.report-pager__buttons button:hover:not(:disabled) {
+  background: #f4f4f5;
+}
+
+.report-pager__buttons button.is-active {
+  border-color: var(--red);
+  background: var(--red);
+  color: #fff;
+  font-weight: 600;
+}
+
+.report-pager__buttons button:disabled {
+  opacity: .4;
+  cursor: default;
+}
+
+.report-pager__gap {
+  padding: 0 4px;
+  color: #4a4a4a;
+}
+
+@media (max-width: 720px) {
+  .report-pager {
+    justify-content: center;
+  }
+}
+
+/* Cajas de la fila de filtros: fechas y selects con el mismo borde */
+.report-filter-row label {
+  font-weight: 500;
+}
+
+.report-filter-row input,
+.report-filter-row select {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid #d9d9dd;
+  border-radius: 10px;
+  background: #fff;
+  color: #111111;
+  font: inherit;
+  font-size: .92rem;
+}
+
+.report-filter-row input:focus,
+.report-filter-row select:focus {
+  border-color: #111111;
+  outline: none;
+}
+
+/* ==========================================================================
+   GRAFICOS (Balance, Desempeno y Ventas)
+   Barras finas con extremo redondeado de 4px, grilla gris de 1px, texto en
+   tinta neutra (nunca del color de la serie). Ingresos azul, Egresos rojo.
+   ========================================================================== */
+
+.report-chart {
+  padding: 20px;
+}
+
+.report-chart__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.report-chart__head h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.report-chart__head p {
+  margin: 2px 0 0;
+  color: #4a4a4a;
+  font-size: .88rem;
+}
+
+.report-chart__legend {
+  display: flex;
+  gap: 16px;
+  color: #111111;
+  font-size: .88rem;
+}
+
+.report-chart__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.report-chart__legend i {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.report-chart__empty {
+  margin: 0;
+  padding: 28px 0;
+  color: #4a4a4a;
+  text-align: center;
+}
+
+.report-chart .is-income { background: #1f6feb; }
+.report-chart .is-expense { background: #c62828; }
+
+/* Columnas pareadas por dia */
+.report-columns {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+}
+
+.report-columns__axis {
+  height: 220px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: #4a4a4a;
+  font-size: .75rem;
+  text-align: right;
+  transform: translateY(-.5em);
+}
+
+.report-columns__plot {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  padding-bottom: 2px;
+}
+
+.report-columns__grid {
+  position: absolute;
+  inset: 0 0 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.report-columns__grid i {
+  display: block;
+  height: 1px;
+  background: #ececee;
+}
+
+.report-columns__group {
+  position: relative;
+  flex: 1 0 28px;
+  max-width: 64px;
+  display: grid;
+  grid-template-rows: 220px auto;
+  gap: 6px;
+  cursor: default;
+}
+
+.report-columns__group:hover .report-columns__bars {
+  background: #f6f6f7;
+}
+
+.report-columns__bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2px;
+  border-radius: 6px;
+}
+
+.report-columns__bars span {
+  width: min(12px, 40%);
+  border-radius: 4px 4px 0 0;
+}
+
+.report-columns__group small {
+  color: #4a4a4a;
+  font-size: .7rem;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Barras horizontales */
+.report-hbars {
+  display: grid;
+  gap: 8px;
+}
+
+.report-hbars__row {
+  display: grid;
+  grid-template-columns: minmax(110px, 220px) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 3px 6px;
+  border-radius: 8px;
+}
+
+.report-hbars__row:hover {
+  background: #f6f6f7;
+}
+
+.report-hbars__label {
+  overflow: hidden;
+  color: #111111;
+  font-size: .9rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.report-hbars__track {
+  height: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.report-hbars__bar {
+  height: 16px;
+  border-radius: 0 4px 4px 0;
+  background: var(--red);
+}
+
+.report-hbars__value {
+  min-width: 70px;
+  color: #111111;
+  font-size: .88rem;
+  font-weight: 600;
+  text-align: right;
+}
+
+/* Tooltip flotante */
+.report-tooltip {
+  position: fixed;
+  z-index: 1000;
+  max-width: 280px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #111111;
+  color: #fff;
+  font-size: .82rem;
+  line-height: 1.35;
+  pointer-events: none;
+  box-shadow: 0 8px 20px rgba(17, 17, 17, .18);
+}
+
+.report-tooltip[hidden] {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .report-hbars__row {
+    grid-template-columns: minmax(80px, 120px) minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+}
+
+/* --- Graficos sin datos: se dibujan en 0 --------------------------------
+   Las columnas muestran un trazo minimo sobre la base y las barras su riel
+   gris, para que se vea que ahi hay un grafico aunque aun no haya ventas. */
+
+.report-columns.is-empty .report-columns__bars span {
+  height: 2px !important;
+  border-radius: 1px;
+  opacity: .35;
+}
+
+.report-hbars__track {
+  border-radius: 0 4px 4px 0;
+  background: #f4f4f5;
+}
+
+.report-hbars.is-empty .report-hbars__label,
+.report-hbars.is-empty .report-hbars__value {
+  color: #6b6b70;
+}
+
+.report-chart__note {
+  margin: 14px 0 0;
+  color: #6b6b70;
+  font-size: .85rem;
+  text-align: center;
+}

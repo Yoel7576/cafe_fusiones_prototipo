@@ -10,23 +10,40 @@
     backdrop-filter: blur(6px);
 }
 
-.admin-tab {
+/* Submenu: mismo tamano de letra que el menu lateral; la opcion activa va
+   en rojo con letra blanca y todas las cajas con radio de 10px. */
+.admin-tab,
+.admin-subtab {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     border: 1px solid transparent;
-    border-radius: 999px;
+    border-radius: 10px;
     background: transparent;
-    color: var(--muted);
+    color: #111111;
     font: inherit;
-    font-weight: 700;
-    padding: 10px 14px;
+    font-size: 1rem;
+    font-weight: 500;
+    padding: 0 14px;
+    white-space: nowrap;
     cursor: pointer;
-    transition: all .2s ease;
+    transition: background-color .15s ease, color .15s ease, border-color .15s ease;
 }
 
-.admin-tab.is-active {
-    border-color: rgba(82, 47, 28, .2);
-    background: var(--brown);
+.admin-tab:hover,
+.admin-subtab:hover {
+    border-color: #e6e6e8;
+    background: #f7f7f8;
+}
+
+.admin-tab.is-active,
+.admin-subtab.is-active {
+    border-color: var(--red);
+    background: var(--red);
     color: #fff;
-    box-shadow: 0 10px 22px rgba(92, 61, 41, .18);
+    font-weight: 600;
+    box-shadow: 0 6px 16px rgba(184, 30, 45, .18);
 }
 
 .admin-list {
@@ -375,5 +392,405 @@
   }
   .lot-step input[data-step-text] {
     grid-column: 2 / -1;
+  }
+}
+
+/* ==========================================================================
+   CATEGORIAS (catalogo por tipo, antes en Configuracion)
+   ========================================================================== */
+
+.admin-cat-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 17px 18px;
+}
+
+.admin-cat-toolbar h2 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.admin-subtabs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.admin-cat-list {
+  overflow: hidden;
+}
+
+.admin-cat-list .panel__header h2,
+.category-panel .panel__header h2 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.admin-cat-list .table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.admin-cat-table {
+  min-width: 720px;
+}
+
+.admin-cat-table th {
+  font-weight: 600;
+}
+
+.admin-cat-table td {
+  font-weight: 400;
+}
+
+.admin-cat-table td strong {
+  font-weight: 600;
+}
+
+.admin-cat-table th:first-child,
+.admin-cat-table td:first-child {
+  width: 86px;
+}
+
+.admin-cat-table th:last-child,
+.admin-cat-table td:last-child {
+  text-align: right;
+}
+
+.admin-cat-table .table-actions {
+  display: inline-flex;
+  justify-content: flex-end;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.admin-cat-order {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.admin-cat-order .icon-button {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  min-height: 30px;
+  border-radius: 8px;
+}
+
+.admin-cat-order .icon-button:disabled {
+  opacity: .3;
+  cursor: default;
+}
+
+.admin-cat-empty {
+  min-height: 180px;
+  padding: 22px 18px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.admin-cat-empty strong {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.admin-cat-empty p {
+  margin: 0 0 6px;
+  font-size: 14px;
+}
+
+.admin-cat-note {
+  margin: -4px 0 14px;
+  font-size: 14px;
+}
+
+.admin-cat-modal {
+  width: min(100%, 640px);
+}
+
+.admin-cat-form {
+  padding: 20px;
+}
+
+.admin-cat-form label {
+  font-weight: 500;
+}
+
+.admin-cat-check {
+  display: flex !important;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.admin-cat-check input {
+  width: 18px;
+  height: 18px;
+  min-height: 0;
+  margin-top: 2px;
+}
+
+.admin-cat-check > span {
+  display: grid;
+  gap: 3px;
+}
+
+.admin-cat-check strong {
+  font-weight: 600;
+}
+
+.admin-cat-branches {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+}
+
+.admin-cat-branches[hidden] {
+  display: none;
+}
+
+.admin-cat-branches label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.admin-cat-branches input {
+  width: 16px;
+  height: 16px;
+  min-height: 0;
+}
+
+@media (max-width: 720px) {
+  .admin-cat-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* ==========================================================================
+   TRAZABILIDAD > PAGINAS PUBLICADAS
+   ========================================================================== */
+
+.admin-pages .panel__header h2 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.admin-pages__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.admin-pages .table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.admin-pages-table {
+  min-width: 720px;
+}
+
+.admin-pages-table th {
+  font-weight: 600;
+}
+
+.admin-pages-table td {
+  font-weight: 400;
+}
+
+.admin-pages-table td strong {
+  font-weight: 600;
+}
+
+.admin-pages-table th:last-child,
+.admin-pages-table td:last-child {
+  text-align: right;
+}
+
+.admin-pages__warn {
+  color: #c62828;
+}
+
+/* Boton de acciones (tres puntos) y su menu flotante */
+.admin-row-menu__trigger {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  border: 1px solid #e6e6e8;
+  border-radius: 10px;
+  background: #fff;
+  color: #111111;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.admin-row-menu__trigger:hover,
+.admin-row-menu__trigger[aria-expanded="true"] {
+  background: #f4f4f5;
+}
+
+.admin-row-menu {
+  position: fixed;
+  z-index: 1000;
+  min-width: 180px;
+  padding: 6px;
+  display: grid;
+  gap: 2px;
+  border: 1px solid #e6e6e8;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 12px 30px rgba(17, 17, 17, .12);
+}
+
+.admin-row-menu a,
+.admin-row-menu button {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #111111;
+  font: inherit;
+  font-size: .9rem;
+  font-weight: 500;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.admin-row-menu a:hover,
+.admin-row-menu button:hover,
+.admin-row-menu a:focus-visible,
+.admin-row-menu button:focus-visible {
+  background: #f4f4f5;
+  outline: none;
+}
+
+.admin-row-menu .is-danger {
+  color: #c62828;
+}
+
+.admin-row-menu .is-danger:hover {
+  background: #fdecea;
+}
+
+/* ==========================================================================
+   HISTORIAL: tabla paginada (20 filas por pagina)
+   ========================================================================== */
+
+.admin-history {
+  overflow: hidden;
+}
+
+.admin-history .panel__header h2 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.admin-history .table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.admin-history-table {
+  min-width: 820px;
+}
+
+.admin-history-table th {
+  font-weight: 600;
+}
+
+.admin-history-table td {
+  font-weight: 400;
+}
+
+.admin-history-table td strong {
+  font-weight: 600;
+}
+
+.admin-history-table td:first-child,
+.admin-history-table td:nth-child(2) {
+  white-space: nowrap;
+}
+
+.admin-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.admin-pager__info {
+  color: #4a4a4a;
+  font-size: .88rem;
+}
+
+.admin-pager__buttons {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.admin-pager__buttons button {
+  min-width: 40px;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid #e6e6e8;
+  border-radius: 10px;
+  background: #fff;
+  color: #111111;
+  font: inherit;
+  font-size: .9rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.admin-pager__buttons button:hover:not(:disabled) {
+  background: #f4f4f5;
+}
+
+.admin-pager__buttons button.is-active {
+  border-color: var(--red);
+  background: var(--red);
+  color: #fff;
+  font-weight: 600;
+}
+
+.admin-pager__buttons button:disabled {
+  opacity: .4;
+  cursor: default;
+}
+
+.admin-pager__gap {
+  padding: 0 4px;
+  color: #4a4a4a;
+}
+
+@media (max-width: 720px) {
+  .admin-pager {
+    justify-content: center;
   }
 }

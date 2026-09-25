@@ -2,13 +2,14 @@
 // Ruta: js/pages/configuracion.js
 //
 // Navegacion:
-//   general | sucursales | categorias | usuarios | operacion
+//   general | sucursales | usuarios | sistema
+//   Sistema abre sub-vistas en la misma pagina (?vista=mesas|estaciones|impresion|parametros).
 //
 // Criterio UX:
 // - La pantalla muestra resumen primero.
 // - Los formularios se abren solo al crear/editar.
 // - No se eliminan registros con historial: se activan/desactivan.
-// - Categorias son dinamicas y se crean exclusivamente aqui.
+// - Las categorias se administran en Administracion > Categorias.
 // - Sucursales son visibles y transversales a todo el ERP.
 // - Los datos fiscales se conservan para Caja/comprobantes, pero esta pantalla
 //   no simula todavia la integracion electronica con SUNAT.
@@ -23,8 +24,6 @@ import {
   getActiveBranch,
   setActiveBranch,
   branchById,
-  categoriesByScope,
-  CATEGORY_SCOPES,
   nextId,
   addAuditEvent
 } from "../core/storage.js";
@@ -51,9 +50,8 @@ const params = new URLSearchParams(location.search);
 const TABS = [
   ["general", "General"],
   ["sucursales", "Sucursales"],
-  ["categorias", "Categorías"],
   ["usuarios", "Usuarios y permisos"],
-  ["operacion", "Operación"]
+  ["sistema", "Sistema"]
 ];
 
 const PERMISSIONS = [
@@ -67,11 +65,24 @@ const PERMISSIONS = [
   ["configuracion", "Configuración"]
 ];
 
+// "operacion" era el nombre anterior de la pestana Sistema: los enlaces viejos siguen sirviendo.
+const requestedTab = params.get("tab") === "operacion" ? "sistema" : params.get("tab");
+const SISTEMA_VISTAS = ["mesas", "estaciones", "impresion", "parametros"];
+const VISTA_TITULOS = {
+  mesas: "Mesas y plano",
+  estaciones: "Estaciones",
+  impresion: "Impresión",
+  parametros: "Parámetros del sistema"
+};
+
+// Estado efimero del editor de plano (no se persiste).
+const planoUi = { seleccion: null };
+
 const ui = {
-  tab: TABS.some(([id]) => id === params.get("tab"))
-    ? params.get("tab")
+  tab: TABS.some(([id]) => id === requestedTab)
+    ? requestedTab
     : "general",
-  categoryScope: params.get("scope") || "menu",
+  vista: SISTEMA_VISTAS.includes(params.get("vista")) ? params.get("vista") : null,
   operationBranchId: state.settings?.activeBranchId || "",
   search: ""
 };
@@ -162,16 +173,11 @@ function render() {
 
 function settingsHeader() {
   const branch = getActiveBranch(state);
-  const fiscalComplete = Boolean(
-    state.settings.legalName &&
-    state.settings.ruc &&
-    state.settings.fiscalAddress
-  );
 
   return `
     <section class="panel settings-module-head">
       <div class="settings-module-head__top">
-        <h2>Administración central</h2>
+        <h2>Configuración central</h2>
 
         <label class="settings-active-branch">
           <span>Sucursal activa</span>
@@ -187,13 +193,6 @@ function settingsHeader() {
           </select>
         </label>
       </div>
-
-      <section class="settings-kpis">
-        ${kpi("Sucursal principal", escapeHtml(mainBranch()?.shortName || mainBranch()?.name || "Sin definir"))}
-        ${kpi("Datos fiscales", fiscalComplete ? "Completos" : "Pendientes", fiscalComplete ? "ok" : "warn")}
-        ${kpi("Usuarios activos", state.users.filter((user) => user.status !== "Inactivo").length)}
-        ${kpi("Sistema", state.settings.kdsEnabled ? "Operativo" : "Revisar", state.settings.kdsEnabled ? "ok" : "warn")}
-      </section>
     </section>`;
 }
 
@@ -216,9 +215,8 @@ function settingsTabs() {
 
 function renderCurrentTab() {
   if (ui.tab === "sucursales") return renderBranches();
-  if (ui.tab === "categorias") return renderCategories();
   if (ui.tab === "usuarios") return renderUsers();
-  if (ui.tab === "operacion") return renderOperation();
+  if (ui.tab === "sistema") return renderSistema();
   return renderGeneral();
 }
 
@@ -332,7 +330,7 @@ function renderGeneral() {
             <div>
               <h2>Categorías</h2>
             </div>
-            <button class="mini-button" type="button" data-go-categories>Administrar</button>
+            <a class="mini-button" href="admin.html?tab=categorias">Administrar</a>
           </header>
 
           <div class="settings-feature-status">
@@ -356,11 +354,6 @@ function renderBranches() {
 
   return `
     <div class="settings-tab-view">
-      <section class="settings-kpis settings-kpis--3">
-        ${kpi("Sucursales", branches.length)}
-        ${kpi("Activas", branches.filter((branch) => branch.status === "Activa").length, "ok")}
-        ${kpi("Principal", escapeHtml(mainBranch()?.shortName || mainBranch()?.name || "Sin definir"), "info")}
-      </section>
 
       <section class="panel settings-toolbar">
         <div>
@@ -442,162 +435,12 @@ function branchUsage(branchId) {
 }
 
 /* ==========================================================================
-   CATEGORIAS
-   ========================================================================== */
-
-function renderCategories() {
-  const scopes = CATEGORY_SCOPES || [];
-  const validScope = scopes.some((scope) => scope.id === ui.categoryScope);
-
-  if (!validScope && scopes.length) {
-    ui.categoryScope = scopes[0].id;
-  }
-
-  const categories = categoriesByScope(state, ui.categoryScope, {
-    activeOnly: false
-  });
-
-  return `
-    <div class="settings-tab-view">
-      <section class="panel settings-toolbar settings-toolbar--categories">
-        <div>
-          <h2>Categorías</h2>
-        </div>
-
-        <button class="button button--primary" type="button" data-new-category>
-          ${icon("plus")}<span>Nueva categoría</span>
-        </button>
-      </section>
-
-      <section class="panel settings-category-scope">
-        <div class="settings-scope-buttons">
-          ${scopes.map((scope) => `
-            <button
-              class="${ui.categoryScope === scope.id ? "is-active" : ""}"
-              type="button"
-              data-category-scope="${scope.id}"
-            >
-              ${escapeHtml(scope.label)}
-              <span>${categoriesByScope(state, scope.id, { activeOnly: false }).length}</span>
-            </button>
-          `).join("")}
-        </div>
-      </section>
-
-      <section class="panel settings-category-list">
-        <div class="panel__header">
-          <div>
-            <h2>Categorías configuradas</h2>
-          </div>
-          <span class="status status--info">${categories.length} registro(s)</span>
-        </div>
-
-        ${categories.length
-          ? `
-            <div class="table-wrap">
-              <table class="data-table settings-category-table">
-                <thead>
-                  <tr>
-                    <th>Orden</th>
-                    <th>Categoría</th>
-                    <th>Aplica en</th>
-                    <th>Estado</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${categories.map((category, index) => categoryRow(category, index, categories.length)).join("")}
-                </tbody>
-              </table>
-            </div>
-          `
-          : `
-            <div class="settings-empty">
-              <span>▦</span>
-              <strong>No hay categorías creadas</strong>
-              <p>
-                Crea la primera categoría para ${escapeHtml(scopeLabel(ui.categoryScope).toLowerCase())}.
-              </p>
-              <button class="button button--primary" type="button" data-new-category>
-                Crear primera categoría
-              </button>
-            </div>
-          `
-        }
-      </section>
-    </div>`;
-}
-
-function categoryRow(category, index, total) {
-  const active = category.status !== "Inactiva";
-
-  return `
-    <tr>
-      <td>
-        <div class="settings-order-actions">
-          <button
-            class="icon-button"
-            type="button"
-            data-move-category="${category.id}"
-            data-direction="-1"
-            ${index === 0 ? "disabled" : ""}
-            aria-label="Subir categoría"
-          >↑</button>
-          <button
-            class="icon-button"
-            type="button"
-            data-move-category="${category.id}"
-            data-direction="1"
-            ${index === total - 1 ? "disabled" : ""}
-            aria-label="Bajar categoría"
-          >↓</button>
-        </div>
-      </td>
-
-      <td>
-        <strong>${escapeHtml(category.name)}</strong>
-        ${category.code ? `<br><small class="muted">${escapeHtml(category.code)}</small>` : ""}
-      </td>
-
-      <td>${escapeHtml(categoryBranchesLabel(category))}</td>
-
-      <td>
-        <span class="${statusClass(active ? "Activa" : "Inactiva")}">
-          ${active ? "Activa" : "Inactiva"}
-        </span>
-      </td>
-
-      <td>
-        <div class="table-actions">
-          <button class="mini-button" type="button" data-edit-category="${category.id}">
-            Editar
-          </button>
-          <button class="mini-button" type="button" data-toggle-category="${category.id}">
-            ${active ? "Desactivar" : "Activar"}
-          </button>
-        </div>
-      </td>
-    </tr>`;
-}
-
-/* ==========================================================================
    USUARIOS Y PERMISOS
    ========================================================================== */
 
 function renderUsers() {
-  const active = state.users.filter((user) => user.status !== "Inactivo").length;
-  const multiBranch = state.users.filter((user) =>
-    Array.isArray(user.branchIds) &&
-    (user.branchIds.includes("ALL") || user.branchIds.length > 1)
-  ).length;
-
   return `
     <div class="settings-tab-view">
-      <section class="settings-kpis settings-kpis--3">
-        ${kpi("Usuarios", state.users.length)}
-        ${kpi("Activos", active, "ok")}
-        ${kpi("Multi-sucursal", multiBranch, "info")}
-      </section>
 
       <section class="panel settings-toolbar">
         <div>
@@ -667,7 +510,9 @@ function userRow(user) {
    OPERACION
    ========================================================================== */
 
-function renderOperation() {
+function renderSistema() {
+  if (ui.vista) return renderSistemaVista();
+
   const branchId = ui.operationBranchId || getActiveBranch(state)?.id;
   const branch = branchById(state, branchId);
 
@@ -698,57 +543,50 @@ function renderOperation() {
 
       <section class="settings-operation-grid">
         ${operationCard({
-          symbol: "▦",
           title: "Mesas",
           value: tables.length,
           detail: `${tables.reduce((sum, table) => sum + Number(table.seats || 0), 0)} asientos configurados`,
-          action: "manage-tables",
+          action: "mesas",
           actionLabel: "Gestionar mesas"
         })}
 
         ${operationCard({
-          symbol: "◉",
           title: "Estaciones",
           value: activeStations.length,
           detail: stations.length
             ? `${stations.length} registradas en ${branch?.shortName || branch?.name || "la sucursal"}`
             : "Sin estaciones configuradas",
-          action: "manage-stations",
+          action: "estaciones",
           actionLabel: "Gestionar estaciones"
         })}
 
         ${operationCard({
-          symbol: "▤",
           title: "Impresión",
           value: `${assignedPrinters}/${stations.length}`,
           detail: "Estaciones con impresora asignada",
-          action: "manage-printing",
+          action: "impresion",
           actionLabel: "Configurar impresión"
         })}
 
         ${operationCard({
-          symbol: "⚙",
           title: "Sistema",
           value: state.settings.kdsEnabled ? "KDS activo" : "KDS inactivo",
           detail: state.settings.loyaltyEnabled
             ? "Fidelización habilitada"
             : "Fidelización deshabilitada",
-          action: "manage-system",
+          action: "parametros",
           actionLabel: "Ajustar parámetros"
         })}
       </section>
     </div>`;
 }
 
-function operationCard({ symbol, title, value, detail, action, actionLabel }) {
+function operationCard({ title, value, detail, action, actionLabel }) {
   return `
     <article class="panel settings-operation-card">
       <header>
-        <span>${symbol}</span>
-        <div>
-          <h3>${escapeHtml(title)}</h3>
-          <strong>${escapeHtml(String(value))}</strong>
-        </div>
+        <h3>${escapeHtml(title)}</h3>
+        <strong>${escapeHtml(String(value))}</strong>
       </header>
 
       <p>${escapeHtml(detail)}</p>
@@ -787,24 +625,19 @@ function wireCommon() {
 function wireCurrentTab() {
   if (ui.tab === "general") wireGeneral();
   if (ui.tab === "sucursales") wireBranches();
-  if (ui.tab === "categorias") wireCategories();
   if (ui.tab === "usuarios") wireUsers();
-  if (ui.tab === "operacion") wireOperation();
+  if (ui.tab === "sistema") wireSistema();
 }
 
 function goTab(tab) {
   if (!TABS.some(([id]) => id === tab)) return;
 
   ui.tab = tab;
+  ui.vista = null;
 
   const url = new URL(location.href);
   url.searchParams.set("tab", tab);
-
-  if (tab === "categorias") {
-    url.searchParams.set("scope", ui.categoryScope);
-  } else {
-    url.searchParams.delete("scope");
-  }
+  url.searchParams.delete("vista");
 
   history.replaceState({}, "", url);
   render();
@@ -818,7 +651,6 @@ function wireGeneral() {
   view.querySelector("[data-edit-business]")?.addEventListener("click", openBusinessModal);
   view.querySelector("[data-edit-billing]")?.addEventListener("click", openBillingModal);
   view.querySelector("[data-go-branches]")?.addEventListener("click", () => goTab("sucursales"));
-  view.querySelector("[data-go-categories]")?.addEventListener("click", () => goTab("categorias"));
 }
 
 function openBusinessModal() {
@@ -1302,296 +1134,6 @@ async function toggleBranch(branchId) {
 }
 
 /* ==========================================================================
-   CATEGORIAS - EVENTOS Y MODALES
-   ========================================================================== */
-
-function wireCategories() {
-  view.querySelectorAll("[data-category-scope]").forEach((button) => {
-    button.addEventListener("click", () => {
-      ui.categoryScope = button.dataset.categoryScope;
-
-      const url = new URL(location.href);
-      url.searchParams.set("tab", "categorias");
-      url.searchParams.set("scope", ui.categoryScope);
-      history.replaceState({}, "", url);
-
-      render();
-    });
-  });
-
-  view.querySelectorAll("[data-new-category]").forEach((button) => {
-    button.addEventListener("click", () => openCategoryModal());
-  });
-
-  view.querySelectorAll("[data-edit-category]").forEach((button) => {
-    button.addEventListener("click", () => openCategoryModal(button.dataset.editCategory));
-  });
-
-  view.querySelectorAll("[data-toggle-category]").forEach((button) => {
-    button.addEventListener("click", () => toggleCategory(button.dataset.toggleCategory));
-  });
-
-  view.querySelectorAll("[data-move-category]").forEach((button) => {
-    button.addEventListener("click", () => {
-      moveCategory(
-        button.dataset.moveCategory,
-        Number(button.dataset.direction || 0)
-      );
-    });
-  });
-}
-
-function openCategoryModal(categoryId = null) {
-  const category = categoryId
-    ? state.categories.find((item) => item.id === categoryId)
-    : null;
-
-  const scope = category?.scope || ui.categoryScope;
-  const branchIds = Array.isArray(category?.branchIds) && category.branchIds.length
-    ? category.branchIds
-    : ["ALL"];
-  const appliesAll = branchIds.includes("ALL");
-
-  const html = `
-    <section class="modal settings-form-modal" role="dialog" aria-modal="true">
-      ${modalHeader(category ? "Editar categoría" : "Nueva categoría", "Categorías")}
-
-      <form class="form-grid settings-modal-body" data-category-form>
-        <label>
-          Tipo de categoría
-          <select name="scope">
-            ${CATEGORY_SCOPES.map((item) => `
-              <option value="${item.id}" ${scope === item.id ? "selected" : ""}>
-                ${escapeHtml(item.label)}
-              </option>
-            `).join("")}
-          </select>
-        </label>
-
-        <label>
-          Nombre *
-          <input
-            name="name"
-            value="${escapeHtml(category?.name || "")}"
-            placeholder="Ej. Cafés"
-            required
-          >
-        </label>
-
-        <label>
-          Código <span class="optional">(opcional)</span>
-          <input
-            name="code"
-            value="${escapeHtml(category?.code || "")}"
-            placeholder="Ej. CAF"
-          >
-        </label>
-
-        <label>
-          Orden
-          <input
-            name="order"
-            type="number"
-            min="0"
-            step="1"
-            value="${Number(category?.order ?? nextCategoryOrder(scope))}"
-          >
-        </label>
-
-        <label class="settings-check-row span-2">
-          <input
-            name="allBranches"
-            type="checkbox"
-            value="1"
-            ${appliesAll ? "checked" : ""}
-            data-all-category-branches
-          >
-          <span>
-            <strong>Disponible en todas las sucursales</strong>
-            <small>Desmarca esta opción únicamente si la categoría pertenece a sedes específicas.</small>
-          </span>
-        </label>
-
-        <div
-          class="settings-branch-checks span-2"
-          data-category-branches
-          ${appliesAll ? "hidden" : ""}
-        >
-          ${activeBranches(state).map((branch) => `
-            <label>
-              <input
-                type="checkbox"
-                name="branchIds"
-                value="${branch.id}"
-                ${branchIds.includes(branch.id) ? "checked" : ""}
-              >
-              <span>${escapeHtml(branch.name)}</span>
-            </label>
-          `).join("")}
-        </div>
-
-        <div class="settings-form-note span-2">
-          <strong>Categorías</strong>
-          <small>
-            Define solo las categorías que utiliza Cafe Fusiones.
-          </small>
-        </div>
-
-        ${modalActions(category ? "Guardar cambios" : "Crear categoría")}
-      </form>
-    </section>`;
-
-  const modal = openModal(html);
-  const form = modal.querySelector("[data-category-form]");
-  const allBranches = modal.querySelector("[data-all-category-branches]");
-  const branchBox = modal.querySelector("[data-category-branches]");
-
-  allBranches?.addEventListener("change", () => {
-    if (branchBox) branchBox.hidden = allBranches.checked;
-  });
-
-  form?.addEventListener("submit", (event) => {
-    event.preventDefault();
-
-    const data = new FormData(event.currentTarget);
-    const nextScope = String(data.get("scope") || "").trim();
-    const name = String(data.get("name") || "").trim();
-
-    if (!name) {
-      showToast("Ingresa el nombre de la categoría.");
-      return;
-    }
-
-    const duplicate = state.categories.find(
-      (item) =>
-        item.id !== category?.id &&
-        item.scope === nextScope &&
-        normalizeText(item.name) === normalizeText(name)
-    );
-
-    if (duplicate) {
-      showToast("Ya existe una categoría con ese nombre en este tipo.");
-      return;
-    }
-
-    let selectedBranches = ["ALL"];
-
-    if (data.get("allBranches") !== "1") {
-      selectedBranches = data.getAll("branchIds").filter(Boolean);
-
-      if (!selectedBranches.length) {
-        showToast("Selecciona al menos una sucursal o marca 'todas'.");
-        return;
-      }
-    }
-
-    const payload = {
-      scope: nextScope,
-      name,
-      code: String(data.get("code") || "").trim().toUpperCase(),
-      order: Number(data.get("order") || 0),
-      branchIds: selectedBranches,
-      updatedAt: new Date().toISOString()
-    };
-
-    if (category) {
-      Object.assign(category, payload);
-    } else {
-      state.categories.push({
-        id: nextId(state, "category", "CAT", 4),
-        ...payload,
-        status: "Activa",
-        createdAt: new Date().toISOString()
-      });
-    }
-
-    ui.categoryScope = nextScope;
-
-    addAuditEvent(state, {
-      user: session.name,
-      action: category ? "Categoría actualizada" : "Categoría creada",
-      module: "Configuración",
-      detail: `${scopeLabel(nextScope)} · ${name}`
-    });
-
-    saveState(state);
-    closeModal();
-    showToast(category ? "Categoría actualizada." : "Categoría creada.");
-    render();
-  });
-}
-
-async function toggleCategory(categoryId) {
-  const category = state.categories.find((item) => item.id === categoryId);
-  if (!category) return;
-
-  const active = category.status !== "Inactiva";
-
-  if (active) {
-    const ok = await confirmAction({
-      title: "Desactivar categoría",
-      message: "Los registros históricos conservarán su categoría, pero ya no estará disponible para nuevas asignaciones.",
-      label: "Desactivar"
-    });
-
-    if (!ok) return;
-  }
-
-  category.status = active ? "Inactiva" : "Activa";
-  category.updatedAt = new Date().toISOString();
-
-  addAuditEvent(state, {
-    user: session.name,
-    action: active ? "Categoría desactivada" : "Categoría activada",
-    module: "Configuración",
-    detail: category.name
-  });
-
-  saveState(state);
-  showToast(active ? "Categoría desactivada." : "Categoría activada.");
-  render();
-}
-
-function moveCategory(categoryId, direction) {
-  if (!direction) return;
-
-  const list = categoriesByScope(state, ui.categoryScope, { activeOnly: false });
-  const index = list.findIndex((category) => category.id === categoryId);
-  const targetIndex = index + direction;
-
-  if (index < 0 || targetIndex < 0 || targetIndex >= list.length) return;
-
-  const current = list[index];
-  const target = list[targetIndex];
-
-  const currentOrder = Number(current.order || index * 10);
-  const targetOrder = Number(target.order || targetIndex * 10);
-
-  current.order = targetOrder;
-  target.order = currentOrder;
-
-  if (current.order === target.order) {
-    list.forEach((category, position) => {
-      category.order = (position + 1) * 10;
-    });
-
-    const refreshedIndex = list.findIndex((category) => category.id === categoryId);
-    const swapIndex = refreshedIndex + direction;
-
-    if (swapIndex >= 0 && swapIndex < list.length) {
-      const a = list[refreshedIndex];
-      const b = list[swapIndex];
-      const temp = a.order;
-      a.order = b.order;
-      b.order = temp;
-    }
-  }
-
-  saveState(state);
-  render();
-}
-
-/* ==========================================================================
    USUARIOS - EVENTOS Y MODALES
    ========================================================================== */
 
@@ -1947,46 +1489,79 @@ async function toggleUser(userId) {
    OPERACION - EVENTOS
    ========================================================================== */
 
-function wireOperation() {
+// Cada tarjeta abre su propia pantalla dentro de Sistema (no un modal):
+// el menu lateral y el submenu siguen visibles.
+function renderSistemaVista() {
+  const branch = branchById(state, ui.operationBranchId);
+  const cuerpo = {
+    mesas: () => `<div class="settings-plan-body" data-plan-body>${planoEditorBody()}</div>`,
+    estaciones: stationsViewBody,
+    impresion: printingViewBody,
+    parametros: systemViewBody
+  }[ui.vista];
+
+  return `
+    <div class="settings-tab-view">
+      <section class="panel settings-subpage-head">
+        <button class="settings-back" type="button" data-sistema-back>‹ Volver</button>
+        <div>
+          <p class="eyebrow">Sistema${ui.vista === "parametros" ? "" : ` · ${escapeHtml(branch?.shortName || branch?.name || "Sucursal")}`}</p>
+          <h2>${VISTA_TITULOS[ui.vista]}</h2>
+        </div>
+      </section>
+      <section class="panel settings-subpage" data-sistema-vista>
+        ${cuerpo()}
+      </section>
+    </div>`;
+}
+
+function goVista(vista) {
+  ui.vista = SISTEMA_VISTAS.includes(vista) ? vista : null;
+  planoUi.seleccion = null;
+
+  const url = new URL(location.href);
+  url.searchParams.set("tab", "sistema");
+  if (ui.vista) url.searchParams.set("vista", ui.vista);
+  else url.searchParams.delete("vista");
+  history.replaceState({}, "", url);
+
+  render();
+  window.scrollTo({ top: 0 });
+}
+
+function wireSistema() {
+  if (ui.vista) {
+    wireSistemaVista();
+    return;
+  }
+
   view.querySelector("[data-operation-branch]")?.addEventListener("change", (event) => {
     ui.operationBranchId = event.target.value;
     render();
   });
 
   view.querySelectorAll("[data-operation-action]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const action = button.dataset.operationAction;
-
-      if (action === "manage-tables") openTablesModal();
-      if (action === "manage-stations") openStationsModal();
-      if (action === "manage-printing") openPrintingModal();
-      if (action === "manage-system") openSystemModal();
-    });
+    button.addEventListener("click", () => goVista(button.dataset.operationAction));
   });
 }
 
+function wireSistemaVista() {
+  const root = view.querySelector("[data-sistema-vista]");
+  view.querySelector("[data-sistema-back]")?.addEventListener("click", () => goVista(null));
+  root?.querySelectorAll("[data-sistema-cancel]").forEach((button) => {
+    button.addEventListener("click", () => goVista(null));
+  });
+
+  if (ui.vista === "mesas") wirePlanoEditor(root);
+  if (ui.vista === "estaciones") wireStationsView(root);
+  if (ui.vista === "impresion") wirePrintingView(root);
+  if (ui.vista === "parametros") wireSystemView(root);
+}
+
 /* ==========================================================================
-   OPERACION - MESAS
+   SISTEMA - MESAS
    ========================================================================== */
 
-// Estado efimero del editor de plano (no se persiste).
-const planoUi = { seleccion: null };
-
-function openTablesModal() {
-  planoUi.seleccion = null;
-  const modal = openModal(planoEditorHtml());
-  wirePlanoEditor(modal);
-}
-
-function planoEditorHtml() {
-  const branch = branchById(state, ui.operationBranchId);
-
-  return `
-    <section class="modal settings-plan-modal" role="dialog" aria-modal="true">
-      ${modalHeader(`Mesas y plano · ${branch?.shortName || branch?.name || "Sucursal"}`, "Operación")}
-      <div class="settings-plan-body" data-plan-body>${planoEditorBody()}</div>
-    </section>`;
-}
 
 function planoEditorBody() {
   const mesas = planoTables();
@@ -1995,11 +1570,7 @@ function planoEditorBody() {
 
   return `
     <div class="plan-toolbar">
-      <p class="muted">
-        Arrastra una mesa o una zona para moverla. Al seleccionarla aparece un punto
-        en la esquina para cambiarle el tamaño. Todo se alinea solo a la cuadrícula.
-        Funciona con el dedo en tablet.
-      </p>
+      <p class="muted">Arrastra una mesa o una zona para moverla.</p>
       <div class="plan-toolbar__actions">
         <button class="mini-button" type="button" data-plan-new-zone>Nueva zona</button>
         <button class="button button--primary" type="button" data-plan-new-table>
@@ -2070,7 +1641,7 @@ function planoInspector(elemento) {
   if (!elemento) {
     return `
       <p class="eyebrow">Elemento</p>
-      <p class="muted">Toca una mesa o una zona del plano para cambiarle el nombre, el tamaño o eliminarla.</p>`;
+      <p class="muted">Toca una mesa o una zona del plano para editarla o eliminarla.</p>`;
   }
 
   const esMesa = planoUi.seleccion.tipo === "mesa";
@@ -2111,14 +1682,14 @@ function planoInspector(elemento) {
    el lienzo, que es lo que Ventas vuelve a pintar.
    ------------------------------------------------------------------------------ */
 
-function wirePlanoEditor(modal) {
-  const cuerpo = modal.querySelector("[data-plan-body]");
-  const lienzo = modal.querySelector("[data-plan-canvas]");
+function wirePlanoEditor(root) {
+  const cuerpo = root?.querySelector("[data-plan-body]");
+  const lienzo = root?.querySelector("[data-plan-canvas]");
   if (!lienzo) return;
 
   const repintar = () => {
     cuerpo.innerHTML = planoEditorBody();
-    wirePlanoEditor(modal);
+    wirePlanoEditor(root);
   };
 
   lienzo.addEventListener("pointerdown", (event) => {
@@ -2133,10 +1704,13 @@ function wirePlanoEditor(modal) {
     if (!registro) return;
 
     planoUi.seleccion = { tipo, id };
-    modal.querySelector(".plan-inspector").innerHTML = planoInspector(registro);
-    wirePlanoInspector(modal, repintar);
+    root.querySelector(".plan-inspector").innerHTML = planoInspector(registro);
+    wirePlanoInspector(root, repintar);
     lienzo.querySelectorAll(".floor-item").forEach((item) => item.classList.remove("is-selected"));
     elemento.classList.add("is-selected");
+
+    // Las mesas tienen tamano unico: se corrige el guardado antes de moverla.
+    if (tipo === "mesa") registro.map = { ...registro.map, ...tamanoMesa() };
 
     const redimensionando = Boolean(event.target.closest("[data-plan-resize]"));
     const caja = lienzo.getBoundingClientRect();
@@ -2153,7 +1727,7 @@ function wirePlanoEditor(modal) {
 
       // Todo cae en la grilla del plano, para que quede alineado sin puntería.
       if (redimensionando) {
-        // Las mesas no se redimensionan a mano: su tamaño sale de la capacidad.
+        // Las mesas no se redimensionan: todas tienen el mismo tamaño.
         if (tipo === "mesa") return;
         registro.map.w = acotar(snapPlano(base.w + dx), PLANO_GRID * 2, 100 - registro.map.x);
         registro.map.h = acotar(snapPlano(base.h + dy), PLANO_GRID * 2, 100 - registro.map.y);
@@ -2181,9 +1755,9 @@ function wirePlanoEditor(modal) {
     elemento.addEventListener("pointercancel", soltar);
   });
 
-  wirePlanoInspector(modal, repintar);
+  wirePlanoInspector(root, repintar);
 
-  modal.querySelector("[data-plan-new-table]")?.addEventListener("click", () => {
+  root.querySelector("[data-plan-new-table]")?.addEventListener("click", () => {
     const id = uniqueTableId();
     state.tables.push({
       id,
@@ -2195,7 +1769,7 @@ function wirePlanoEditor(modal) {
       customerId: null,
       openedAt: null,
       items: [],
-      map: { x: 45, y: 45, ...tamanoMesa(2), shape: "rect" }
+      map: { x: 45, y: 45, ...tamanoMesa(), shape: "rect" }
     });
     addAuditEvent(state, {
       user: session.name, action: "Mesa creada", module: "Configuración",
@@ -2207,7 +1781,7 @@ function wirePlanoEditor(modal) {
     showToast("Mesa agregada al plano.");
   });
 
-  modal.querySelector("[data-plan-new-zone]")?.addEventListener("click", () => {
+  root.querySelector("[data-plan-new-zone]")?.addEventListener("click", () => {
     // Defensa: si la secuencia viene desfasada de un estado viejo, se avanza
     // hasta un id libre en vez de duplicar una zona existente.
     let id = nextId(state, "floorZone", "ZON", 2);
@@ -2231,13 +1805,13 @@ function wirePlanoEditor(modal) {
     showToast("Zona agregada al plano.");
   });
 
-  modal.querySelectorAll("[data-edit-table]").forEach((boton) => {
+  root.querySelectorAll("[data-edit-table]").forEach((boton) => {
     boton.addEventListener("click", () => openTableForm(boton.dataset.editTable));
   });
 }
 
-function wirePlanoInspector(modal, repintar) {
-  const inspector = modal.querySelector(".plan-inspector");
+function wirePlanoInspector(root, repintar) {
+  const inspector = root.querySelector(".plan-inspector");
   if (!inspector) return;
 
   // IMPORTANTE: `saveState` normaliza el estado y reemplaza los objetos de los
@@ -2275,7 +1849,7 @@ function wirePlanoInspector(modal, repintar) {
     const elemento = registro();
     if (!elemento) return;
     elemento.seats = Math.max(1, Number(event.target.value || 1));
-    // El tamaño de una mesa lo define su capacidad, no el arrastre.
+    // Cambiar la capacidad no cambia el tamaño: todas las mesas miden lo mismo.
     elemento.map = normalizarMapaMesa(elemento);
     saveState(state);
     repintar();
@@ -2308,18 +1882,15 @@ function wirePlanoInspector(modal, repintar) {
       return;
     }
 
-    // confirmAction abre su propio modal y openModal no apila: al confirmar, el
-    // editor queda fuera del DOM, asi que despues hay que volver a abrirlo.
+    // El editor vive en la pagina (no en un modal), asi que sigue en el DOM
+    // mientras se muestra la confirmacion.
     const confirmado = await confirmAction({
       title: esMesa ? "Eliminar mesa" : "Eliminar zona",
       message: `¿Seguro que quieres eliminar "${nombre}" del plano? Esta accion no se puede deshacer.`,
       label: "Eliminar"
     });
 
-    if (!confirmado) {
-      openTablesModal();
-      return;
-    }
+    if (!confirmado) return;
 
     if (esMesa) {
       state.tables = state.tables.filter((table) => table.id !== elemento.id);
@@ -2336,7 +1907,7 @@ function wirePlanoInspector(modal, repintar) {
     });
     saveState(state);
     planoUi.seleccion = null;
-    openTablesModal();
+    render();
     showToast(esMesa ? "Mesa eliminada." : "Zona eliminada.");
   });
 }
@@ -2457,61 +2028,53 @@ function openTableForm(tableId = null) {
     saveState(state);
     closeModal();
     showToast(table ? "Mesa actualizada." : "Mesa creada.");
-    openTablesModal();
+    render();
   });
 }
 
 /* ==========================================================================
-   OPERACION - ESTACIONES
+   SISTEMA - ESTACIONES
    ========================================================================== */
 
-function openStationsModal() {
-  const branchId = ui.operationBranchId;
-  const branch = branchById(state, branchId);
-  const stations = state.stations.filter((station) => station.branchId === branchId);
+function stationsViewBody() {
+  const stations = state.stations.filter((station) => station.branchId === ui.operationBranchId);
 
-  const html = `
-    <section class="modal settings-list-modal" role="dialog" aria-modal="true">
-      ${modalHeader(`Estaciones · ${branch?.shortName || branch?.name || "Sucursal"}`, "Operación")}
+  return `
+    <div class="settings-inline-head">
+      <p>
+        Las estaciones organizan KDS y producción. Barra y Cocina pueden
+        mantenerse separadas aunque físicamente compartan espacio.
+      </p>
+      <button class="button button--primary" type="button" data-new-station>
+        ${icon("plus")}<span>Nueva estación</span>
+      </button>
+    </div>
 
-      <div class="settings-list-modal-body">
-        <div class="settings-inline-head">
-          <p>
-            Las estaciones organizan KDS y producción. Barra y Cocina pueden
-            mantenerse separadas aunque físicamente compartan espacio.
-          </p>
-          <button class="button button--primary" type="button" data-new-station>
-            ${icon("plus")}<span>Nueva estación</span>
+    <div class="settings-station-list">
+      ${stations.map((station) => `
+        <article>
+          <div>
+            <span class="${statusClass(station.status)}">${escapeHtml(station.status)}</span>
+            <strong>${escapeHtml(station.name)}</strong>
+            <small>${escapeHtml(station.type || "Operativa")} · objetivo ${Number(station.targetMinutes || 0)} min</small>
+          </div>
+          <button class="mini-button" type="button" data-edit-station="${station.id}">
+            Editar
           </button>
+        </article>
+      `).join("") || `
+        <div class="settings-empty settings-empty--small">
+          <strong>Sin estaciones</strong>
+          <p>Crea las estaciones que realmente utiliza esta sucursal.</p>
         </div>
+      `}
+    </div>`;
+}
 
-        <div class="settings-station-list">
-          ${stations.map((station) => `
-            <article>
-              <div>
-                <span class="${statusClass(station.status)}">${escapeHtml(station.status)}</span>
-                <strong>${escapeHtml(station.name)}</strong>
-                <small>${escapeHtml(station.type || "Operativa")} · objetivo ${Number(station.targetMinutes || 0)} min</small>
-              </div>
-              <button class="mini-button" type="button" data-edit-station="${station.id}">
-                Editar
-              </button>
-            </article>
-          `).join("") || `
-            <div class="settings-empty settings-empty--small">
-              <strong>Sin estaciones</strong>
-              <p>Crea las estaciones que realmente utiliza esta sucursal.</p>
-            </div>
-          `}
-        </div>
-      </div>
-    </section>`;
+function wireStationsView(root) {
+  root?.querySelector("[data-new-station]")?.addEventListener("click", () => openStationForm());
 
-  const modal = openModal(html);
-
-  modal.querySelector("[data-new-station]")?.addEventListener("click", () => openStationForm());
-
-  modal.querySelectorAll("[data-edit-station]").forEach((button) => {
+  root?.querySelectorAll("[data-edit-station]").forEach((button) => {
     button.addEventListener("click", () => openStationForm(button.dataset.editStation));
   });
 }
@@ -2609,82 +2172,62 @@ function openStationForm(stationId = null) {
 }
 
 /* ==========================================================================
-   OPERACION - IMPRESION
+   SISTEMA - IMPRESION
    ========================================================================== */
 
-function openPrintingModal() {
-  const branchId = ui.operationBranchId;
-  const stations = state.stations.filter((station) => station.branchId === branchId);
+function printingViewBody() {
+  const stations = state.stations.filter((station) => station.branchId === ui.operationBranchId);
   const printing = state.settings.printing || { stationPrinters: {} };
 
-  const html = `
-    <section class="modal settings-form-modal" role="dialog" aria-modal="true">
-      ${modalHeader("Impresión", "Operación")}
+  return `
+    <form class="settings-subpage-form" data-printing-form>
+      <div class="settings-check-stack">
+        <label class="settings-check-row">
+          <input type="checkbox" name="autoKitchen" value="1" ${printing.autoKitchen ? "checked" : ""}>
+          <span>
+            <strong>Imprimir comandas automáticamente</strong>
+            <small>Imprime la comanda al enviar el pedido.</small>
+          </span>
+        </label>
 
-      <form class="settings-modal-body" data-printing-form>
-        <div class="settings-check-stack">
-          <label class="settings-check-row">
-            <input
-              type="checkbox"
-              name="autoKitchen"
-              value="1"
-              ${printing.autoKitchen ? "checked" : ""}
-            >
-            <span>
-              <strong>Imprimir comandas automáticamente</strong>
-              <small>Imprime la comanda al enviar el pedido.</small>
-            </span>
-          </label>
+        <label class="settings-check-row">
+          <input type="checkbox" name="autoReceipt" value="1" ${printing.autoReceipt ? "checked" : ""}>
+          <span>
+            <strong>Imprimir comprobante al cerrar venta</strong>
+            <small>Imprime el comprobante al cerrar la venta.</small>
+          </span>
+        </label>
+      </div>
 
-          <label class="settings-check-row">
-            <input
-              type="checkbox"
-              name="autoReceipt"
-              value="1"
-              ${printing.autoReceipt ? "checked" : ""}
-            >
-            <span>
-              <strong>Imprimir comprobante al cerrar venta</strong>
-              <small>Imprime el comprobante al cerrar la venta.</small>
-            </span>
-          </label>
-        </div>
+      <div class="settings-printer-fields">
+        <h3>Impresora por estación</h3>
+        ${stations.length
+          ? stations.map((station) => `
+            <label>
+              <span>${escapeHtml(station.name)}</span>
+              <input
+                name="printer_${station.id}"
+                value="${escapeHtml(printing.stationPrinters?.[station.id] || "")}"
+                placeholder="Sin asignar"
+              >
+            </label>
+          `).join("")
+          : `<p class="muted">Primero configura una estación para esta sucursal.</p>`
+        }
+      </div>
 
-        <div class="settings-printer-fields">
-          <h3>Impresora por estación</h3>
+      <div class="settings-subpage-actions">
+        <button class="button button--secondary" type="button" data-sistema-cancel>Cancelar</button>
+        <button class="button button--primary" type="submit">Guardar impresión</button>
+      </div>
+    </form>`;
+}
 
-          ${stations.length
-            ? stations.map((station) => `
-              <label>
-                <span>${escapeHtml(station.name)}</span>
-                <input
-                  name="printer_${station.id}"
-                  value="${escapeHtml(printing.stationPrinters?.[station.id] || "")}"
-                  placeholder="Sin asignar"
-                >
-              </label>
-            `).join("")
-            : `<p class="muted">Primero configura una estación para esta sucursal.</p>`
-          }
-        </div>
+function wirePrintingView(root) {
+  const branchId = ui.operationBranchId;
+  const stations = state.stations.filter((station) => station.branchId === branchId);
 
-        <div class="settings-form-note">
-          <strong>Impresoras</strong>
-          <small>
-            Asigna la impresora utilizada en cada estación.
-          </small>
-        </div>
-
-        <div class="modal__actions">
-          <button class="button button--secondary" type="button" data-close-modal>Cancelar</button>
-          <button class="button button--primary" type="submit">Guardar impresión</button>
-        </div>
-      </form>
-    </section>`;
-
-  const modal = openModal(html);
-
-  modal.querySelector("[data-printing-form]")?.addEventListener("submit", (event) => {
+  root?.querySelector("[data-printing-form]")?.addEventListener("submit", (event) => {
     event.preventDefault();
 
     const data = new FormData(event.currentTarget);
@@ -2715,67 +2258,47 @@ function openPrintingModal() {
     });
 
     saveState(state);
-    closeModal();
     showToast("Configuración de impresión guardada.");
-    render();
+    goVista(null);
   });
 }
 
 /* ==========================================================================
-   OPERACION - SISTEMA
+   SISTEMA - PARAMETROS
    ========================================================================== */
 
-function openSystemModal() {
-  const html = `
-    <section class="modal settings-form-modal" role="dialog" aria-modal="true">
-      ${modalHeader("Parámetros del sistema", "Operación")}
+function systemViewBody() {
+  return `
+    <form class="settings-subpage-form" data-system-form>
+      <div class="settings-check-stack">
+        <label class="settings-check-row">
+          <input type="checkbox" name="kdsEnabled" value="1" ${state.settings.kdsEnabled ? "checked" : ""}>
+          <span>
+            <strong>KDS habilitado</strong>
+            <small>Permite enviar pedidos a las estaciones de producción.</small>
+          </span>
+        </label>
 
-      <form class="settings-modal-body" data-system-form>
-        <div class="settings-check-stack">
-          <label class="settings-check-row">
-            <input
-              type="checkbox"
-              name="kdsEnabled"
-              value="1"
-              ${state.settings.kdsEnabled ? "checked" : ""}
-            >
-            <span>
-              <strong>KDS habilitado</strong>
-              <small>Permite enviar pedidos a las estaciones de producción.</small>
-            </span>
-          </label>
+        <label class="settings-check-row">
+          <input type="checkbox" name="loyaltyEnabled" value="1" ${state.settings.loyaltyEnabled ? "checked" : ""}>
+          <span>
+            <strong>Fidelización habilitada</strong>
+            <small>Permite afiliación, puntos y recompensas.</small>
+          </span>
+        </label>
+      </div>
 
-          <label class="settings-check-row">
-            <input
-              type="checkbox"
-              name="loyaltyEnabled"
-              value="1"
-              ${state.settings.loyaltyEnabled ? "checked" : ""}
-            >
-            <span>
-              <strong>Fidelización habilitada</strong>
-              <small>Permite afiliación, puntos y recompensas.</small>
-            </span>
-          </label>
-        </div>
+      <p class="muted">Estos ajustes se aplican a todas las sucursales.</p>
 
-        <div class="settings-form-note">
-          <strong>Aplicación</strong>
-          <small>
-            Estos ajustes se aplican a todas las sucursales.
-          </small>
-        </div>
+      <div class="settings-subpage-actions">
+        <button class="button button--secondary" type="button" data-sistema-cancel>Cancelar</button>
+        <button class="button button--primary" type="submit">Guardar parámetros</button>
+      </div>
+    </form>`;
+}
 
-        <div class="modal__actions">
-          <button class="button button--secondary" type="button" data-close-modal>Cancelar</button>
-          <button class="button button--primary" type="submit">Guardar parámetros</button>
-        </div>
-      </form>
-    </section>`;
-
-  const modal = openModal(html);
-
-  modal.querySelector("[data-system-form]")?.addEventListener("submit", (event) => {
+function wireSystemView(root) {
+  root?.querySelector("[data-system-form]")?.addEventListener("submit", (event) => {
     event.preventDefault();
 
     const data = new FormData(event.currentTarget);
@@ -2791,42 +2314,14 @@ function openSystemModal() {
     });
 
     saveState(state);
-    closeModal();
     showToast("Parámetros actualizados.");
-    render();
+    goVista(null);
   });
 }
 
 /* ==========================================================================
    HELPERS
    ========================================================================== */
-
-function mainBranch() {
-  return (
-    state.branches.find((branch) => branch.isMain) ||
-    state.branches[0] ||
-    null
-  );
-}
-
-function scopeLabel(scopeId) {
-  return (
-    CATEGORY_SCOPES.find((scope) => scope.id === scopeId)?.label ||
-    "Categorías"
-  );
-}
-
-function categoryBranchesLabel(category) {
-  const ids = Array.isArray(category.branchIds) ? category.branchIds : ["ALL"];
-
-  if (ids.includes("ALL")) return "Todas las sucursales";
-
-  const names = ids
-    .map((id) => branchById(state, id)?.shortName || branchById(state, id)?.name)
-    .filter(Boolean);
-
-  return names.join(", ") || "Sin sucursal";
-}
 
 function userBranchesLabel(user) {
   const ids = Array.isArray(user.branchIds) ? user.branchIds : [];
@@ -2838,14 +2333,6 @@ function userBranchesLabel(user) {
     .filter(Boolean);
 
   return names.join(", ") || "Sin sucursal";
-}
-
-function nextCategoryOrder(scope) {
-  const list = categoriesByScope(state, scope, { activeOnly: false });
-
-  if (!list.length) return 10;
-
-  return Math.max(...list.map((category) => Number(category.order || 0))) + 10;
 }
 
 function uniqueRoles() {
@@ -2894,15 +2381,6 @@ function uniqueTableId() {
   return id;
 }
 
-function normalizeText(value) {
-  return String(value || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
 function modalHeader(title, eyebrow) {
   return `
     <div class="modal__header">
@@ -2932,12 +2410,4 @@ function modalActions(label) {
         ${escapeHtml(label)}
       </button>
     </div>`;
-}
-
-function kpi(label, value, tone = "neutral") {
-  return `
-    <article class="panel settings-kpi settings-kpi--${tone}">
-      <span>${escapeHtml(String(label))}</span>
-      <strong>${value}</strong>
-    </article>`;
 }

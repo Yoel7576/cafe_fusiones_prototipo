@@ -94,7 +94,8 @@
     align-items: center;
     gap: 12px;
     padding: 0 12px;
-    color: rgba(255, 255, 255, .78);
+    /* Blanco puro: las opciones se leen igual esten o no seleccionadas. */
+    color: #ffffff;
     background: transparent;
     text-align: left;
     font-weight: 800;

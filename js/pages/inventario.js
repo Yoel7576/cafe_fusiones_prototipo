@@ -164,8 +164,8 @@ function stockView(){
     <section class="panel inventory-toolbar"><div class="inventory-toolbar__filters"><label><span>Categoría</span><select data-stock-category>${cats.map(c=>`<option ${ui.stockCategory===c?"selected":""}>${escapeHtml(c)}</option>`).join("")}</select></label></div>
       <div class="inventory-toolbar__actions"><button class="button button--secondary" data-stock-adjust>${icon("edit")}<span>Ajustar stock</span></button><button class="button button--primary" data-new-inventory>${icon("plus")}<span>Nuevo insumo</span></button></div>
     </section>
-    <section class="panel"><div class="panel__header"><div><p class="eyebrow">Existencias</p><h2>Stock actual</h2></div><span class="status status--info">${rows.length} registros</span></div>
-      <div class="table-wrap"><table class="data-table"><thead><tr><th>Insumo / producto</th><th>Tipo</th><th>Disponible</th><th>Mínimo</th><th>Ubicación</th><th>Rotación</th><th>Costo</th><th>Estado</th><th></th></tr></thead>
+    <section class="panel"><div class="panel__header"><h2>Stock actual</h2><span class="status status--info">${rows.length} registros</span></div>
+      <div class="table-wrap"><table class="data-table stock-table"><thead><tr><th>Insumo / producto</th><th>Tipo</th><th>Disponible</th><th>Mínimo</th><th>Ubicación</th><th>Rotación</th><th>Costo</th><th>Estado</th><th>Acciones</th></tr></thead>
       <tbody>${rows.map(stockRow).join("")||tableEmpty(9,"No hay existencias con estos filtros.")}</tbody></table></div>
     </section></div>`;
 }
@@ -174,16 +174,14 @@ function stockRow(i){
   const available=Number(i.stock||0)-Number(i.committed||0), label=estadoDeInsumo(i);
   return `<tr><td><strong>${escapeHtml(i.item)}</strong><br><small class="muted">${escapeHtml(i.category)} · ${escapeHtml(i.lot||"Sin lote")}</small></td><td>${escapeHtml(i.type||"Insumo")}</td>
   <td><strong>${qty(available)} ${escapeHtml(i.unit)}</strong>${i.committed?`<br><small class="muted">${qty(i.committed)} comprometido</small>`:""}</td><td>${qty(i.min)} ${escapeHtml(i.unit)}</td><td>${escapeHtml(i.location||"-")}</td><td>${escapeHtml(i.rotation||"FIFO")}</td><td>${money(i.cost||0)}</td><td><span class="${statusClass(label)}">${label}</span></td>
-  <td><div class="table-actions"><button class="mini-button" data-stock-view="${i.id}">Ver</button><button class="mini-button" data-stock-edit="${i.id}">${icon("edit")}<span>Editar</span></button></div></td></tr>`;
+  <td><div class="table-actions"><button class="mini-button" data-stock-view="${i.id}">Ver</button><button class="mini-button" data-stock-edit="${i.id}">Editar</button></div></td></tr>`;
 }
 
 /* -------------------------- KARDEX -------------------------- */
 
 function kardexView(){
   const rows=[...state.inventoryMovements].filter(m=>matchesSearch(ui.search,m.item,m.type,m.origin,m.reference,m.user)).sort((a,b)=>new Date(b.at)-new Date(a.at));
-  const inputs=rows.filter(r=>r.direction==="Entrada").reduce((s,r)=>s+Number(r.cost||0),0), outputs=rows.filter(r=>r.direction==="Salida").reduce((s,r)=>s+Number(r.cost||0),0);
-  return `<div class="inventory-tab-view"><section class="inventory-kpis inventory-kpis--3">${kpi("Movimientos",rows.length,"Registros visibles")}${kpi("Entradas valorizadas",money(inputs),"Filtro actual","ok")}${kpi("Salidas valorizadas",money(outputs),"Consumo y merma",outputs?"warn":"ok")}</section>
-  <section class="panel"><div class="panel__header"><div><p class="eyebrow">Kardex</p><h2>Movimientos de inventario</h2></div><button class="button button--secondary" data-manual-movement>${icon("plus")}<span>Movimiento manual</span></button></div>${movementTable(rows)}</section></div>`;
+  return `<div class="inventory-tab-view"><section class="panel"><div class="panel__header"><div><p class="eyebrow">Kardex</p><h2>Movimientos de inventario</h2></div><button class="button button--secondary" data-manual-movement>${icon("plus")}<span>Movimiento manual</span></button></div>${movementTable(rows)}</section></div>`;
 }
 function movementTable(rows){
   return `<div class="table-wrap"><table class="data-table"><thead><tr><th>Fecha</th><th>Insumo</th><th>Movimiento</th><th>Cantidad</th><th>Costo</th><th>Origen</th><th>Responsable</th></tr></thead><tbody>
@@ -205,10 +203,7 @@ function lotsView(){
 
 function purchasesView(){
   const orders=[...state.purchaseOrders].filter(o=>matchesSearch(ui.search,o.id,o.supplier,o.status,o.type)).sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
-  const pending=orders.filter(o=>["Pendiente","Por recibir"].includes(o.status)).length;
-  const total=orders.filter(o=>String(o.createdAt).startsWith(today().slice(0,7))).reduce((s,o)=>s+Number(o.total||0),0);
-  return `<div class="inventory-tab-view"><section class="inventory-kpis inventory-kpis--3">${kpi("Órdenes abiertas",pending,"Pendientes de recepción",pending?"warn":"ok")}${kpi("Compras del mes",money(total),"Órdenes registradas")}${kpi("Sugerencias",state.purchaseSuggestions.length,"Según stock mínimo",state.purchaseSuggestions.length?"danger":"ok")}</section>
-  <section class="panel purchase-suggestions-panel"><div class="panel__header"><div><p class="eyebrow">Reposición</p><h2>Sugerencias de compra</h2></div><button class="button button--primary" data-new-purchase>${icon("plus")}<span>Nueva compra</span></button></div>
+  return `<div class="inventory-tab-view"><section class="panel purchase-suggestions-panel"><div class="panel__header"><div><p class="eyebrow">Reposición</p><h2>Sugerencias de compra</h2></div><button class="button button--primary" data-new-purchase>${icon("plus")}<span>Nueva compra</span></button></div>
   <div class="purchase-suggestion-grid">${state.purchaseSuggestions.slice(0,6).map(s=>{const p=preferredSupplier(s.inventoryId);return `<article class="purchase-suggestion-card"><div><span class="status status--danger">Reposición</span><strong>${escapeHtml(s.item)}</strong><small>Actual ${qty(s.stock)} ${escapeHtml(s.unit)} · mín. ${qty(s.min)}</small></div><div><p>Sugerido</p><strong>${qty(s.suggestedQty)} ${escapeHtml(s.unit)}</strong><small>${escapeHtml(p?.tradeName||p?.name||"Proveedor por definir")}</small></div><button class="mini-button" data-create-po-from="${s.inventoryId}">Crear orden</button></article>`}).join("")||emptyMini("✓","Sin sugerencias","Define los mínimos en Stock para que el sistema sugiera reposiciones.")}</div></section>
   <section class="panel"><div class="panel__header"><div><p class="eyebrow">Abastecimiento</p><h2>Órdenes de compra</h2></div><span class="status status--info">${orders.length}</span></div><div class="table-wrap"><table class="data-table"><thead><tr><th>Orden</th><th>Proveedor</th><th>Tipo</th><th>Emisión</th><th>Entrega</th><th>Total</th><th>Documento</th><th>Estado</th><th></th></tr></thead><tbody>
   ${orders.map(o=>`<tr><td><strong>${o.id}</strong></td><td>${escapeHtml(o.supplier)}</td><td>${escapeHtml(o.type)}</td><td>${shortDate(o.createdAt)}</td><td>${shortDate(o.expectedAt)}</td><td><strong>${money(o.total)}</strong></td><td>${escapeHtml(o.voucher||"-")}</td><td><span class="${statusClass(o.status)}">${o.status}</span></td><td><div class="table-actions"><button class="mini-button" data-po-view="${o.id}">Ver</button>${o.status!=="Recibida"?`<button class="mini-button" data-po-receive="${o.id}">Recibir</button>`:""}</div></td></tr>`).join("")||tableEmpty(9,"Sin órdenes.")}</tbody></table></div></section></div>`;
@@ -219,9 +214,7 @@ function purchasesView(){
 function suppliersView(){
   const types=["Todos","Formal","Informal"];
   const rows=state.suppliers.filter(s=>ui.supplierType==="Todos"||s.type===ui.supplierType).filter(s=>matchesSearch(ui.search,s.name,s.tradeName,s.document,s.origin,(s.products||[]).join(" ")));
-  const formal=state.suppliers.filter(s=>s.type==="Formal").length, informal=state.suppliers.filter(s=>s.type==="Informal").length;
-  return `<div class="inventory-tab-view"><section class="inventory-kpis inventory-kpis--3">${kpi("Proveedores activos",state.suppliers.filter(s=>s.status==="Activo").length,"Red de abastecimiento")}${kpi("Formales",formal,"RUC / comprobante","ok")}${kpi("Locales / informales",informal,"Trazabilidad interna",informal?"warn":"neutral")}</section>
-  <section class="panel inventory-toolbar"><div class="inventory-toolbar__filters"><label><span>Tipo</span><select data-supplier-type>${types.map(t=>`<option ${ui.supplierType===t?"selected":""}>${t}</option>`).join("")}</select></label></div><div class="inventory-toolbar__actions"><button class="button button--secondary" data-new-supplier="Informal">${icon("plus")}<span>Productor / informal</span></button><button class="button button--primary" data-new-supplier="Formal">${icon("plus")}<span>Proveedor formal</span></button></div></section>
+  return `<div class="inventory-tab-view"><section class="panel inventory-toolbar"><div class="inventory-toolbar__filters"><label><span>Tipo</span><select data-supplier-type>${types.map(t=>`<option ${ui.supplierType===t?"selected":""}>${t}</option>`).join("")}</select></label></div><div class="inventory-toolbar__actions"><button class="button button--secondary" data-new-supplier="Informal">${icon("plus")}<span>Productor / informal</span></button><button class="button button--primary" data-new-supplier="Formal">${icon("plus")}<span>Proveedor formal</span></button></div></section>
   <div class="table-wrap"><table class="data-table supplier-table"><thead><tr><th>Proveedor</th><th>Tipo</th><th>Estado</th><th>Documento</th><th>Procedencia</th><th>Contacto</th><th>Pago</th><th>Productos</th><th>Acciones</th></tr></thead><tbody>${rows.map(supplierRow).join("")||tableEmpty(9,"No hay coincidencias.")}</tbody></table></div></div>`;
 }
 function supplierRow(s){
@@ -271,9 +264,7 @@ function recipeRow(r){
 function wasteView(){
   const types=["Todos","Insumo","Preparación","Producto terminado"];
   const rows=[...state.wasteRecords].filter(r=>ui.wasteType==="Todos"||normalizeWasteType(r.type)===ui.wasteType).filter(r=>matchesSearch(ui.search,r.item,r.reason,r.station,r.orderId,r.user)).sort((a,b)=>new Date(b.at||b.date)-new Date(a.at||a.date));
-  const totals=wasteTotals();
-  return `<div class="inventory-tab-view"><section class="inventory-kpis">${kpi("Merma de insumos",money(totals.Insumo),"Vencimiento / deterioro",totals.Insumo?"warn":"ok")}${kpi("Merma preparación",money(totals["Preparación"]),"Proceso / cambios",totals["Preparación"]?"warn":"ok")}${kpi("Producto terminado",money(totals["Producto terminado"]),"Listo / devolución",totals["Producto terminado"]?"danger":"ok")}${kpi("Total registrado",money(totals.total),`${rows.length} registros`,totals.total?"danger":"ok")}</section>
-  <section class="panel inventory-toolbar"><div class="inventory-toolbar__filters"><label><span>Tipo de merma</span><select data-waste-type>${types.map(t=>`<option ${ui.wasteType===t?"selected":""}>${t}</option>`).join("")}</select></label></div><div class="inventory-toolbar__actions"><button class="button button--primary" data-new-waste>${icon("plus")}<span>Registrar merma</span></button></div></section>
+  return `<div class="inventory-tab-view"><section class="panel inventory-toolbar"><div class="inventory-toolbar__filters"><label><span>Tipo de merma</span><select data-waste-type>${types.map(t=>`<option ${ui.wasteType===t?"selected":""}>${t}</option>`).join("")}</select></label></div><div class="inventory-toolbar__actions"><button class="button button--primary" data-new-waste>${icon("plus")}<span>Registrar merma</span></button></div></section>
   <section class="panel"><div class="panel__header"><div><p class="eyebrow">Control de pérdidas</p><h2>Historial de mermas</h2></div><span class="status status--danger">${rows.length}</span></div>
   <div class="table-wrap"><table class="data-table"><thead><tr><th>Fecha</th><th>Tipo</th><th>Insumo / producto</th><th>Cantidad</th><th>Motivo</th><th>Origen</th><th>Costo</th><th>Responsable</th></tr></thead><tbody>
   ${rows.map(r=>{const type=normalizeWasteType(r.type),origin=[r.station,r.table,r.orderId].filter(Boolean).join(" · ");return `<tr><td>${dateTime(r.at||r.date)}</td><td><span class="${statusClass(type==="Producto terminado"?"Crítico":"Atención")}">${type}</span></td><td><strong>${escapeHtml(r.item||"-")}</strong></td><td>${qty(r.qty)} ${escapeHtml(r.unit||"")}</td><td>${escapeHtml(r.reason||"-")}${r.note?`<br><small class="muted">${escapeHtml(r.note)}</small>`:""}</td><td>${escapeHtml(origin||"-")}</td><td><strong>${money(r.cost||0)}</strong></td><td>${escapeHtml(r.user||"-")}</td></tr>`}).join("")||tableEmpty(8,"Sin mermas.")}</tbody></table></div></section></div>`;
@@ -283,9 +274,7 @@ function wasteView(){
 
 function productionView(){
   const rows=[...state.productionBatches].filter(b=>matchesSearch(ui.search,b.name,b.station,b.lotCode,b.user)).sort((a,b)=>new Date(b.startedAt)-new Date(a.startedAt));
-  const avg=rows.length?rows.reduce((s,b)=>s+Number(b.yieldPct||0),0)/rows.length:0, waste=rows.reduce((s,b)=>s+Number(b.wasteCost||0),0);
-  return `<div class="inventory-tab-view"><section class="inventory-kpis inventory-kpis--3">${kpi("Producciones",rows.length,"Lotes / preparaciones")}${kpi("Rendimiento promedio",`${avg.toFixed(1)}%`,"Real vs esperado",avg>=95?"ok":"warn")}${kpi("Pérdida estimada",money(waste),"Diferencias valorizadas",waste?"danger":"ok")}</section>
-  <section class="panel"><div class="panel__header"><div><p class="eyebrow">Producción</p><h2>Rendimientos y transformaciones</h2></div><button class="button button--primary" data-new-production>${icon("plus")}<span>Registrar producción</span></button></div>
+  return `<div class="inventory-tab-view"><section class="panel"><div class="panel__header"><div><p class="eyebrow">Producción</p><h2>Rendimientos y transformaciones</h2></div><button class="button button--primary" data-new-production>${icon("plus")}<span>Registrar producción</span></button></div>
   <div class="production-grid">${rows.map(productionCard).join("")||emptyMini("⚙","Sin producciones","No hay registros.")}</div></section></div>`;
 }
 function productionCard(b){

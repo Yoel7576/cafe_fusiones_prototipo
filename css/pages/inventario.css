@@ -1506,3 +1506,41 @@
 .inventory-v4 .eyebrow {
   color: #111111 !important;
 }
+
+/* ==========================================================================
+   STOCK ACTUAL: anchos fijos por columna
+   Con el reparto automatico, el espacio sobrante inflaba la columna Tipo.
+   El insumo se lleva el resto del ancho; en pantallas angostas la tabla se
+   desplaza en horizontal dentro de .table-wrap.
+   ========================================================================== */
+
+.data-table.stock-table,
+.inventory-v4 .data-table.stock-table {
+  table-layout: fixed;
+  min-width: 1040px;
+}
+
+.stock-table th:nth-child(2), .stock-table td:nth-child(2) { width: 110px; }  /* Tipo */
+.stock-table th:nth-child(3), .stock-table td:nth-child(3) { width: 120px; }  /* Disponible */
+.stock-table th:nth-child(4), .stock-table td:nth-child(4) { width: 100px; }  /* Minimo */
+.stock-table th:nth-child(5), .stock-table td:nth-child(5) { width: 130px; }  /* Ubicacion */
+.stock-table th:nth-child(6), .stock-table td:nth-child(6) { width: 90px; }   /* Rotacion */
+.stock-table th:nth-child(7), .stock-table td:nth-child(7) { width: 95px; }   /* Costo */
+.stock-table th:nth-child(8), .stock-table td:nth-child(8) { width: 115px; }  /* Estado */
+.stock-table th:nth-child(9), .stock-table td:nth-child(9) { width: 170px; }  /* Acciones */
+
+.stock-table td:first-child {
+  overflow-wrap: anywhere;
+}
+
+.stock-table th:last-child,
+.stock-table td:last-child {
+  text-align: right;
+}
+
+.stock-table .table-actions {
+  display: inline-flex;
+  justify-content: flex-end;
+  gap: 6px;
+  white-space: nowrap;
+}

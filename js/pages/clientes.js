@@ -110,7 +110,7 @@ function init() {
   renderSidebar("clientes", session.role);
   renderTopbar({
     title: "Clientes y Fidelización",
-    eyebrow: "CRM y relación con clientes",
+    eyebrow: "",
     searchPlaceholder: "Buscar nombre, teléfono, correo o documento...",
     onSearch: (query) => {
       ui.search = query || "";
@@ -381,7 +381,6 @@ function branchMatchesRecord(record) {
 function render() {
   view.innerHTML = `
     <div class="clients-v4">
-      ${moduleHeader()}
       ${moduleTabs()}
       ${renderCurrentTab()}
     </div>
@@ -389,41 +388,6 @@ function render() {
 
   wireCommon();
   wireCurrentTab();
-}
-
-function moduleHeader() {
-  const scopedCustomers = state.customers.filter(branchMatchesCustomer);
-  const active = scopedCustomers.filter((customer) =>
-    customer.status === "Activo"
-  ).length;
-  const members = scopedCustomers.filter((customer) =>
-    customer.loyalty?.enrolled === true &&
-    customer.loyalty?.status === "Activo"
-  ).length;
-  const activeReservations = state.reservations
-    .filter(branchMatchesRecord)
-    .filter((reservation) => ["Pendiente", "Confirmada"].includes(reservation.status))
-    .length;
-
-  return `
-    <section class="panel clients-module-head">
-      <div>
-        <p class="eyebrow">CLIENTES · FIDELIZACIÓN · RESERVAS</p>
-        <h2>Relación con clientes</h2>
-        <p>
-          El cliente se identifica una sola vez para toda Cafe Fusiones. Cada venta o
-          reserva conserva su sucursal. Registrar un cliente no lo afilia automáticamente
-          al programa de fidelización.
-        </p>
-      </div>
-
-      <div class="clients-head-pills">
-        ${branchSelector()}
-        <span><strong>${active}</strong> clientes</span>
-        <span><strong>${members}</strong> afiliados</span>
-        <span><strong>${activeReservations}</strong> reservas</span>
-      </div>
-    </section>`;
 }
 
 function branchSelector() {
@@ -460,6 +424,7 @@ function moduleTabs() {
           </button>
         `).join("")}
       </nav>
+      ${branchSelector()}
     </section>`;
 }
 
@@ -673,20 +638,10 @@ function renderLoyalty() {
         ${metricCard("Canjes", redemptions, "Se ejecutarán principalmente en Caja", "neutral")}
       </section>
 
-      <section class="panel loyalty-intro">
-        <div>
-          <p class="eyebrow">Programa configurable</p>
-          <h2>Niveles y recompensas</h2>
-          <p>
-            Afiliarse es independiente de registrarse como cliente. Los puntos disponibles
-            pueden gastarse; los puntos calificables determinan Bronce, Plata u Oro.
-            Los umbrales y la regla de acumulación son configurables.
-          </p>
-        </div>
-        <button class="button button--secondary" type="button" data-loyalty-config>
-          Configurar reglas
-        </button>
-      </section>
+      <div class="loyalty-levels-head">
+        <h2>Niveles</h2>
+        <button class="mini-button" type="button" data-loyalty-config>Configurar reglas</button>
+      </div>
 
       <section class="loyalty-level-grid">
         ${levels.map(levelCard).join("")}

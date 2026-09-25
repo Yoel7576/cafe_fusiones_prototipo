@@ -29,13 +29,13 @@
   min-height: 280px;
   margin-inline: auto;
   /* Muro perimetral del local. */
-  border: 3px solid #cdbfb2;
+  border: 3px solid #d4d4d8;
   border-radius: 10px;
   overflow: hidden;
   background:
-    linear-gradient(90deg, rgba(86, 47, 31, .045) 1px, transparent 1px),
-    linear-gradient(rgba(86, 47, 31, .045) 1px, transparent 1px),
-    #fcfaf7;
+    linear-gradient(90deg, rgba(17, 17, 17, .04) 1px, transparent 1px),
+    linear-gradient(rgba(17, 17, 17, .04) 1px, transparent 1px),
+    #fbfbfc;
   background-size: 6.25% 10%;
 }
 
@@ -72,10 +72,10 @@
 /* --- Zonas: ambientes con relleno muy sutil y borde punteado --------------- */
 
 .floor-item--zone {
-  border: 1px dashed #cfc2b5;
+  border: 1px dashed #c9c9ce;
   border-radius: 6px;
-  background: rgba(120, 96, 78, .05);
-  color: #7a6757;
+  background: rgba(17, 17, 17, .03);
+  color: #111111;
   z-index: 2;
 }
 
@@ -83,13 +83,13 @@
 
 .floor-item--station {
   border-style: solid;
-  border-color: #d8c3a8;
-  background: #f1e6d6;
-  color: var(--brown);
+  border-color: #c9c9ce;
+  background: #f1f1f3;
+  color: #111111;
 }
 
 .floorplan .floor-item--station small {
-  color: #8a7256;
+  color: #4a4a4a;
 }
 
 .floorplan--editable .floor-item--station,
@@ -98,8 +98,8 @@ button.floor-item--station {
 }
 
 button.floor-item--station:hover {
-  background: #e9dac4;
-  border-color: #c9ab86;
+  background: #e6e6e8;
+  border-color: #a1a1aa;
 }
 
 /* --- Accesos: abertura en el muro, no una cajita --------------------------- */
@@ -108,7 +108,7 @@ button.floor-item--station:hover {
   border: 0;
   border-radius: 0;
   background: transparent;
-  color: #a3917f;
+  color: #4a4a4a;
   z-index: 3;
 }
 
@@ -119,8 +119,8 @@ button.floor-item--station:hover {
   height: 6px;
   border-radius: 3px;
   /* Tapa el muro: ahi esta el vano. */
-  background: #fcfaf7;
-  box-shadow: 0 0 0 1px #e2d6c9;
+  background: #fbfbfc;
+  box-shadow: 0 0 0 1px #d4d4d8;
 }
 
 .floorplan .floor-item--door .floor-item__name {
@@ -134,13 +134,21 @@ button.floor-item--station:hover {
 .floor-item--table {
   border: 1.5px solid transparent;
   border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(64, 37, 24, .07);
+  box-shadow: 0 2px 6px rgba(17, 17, 17, .07);
   transition: transform .15s ease, box-shadow .15s ease;
   z-index: 5;
 }
 
 .floor-item--table.is-round {
   border-radius: 999px;
+}
+
+/* Tamano unico de mesa: el ancho sale del plano y el alto se iguala al ancho,
+   asi el lado de la cuadrada es igual al diametro de la redonda aunque el
+   lienzo cambie de proporcion (en pantallas chicas pasa a 4:3). */
+.floorplan .floor-item--table {
+  height: auto !important;
+  aspect-ratio: 1 / 1;
 }
 
 .floorplan .floor-item__code {
@@ -208,7 +216,7 @@ button.floor-item--table {
 
 button.floor-item--table:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(64, 37, 24, .16);
+  box-shadow: 0 8px 16px rgba(17, 17, 17, .14);
 }
 
 button.floor-item--table:focus-visible,

@@ -2,12 +2,13 @@
 //
 // Lo usan dos pantallas con el MISMO aspecto visual:
 //   - Ventas > Salon        -> modo "lectura": estados por color, sin arrastre.
-//   - Configuracion > Mesas -> modo "editor": arrastre, redimension y seleccion.
+//   - Configuracion > Mesas -> modo "editor": arrastre y seleccion (solo las
+//     zonas se redimensionan; las mesas tienen un tamano unico).
 //
 // Todo se posiciona en porcentaje sobre un lienzo 16:10. Los estilos viven en
 // css/components/floorplan.css, que ambas paginas enlazan.
 import { escapeHtml, money } from "../core/utils.js";
-import { PLANO_GRID, TAMANOS_MESA } from "../data/plano.js";
+import { PLANO_GRID, TAMANO_MESA } from "../data/plano.js";
 
 export { PLANO_GRID };
 
@@ -16,21 +17,18 @@ export function snapPlano(valor, paso = PLANO_GRID) {
   return Math.round(Number(valor || 0) / paso) * paso;
 }
 
-/** Tamano estandar de una mesa segun su capacidad. */
-export function tamanoMesa(seats) {
-  const capacidad = Number(seats || 2);
-  if (capacidad >= 6) return { ...TAMANOS_MESA[6] };
-  if (capacidad >= 3) return { ...TAMANOS_MESA[4] };
-  return { ...TAMANOS_MESA[2] };
+/** Tamano de una mesa: es el mismo para todas, sin importar capacidad ni forma. */
+export function tamanoMesa() {
+  return { ...TAMANO_MESA };
 }
 
 /**
  * Normaliza el mapa de una mesa: la lleva a la grilla y le aplica el tamano
- * estandar de su capacidad, para que todas las mesas se vean uniformes.
+ * unico, para que todas las mesas se vean uniformes.
  */
 export function normalizarMapaMesa(table) {
   const base = table.map || { x: 45, y: 45 };
-  const { w, h } = tamanoMesa(table.seats);
+  const { w, h } = tamanoMesa();
 
   return {
     x: acotar(snapPlano(base.x), 0, 100 - w),
@@ -120,7 +118,9 @@ export function etiquetaMesa(table) {
  * @param {number}  [opciones.total]   consumo abierto, si la mesa esta ocupada
  */
 export function mesaHtml(table, { editable = false, selected = false, total = 0 } = {}) {
-  const map = table.map || {};
+  // El tamano guardado se ignora: las mesas de estados viejos tambien se ven
+  // con el tamano unico.
+  const map = { ...(table.map || {}), ...tamanoMesa() };
   const tono = editable ? "free" : tonoMesa(table);
   const clases = [
     "floor-item",
@@ -144,8 +144,7 @@ export function mesaHtml(table, { editable = false, selected = false, total = 0 
   if (editable) {
     return `<div class="${clases}" style="${estilo(map)}"
       data-plan-item="mesa" data-plan-id="${escapeHtml(table.id)}" role="button" tabindex="0"
-      title="${escapeHtml(table.name || table.id)}">${cuerpo}
-      <i class="floor-item__handle" data-plan-resize aria-hidden="true"></i></div>`;
+      title="${escapeHtml(table.name || table.id)}">${cuerpo}</div>`;
   }
 
   return `<button class="${clases}" style="${estilo(map)}" type="button"

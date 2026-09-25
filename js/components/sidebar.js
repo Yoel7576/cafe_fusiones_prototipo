@@ -8,7 +8,8 @@
 // El modal antiguo puede permanecer temporalmente en useractions.js por
 // compatibilidad, pero este componente deja de llamarlo.
 //
-// Notificaciones, Ayuda y Cerrar sesion siguen siendo acciones contextuales.
+// Notificaciones y Ayuda son pantallas propias (enlaces que se marcan en rojo
+// cuando estan abiertas). Solo Cerrar sesion sigue siendo una accion.
 
 import { NAV, allowedIds } from "../core/router.js";
 import { icon } from "../core/utils.js";
@@ -31,12 +32,6 @@ function navLink(item, activeId) {
 
 const secondaryItems = [
   {
-    type: "action",
-    action: "notifications",
-    icon: "bell",
-    label: "Notificaciones"
-  },
-  {
     type: "link",
     id: "configuracion",
     href: "configuracion.html",
@@ -44,8 +39,16 @@ const secondaryItems = [
     label: "Configuracion"
   },
   {
-    type: "action",
-    action: "help",
+    type: "link",
+    id: "notificaciones",
+    href: "notificaciones.html",
+    icon: "bell",
+    label: "Notificaciones"
+  },
+  {
+    type: "link",
+    id: "ayuda",
+    href: "ayuda.html",
     icon: "help",
     label: "Ayuda"
   },

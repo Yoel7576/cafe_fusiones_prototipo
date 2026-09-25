@@ -1,0 +1,358 @@
+/* Cafe Fusiones - pages/ayuda.css
+   Centro de ayuda: portada, submenu de secciones, temas desplegables,
+   accesos directos a modulos y matriz de roles. */
+
+.help-view {
+  max-width: 1100px;
+}
+
+/* --- Portada ------------------------------------------------------------- */
+
+.help-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px 24px;
+}
+
+.help-hero h2 {
+  margin: 0 0 6px;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.help-hero p {
+  max-width: 680px;
+  margin: 0;
+  color: #4a4a4a;
+  font-size: .95rem;
+  line-height: 1.55;
+}
+
+.help-hero__role {
+  flex: 0 0 auto;
+  display: grid;
+  gap: 2px;
+  padding: 12px 16px;
+  border: 1px solid #e6e6e8;
+  border-radius: 10px;
+  text-align: right;
+}
+
+.help-hero__role span {
+  color: #4a4a4a;
+  font-size: .8rem;
+}
+
+.help-hero__role strong {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* --- Submenu: mismo tamano que el menu lateral, activa en rojo ----------- */
+
+.help-subtabs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.help-subtab {
+  flex: 0 0 auto;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: #111111;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.help-subtab:hover {
+  border-color: #e6e6e8;
+  background: #f7f7f8;
+}
+
+.help-subtab.is-active {
+  border-color: var(--red);
+  background: var(--red);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 6px 16px rgba(184, 30, 45, .18);
+}
+
+/* --- Temas desplegables -------------------------------------------------- */
+
+.help-list {
+  display: grid;
+  gap: 12px;
+}
+
+.help-topic {
+  padding: 0;
+  overflow: hidden;
+}
+
+.help-topic summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.help-topic summary::-webkit-details-marker {
+  display: none;
+}
+
+.help-topic summary:hover {
+  background: #fafafa;
+}
+
+.help-topic summary:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: -2px;
+}
+
+.help-topic__head {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.help-topic__head small {
+  color: var(--red);
+  font-size: .75rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.help-topic__head strong {
+  font-size: 1.02rem;
+  font-weight: 600;
+}
+
+.help-topic__head span {
+  color: #4a4a4a;
+  font-size: .9rem;
+}
+
+.help-topic__chevron {
+  flex: 0 0 auto;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: #4a4a4a;
+  transition: transform .15s ease;
+}
+
+.help-topic[open] .help-topic__chevron {
+  transform: rotate(90deg);
+}
+
+.help-topic__body {
+  display: grid;
+  gap: 14px;
+  padding: 4px 20px 20px;
+  border-top: 1px solid #f0f0f2;
+}
+
+.help-steps {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding-left: 22px;
+  font-size: .95rem;
+  line-height: 1.5;
+}
+
+.help-steps li::marker {
+  color: var(--red);
+  font-weight: 600;
+}
+
+.help-tips {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 12px 14px 12px 32px;
+  border: 1px solid #e6e6e8;
+  border-radius: 10px;
+  background: #fafafa;
+  font-size: .9rem;
+  line-height: 1.5;
+}
+
+.help-steps + .help-tips {
+  margin-top: 2px;
+}
+
+.help-topic__link {
+  justify-self: start;
+  min-height: 40px;
+  border-radius: 10px;
+}
+
+/* --- Accesos directos ---------------------------------------------------- */
+
+.help-shortcuts {
+  padding: 20px;
+}
+
+.help-shortcuts h2 {
+  margin: 0 0 14px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.help-shortcuts__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.help-shortcut {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  border: 1px solid #e6e6e8;
+  border-radius: 10px;
+  background: #fff;
+  color: #111111;
+  text-decoration: none;
+  transition: border-color .15s ease, background-color .15s ease;
+}
+
+.help-shortcut:hover {
+  border-color: var(--red);
+  background: #fffafa;
+}
+
+.help-shortcut strong {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.help-shortcut span {
+  color: #4a4a4a;
+  font-size: .85rem;
+  line-height: 1.4;
+}
+
+/* --- Roles y permisos ---------------------------------------------------- */
+
+.help-roles {
+  overflow: hidden;
+}
+
+.help-roles .panel__header h2 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.help-note {
+  margin: 0 0 14px;
+  color: #4a4a4a;
+  font-size: .9rem;
+  line-height: 1.5;
+}
+
+.help-roles .table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.help-roles-table {
+  min-width: 860px;
+}
+
+.help-roles-table th {
+  font-weight: 600;
+}
+
+.help-roles-table th:not(:first-child),
+.help-roles-table td:not(:first-child) {
+  text-align: center;
+}
+
+.help-roles-table td small {
+  color: #4a4a4a;
+  font-size: .8rem;
+}
+
+.help-roles-table tr.is-current td {
+  background: #fff5f5;
+}
+
+.help-yes {
+  color: #2f6b4f;
+  font-weight: 700;
+}
+
+.help-no {
+  color: #b0b0b5;
+}
+
+.help-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--red);
+  color: #fff;
+  font-size: .7rem;
+  font-weight: 600;
+  vertical-align: middle;
+}
+
+/* --- Busqueda ------------------------------------------------------------ */
+
+.help-results {
+  margin: 0;
+  color: #4a4a4a;
+  font-size: .9rem;
+}
+
+.help-empty {
+  display: grid;
+  gap: 6px;
+  padding: 28px 20px;
+  text-align: center;
+}
+
+.help-empty strong {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.help-empty p {
+  margin: 0;
+  color: #4a4a4a;
+}
+
+@media (max-width: 720px) {
+  .help-hero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .help-hero__role {
+    text-align: left;
+  }
+
+  .help-topic summary,
+  .help-topic__body {
+    padding-inline: 16px;
+  }
+}

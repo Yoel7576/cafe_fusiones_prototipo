@@ -19,7 +19,7 @@ extension **Live Server** de VS Code (boton "Go Live" o clic derecho > "Open wit
 Live Server" sobre `index.html`), configurada en el puerto 5501 (`.vscode/settings.json`).
 
 - Login demo: usuario `CFUSIONES`, clave `prototipo` (la misma clave se pide para anular productos).
-- Tras cambiar codigo, **Ctrl+F5**: `sw.js` cachea el app shell (network-first, cache `cafe-fusiones-modular-v11`).
+- Tras cambiar codigo, **Ctrl+F5**: `sw.js` cachea el app shell (network-first, cache `cafe-fusiones-modular-v12`).
   Si se agregan o renombran paginas, actualizar `APP_SHELL` y subir el numero de `CACHE_NAME`.
 - No hay tests, linter ni CI. La verificacion es manual en el navegador.
 
@@ -102,7 +102,7 @@ Reglas del modelo:
 
 - **Sucursales** (`branchId`) son transversales: toda operacion dependiente de local lo conserva.
   El cliente, en cambio, es global a la marca.
-- **Categorias son dinamicas** y se administran **solo** desde Configuracion
+- **Categorias son dinamicas** y se administran **solo** desde Administracion > Categorias
   (`state.categories` arranca vacio). Las 16 categorias de la carta real si vienen
   sembradas en `menuCategoriesSeed` porque son el catalogo del cliente, no un default
   inventado. `menuCategories` (con "Todos" al inicio) se deriva de ahi y es la **lista
@@ -137,16 +137,19 @@ enlazan esa hoja). Si se toca el aspecto del plano, se toca ahi, no en
   la proporcion cuando la pantalla es baja, para que nunca quede cortado.
 - Todo se alinea a una **grilla de 2.5** (`PLANO_GRID`): el editor hace snap al
   mover y al redimensionar.
-- Las mesas tienen **tamano estandar por capacidad** (`TAMANOS_MESA`): 2 personas
-  cuadrada chica, 4 cuadrada mediana, 6 o mas rectangular. No se redimensionan a
-  mano; cambiar la capacidad reajusta el tamano (`normalizarMapaMesa`).
-- **Configuracion > Operacion > Mesas** es el editor: arrastre y redimension con
+- Todas las mesas tienen **un solo tamano** (`TAMANO_MESA`), sin importar capacidad
+  ni forma: el lado de la cuadrada es igual al diametro de la redonda (el CSS fuerza
+  `aspect-ratio: 1`). No se redimensionan y no llevan tirador; `mesaHtml` ignora el
+  tamano guardado, asi que los estados viejos tambien se ven uniformes.
+- **Configuracion > Sistema > Mesas** (`configuracion.html?tab=sistema&vista=mesas`) es el editor: arrastre y redimension con
   **pointer events** (mismo gesto con mouse y con el dedo). El tirador aparece
   solo en el elemento seleccionado.
 - **Ventas > Salon** solo pinta el plano guardado; las zonas de tipo `station`
   (Cocina, Barra) abren la pestana de Produccion filtrada por estacion.
-- Los modales **no se apilan** (`openModal` cierra el anterior): tras un
-  `confirmAction` hay que volver a abrir el editor con `openTablesModal()`.
+- Las tarjetas de **Configuracion > Sistema** (Mesas, Estaciones, Impresion, Sistema)
+  abren sub-vistas en la misma pagina (`?vista=`), no modales: el editor del plano
+  sigue en el DOM mientras se muestra un `confirmAction`. Los modales **no se apilan**
+  (`openModal` cierra el anterior); los formularios de mesa y estacion siguen siendo modales.
 - **`saveState` reemplaza los objetos de los arrays** (llama a `hydrateState`).
   Un handler no puede quedarse con una referencia a un registro entre eventos:
   hay que volver a buscarlo por id en cada uno.
@@ -178,7 +181,10 @@ que ve lo que Administracion guarda en el navegador del local.
 - **Trazabilidad**: `landing-trazabilidad` y `landing-lote` muestran los lotes de
   `state.coffeeLots` con `publishWeb !== false`. La ficha completa se carga en
   Administracion > Trazabilidad (incluye imagenes, preparaciones, conservacion y
-  los pasos del recorrido como lista editable).
+  los pasos del recorrido como lista editable). La sub-vista **Paginas publicadas**
+  (`admin.html?tab=trazabilidad&vista=paginas`) lista cada pagina de lote; el menu de
+  tres puntos permite verla, copiar el enlace, editarla y eliminarla. "Eliminar" solo
+  pone `publishWeb: false` (el lote se conserva y se vuelve a publicar desde "Sin publicar").
 - **Carta**: `landing-menu` y la vista previa de `landing` muestran los platos con
   `publishLanding` activo, agrupados por categoria.
 - **Respaldo**: si el navegador del visitante no tiene estado (nunca abrio el
@@ -191,6 +197,14 @@ que ve lo que Administracion guarda en el navegador del local.
 Mozo (`ventas-pedido`) toma el pedido -> produccion en `ventas-kds`
 (Nuevo -> Preparando -> Listo -> Entregado) -> "Solicitar cuenta" encola para `caja`,
 que registra el pago. El mozo nunca cobra.
+
+### Ayuda
+
+`pages/ayuda.html` es una pantalla propia (antes era un modal): secciones por `?tab=`
+(inicio, modulos, flujos, roles, preguntas), buscador en la barra superior y enlaces
+a un tema con `#id`. El texto vive en `js/data/ayuda.js`; si cambia un flujo o una
+pantalla, actualizar ahi el tema correspondiente. La matriz de roles sale de
+`rolePermissions` (router.js), asi que no hay que mantenerla a mano.
 
 ## CSS
 

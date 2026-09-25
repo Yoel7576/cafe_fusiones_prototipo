@@ -1,40 +1,518 @@
-/* Cafe Fusiones - pages/dashboard.css (generado desde styles.css, sin cambios visuales) */
+/* Cafe Fusiones - pages/dashboard.css
+   Inicio: tablero del dia (vista completa de Administrador / Gerencia).
+   Primeros pasos, estado del turno, indicadores, salon, pendientes,
+   mas vendidos y reservas de hoy. */
 
-.hero-panel {
-    min-height: 260px;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(260px, .42fr);
-    gap: 20px;
-    align-items: end;
-    padding: clamp(22px, 4vw, 38px);
-    border-radius: var(--radius-lg);
-    color: #fff;
-    overflow: hidden;
-    background:
-      linear-gradient(90deg, rgba(61, 33, 21, .9), rgba(61, 33, 21, .45)),
-      url("../../assets/img/menu-cafe.jpg") center / cover;
-    box-shadow: var(--shadow-md);
+.home-view {
+  gap: 18px;
+}
+
+.home-view h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* --- Primeros pasos ------------------------------------------------------ */
+
+.home-setup {
+  padding: 20px 22px;
+  border-left: 4px solid var(--red);
+}
+
+.home-setup__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.home-setup__head p {
+  margin: 4px 0 0;
+  color: #4a4a4a;
+  font-size: .92rem;
+}
+
+.home-setup__progress {
+  display: grid;
+  gap: 6px;
+  min-width: 160px;
+  text-align: right;
+}
+
+.home-setup__progress strong {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.home-progress {
+  display: block;
+  height: 8px;
+  border-radius: 999px;
+  background: #f0f0f2;
+  overflow: hidden;
+}
+
+.home-progress span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--red);
+}
+
+.home-setup__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.home-setup__list li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid #e6e6e8;
+  border-radius: 10px;
+}
+
+.home-setup__list li.is-done {
+  background: #fafafa;
+}
+
+.home-setup__list li.is-done strong {
+  color: #4a4a4a;
+  text-decoration: line-through;
+}
+
+.home-setup__check {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border: 2px solid #d9d9dd;
+  border-radius: 999px;
+  color: #fff;
+  font-size: .8rem;
+  font-weight: 700;
+}
+
+.home-setup__list li.is-done .home-setup__check {
+  border-color: #2f6b4f;
+  background: #2f6b4f;
+}
+
+.home-setup__list strong {
+  display: block;
+  font-size: .95rem;
+  font-weight: 600;
+}
+
+.home-setup__list small {
+  display: block;
+  margin-top: 2px;
+  color: #4a4a4a;
+  font-size: .82rem;
+  line-height: 1.4;
+}
+
+/* --- Estado del turno ---------------------------------------------------- */
+
+.home-shift {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px 28px;
+  padding: 16px 20px;
+}
+
+.home-shift__cash {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 240px;
+  flex: 1 1 auto;
+}
+
+.home-shift__cash strong {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.home-shift__cash small,
+.home-shift__meta small {
+  display: block;
+  color: #4a4a4a;
+  font-size: .82rem;
+}
+
+.home-dot {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+}
+
+.home-dot.is-ok {
+  background: #2f6b4f;
+  box-shadow: 0 0 0 4px rgba(47, 107, 79, .15);
+}
+
+.home-dot.is-off {
+  background: #c62828;
+  box-shadow: 0 0 0 4px rgba(198, 40, 40, .15);
+}
+
+.home-shift__meta {
+  display: flex;
+  gap: 28px;
+}
+
+.home-shift__meta strong {
+  font-size: .95rem;
+  font-weight: 600;
+}
+
+.home-capitalize::first-letter {
+  text-transform: uppercase;
+}
+
+.home-shift .button {
+  border-radius: 10px;
+}
+
+/* --- Indicadores --------------------------------------------------------- */
+
+.home-kpi {
+  display: grid;
+  gap: 4px;
+  min-height: auto !important;
+  padding: 18px;
+}
+
+.home-kpi p {
+  margin: 0;
+  color: #4a4a4a;
+  font-size: .9rem;
+}
+
+.home-kpi strong {
+  font-size: 1.7rem;
+  font-weight: 700;
+}
+
+.home-kpi__extra {
+  color: #4a4a4a;
+  font-size: .82rem;
+}
+
+.home-kpi__trend {
+  margin-top: 4px;
+  font-size: .8rem;
+  font-weight: 500;
+}
+
+.home-kpi__trend.is-up { color: #2f6b4f; }
+.home-kpi__trend.is-down { color: #c62828; }
+.home-kpi__trend.is-neutral { color: #6b6b70; }
+
+/* --- Tarjetas ------------------------------------------------------------ */
+
+.home-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  align-items: start;
+}
+
+.home-card {
+  padding: 20px;
+}
+
+.home-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.home-count {
+  min-width: 28px;
+  height: 28px;
+  padding: 0 8px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #f1f1f3;
+  font-size: .85rem;
+  font-weight: 600;
+}
+
+.home-subtitle {
+  margin: 18px 0 10px;
+  font-size: .95rem;
+  font-weight: 600;
+}
+
+.home-empty {
+  margin: 0;
+  padding: 18px 0;
+  color: #4a4a4a;
+  text-align: center;
+}
+
+.home-empty--ok {
+  color: #2f6b4f;
+  font-weight: 500;
+}
+
+/* Salon */
+.home-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.home-tile {
+  display: grid;
+  gap: 2px;
+  padding: 12px;
+  border: 1px solid #e6e6e8;
+  border-radius: 10px;
+}
+
+.home-tile strong {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.home-tile span {
+  color: #4a4a4a;
+  font-size: .82rem;
+}
+
+.home-stations {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.home-stations li {
+  display: grid;
+  grid-template-columns: minmax(70px, auto) 1fr 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid #e6e6e8;
+  border-radius: 10px;
+  font-size: .88rem;
+}
+
+.home-stations strong {
+  font-weight: 600;
+}
+
+.home-stations span {
+  color: #4a4a4a;
+}
+
+.home-stations .home-flag {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #fdecea;
+  color: #c62828;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.home-stations .home-ok {
+  color: #2f6b4f;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Pendientes */
+.home-alerts {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.home-alert {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  border: 1px solid #e6e6e8;
+  border-radius: 10px;
+  color: #111111;
+  text-decoration: none;
+  transition: background-color .15s ease, border-color .15s ease;
+}
+
+.home-alert:hover {
+  border-color: #c9c9ce;
+  background: #fafafa;
+}
+
+.home-alert__mark {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  font-size: .85rem;
+  font-weight: 700;
+}
+
+.home-alert.is-danger .home-alert__mark { background: #fdecea; color: #c62828; }
+.home-alert.is-warn .home-alert__mark { background: #fff4de; color: #9a6700; }
+.home-alert.is-info .home-alert__mark { background: #eef3fd; color: #1f6feb; }
+
+.home-alert__text {
+  min-width: 0;
+}
+
+.home-alert__text strong {
+  display: block;
+  font-size: .92rem;
+  font-weight: 600;
+}
+
+.home-alert__text small {
+  display: block;
+  margin-top: 1px;
+  overflow: hidden;
+  color: #4a4a4a;
+  font-size: .8rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-alert__go {
+  color: #6b6b70;
+  font-size: 1.3rem;
+}
+
+/* Mas vendidos */
+.home-bars {
+  display: grid;
+  gap: 10px;
+}
+
+.home-bars__row {
+  display: grid;
+  grid-template-columns: minmax(100px, 180px) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  font-size: .9rem;
+}
+
+.home-bars__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-bars__track {
+  height: 14px;
+}
+
+.home-bars__track span {
+  display: block;
+  height: 100%;
+  border-radius: 0 4px 4px 0;
+  background: var(--red);
+}
+
+.home-bars__row strong {
+  min-width: 48px;
+  font-weight: 600;
+  text-align: right;
+}
+
+/* Reservas */
+.home-reservations {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.home-reservations li {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid #e6e6e8;
+  border-radius: 10px;
+}
+
+.home-reservations time {
+  font-size: .95rem;
+  font-weight: 600;
+}
+
+.home-reservations strong {
+  display: block;
+  font-size: .92rem;
+  font-weight: 600;
+}
+
+.home-reservations small {
+  color: #4a4a4a;
+  font-size: .8rem;
+}
+
+.home-tag {
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: .75rem;
+  font-weight: 600;
+}
+
+.home-tag.is-ok { background: #e7f3ec; color: #2f6b4f; }
+.home-tag.is-pending { background: #fff4de; color: #9a6700; }
+
+.home-more {
+  margin: 10px 0 0;
+  color: #4a4a4a;
+  font-size: .85rem;
+  text-align: center;
+}
+
+@media (max-width: 1080px) {
+  .home-grid {
+    grid-template-columns: minmax(0, 1fr);
   }
-.hero-panel h2 {
-    max-width: 760px;
-    font-size: clamp(2rem, 4vw, 3.8rem);
+}
+
+@media (max-width: 640px) {
+  .home-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-.hero-panel p {
-    max-width: 650px;
-    color: rgba(255, 255, 255, .82);
+
+  .home-stations li {
+    grid-template-columns: 1fr 1fr;
   }
-.hero-panel__meta {
-    display: grid;
-    gap: 10px;
-    padding: 18px;
-    border: 1px solid rgba(255, 255, 255, .18);
-    border-radius: var(--radius);
-    background: rgba(38, 28, 23, .5);
+
+  .home-shift__meta {
+    flex-wrap: wrap;
+    gap: 12px 24px;
   }
-.hero-panel__meta strong {
-    font-size: 1.42rem;
-  }
-@media (max-width: 720px) {
-  .hero-panel {min-height: 260px;
-    padding: 22px;}
 }

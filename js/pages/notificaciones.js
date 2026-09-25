@@ -212,7 +212,7 @@ function bindEvents() {
 }
 
 if (session) {
-  renderSidebar("dashboard", session.role);
+  renderSidebar("notificaciones", session.role);
   renderTopbar({ title: "Notificaciones", eyebrow: "Alertas", showSearch: false });
   render();
 }

@@ -14,7 +14,7 @@
 // - Sucursales son una entidad transversal del ERP.
 // - Cada operacion que depende de un local conserva branchId.
 // - El cliente es global a Cafe Fusiones; ventas/reservas conservan sucursal.
-// - Categorias son DINAMICAS y se administran desde Configuracion.
+// - Categorias son DINAMICAS y se administran desde Administracion > Categorias.
 // - NO se crean categorias configurables por defecto.
 // - Se conserva menuCategories solo como compatibilidad temporal con las
 //   pantallas de Ventas existentes. No es el nuevo catalogo de categorias.
@@ -281,7 +281,7 @@ function seed() {
     branches,
 
     // IMPORTANTE: catalogo vacio a proposito.
-    // Las categorias se crean exclusivamente desde Configuracion.
+    // Las categorias se crean exclusivamente desde Administracion > Categorias.
     categories: [],
 
     /* ==================== RESTAURANT / VENTAS ==================== */

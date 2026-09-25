@@ -1400,3 +1400,70 @@
 .clients-v4 .eyebrow {
   color: #111111 !important;
 }
+
+/* ==========================================================================
+   BARRA DE PESTANAS + SUCURSAL
+   La tarjeta "Relacion con clientes" se elimino; su selector de sucursal
+   (filtra clientes y reservas) vive ahora a la derecha de las pestanas.
+   ========================================================================== */
+
+.clients-tabs-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.clients-tabs-wrap .clients-tabs {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.clients-tabs-wrap .clients-branch-context {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: 6px;
+  color: #111111;
+}
+
+.clients-tabs-wrap .clients-branch-context small {
+  font-size: .9rem;
+  font-weight: 500;
+}
+
+.clients-tabs-wrap .clients-branch-context select {
+  min-width: 150px;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid #d9d9dd;
+  border-radius: 10px;
+  background: #fff;
+  color: #111111;
+  font: inherit;
+  font-size: .92rem;
+}
+
+/* Encabezado simple de los niveles (reemplaza la tarjeta "Programa
+   configurable"); conserva el unico acceso a Configurar reglas. */
+.loyalty-levels-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 2px 0;
+}
+
+.loyalty-levels-head h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.loyalty-levels-head .mini-button {
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 10px;
+}
