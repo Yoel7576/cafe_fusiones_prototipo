@@ -84,7 +84,7 @@ params (`?tab=`, `?mode=`, `?station=`, `?mesa=`) y `history.replaceState`.
 
 ### Estado persistente
 
-`localStorage["cafeFusionesState"]`, esquema versionado (`VERSION = 11` en `storage.js`).
+`localStorage["cafeFusionesState"]`, esquema versionado (`VERSION = 13` en `storage.js`).
 `getState()` hidrata y **migra** el estado existente en vez de borrarlo. Claves
 principales: `tables`, `floorZones`, `menuItems`, `recipes`, `kitchenOrders`, `salesHistory`,
 `inventory`, `inventoryMovements`, `inventoryLots`, `productionBatches`, `suppliers`,
@@ -105,8 +105,13 @@ Reglas del modelo:
 - **Categorias son dinamicas** y se administran **solo** desde Configuracion
   (`state.categories` arranca vacio). Las 16 categorias de la carta real si vienen
   sembradas en `menuCategoriesSeed` porque son el catalogo del cliente, no un default
-  inventado. `menuCategories` (con "Todos" al inicio) se deriva de ahi y queda por
-  compatibilidad con las pantallas de Ventas.
+  inventado. `menuCategories` (con "Todos" al inicio) se deriva de ahi y es la **lista
+  unica** de la carta: la usan Ventas, la landing y Administracion (carta y recetas).
+  Sus nombres son los del recetario del cliente (`migrateToV13` renombra los antiguos).
+- **Carta, recetas y landing se conectan por el plato** (`menuItems`): la receta apunta a
+  sus platos con `productIds`, y su categoria es la del plato. Un plato tiene como maximo
+  una receta. Los platos de despacho directo (`inventoryMode: "direct"`, botellas) no
+  llevan receta: al venderse, la receta tendria prioridad sobre el insumo directo.
 - **Los seeds no se declaran dentro de las paginas.** Toda data base vive en `js/data/`
   y se siembra desde `storage.js`.
 - **Unidades de inventario: `g`, `ml` y `un`**, para que coincidan con las cantidades

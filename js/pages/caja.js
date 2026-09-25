@@ -17,7 +17,7 @@ const view = document.getElementById("view");
 
 if (session && canAccess(session.role, "caja")) {
   renderSidebar("caja", session.role);
-  renderTopbar({ title: "Caja", eyebrow: "Modulo", showSearch: false });
+  renderTopbar({ title: "Caja", eyebrow: "", showSearch: false });
   render();
 }
 
@@ -31,6 +31,17 @@ function summary() {
   const ventasCount = c.movements.filter((m) => m.type === "venta").length;
   const efectivoFinal = c.opening + efectivoVentas + ingresos - egresos;
   return { efectivoVentas, posVentas, ingresos, egresos, ventasTotal, ventasCount, efectivoFinal };
+}
+
+function shiftLabel(shift) {
+  if (shift === "manana") return "Turno mañana";
+  if (shift === "tarde") return "Turno tarde";
+  return "Turno sin definir";
+}
+
+function openedAtLabel(openedAt) {
+  if (!openedAt) return "-";
+  return new Date(openedAt).toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit" });
 }
 
 function soldProducts() {
@@ -75,7 +86,7 @@ function render() {
     <div class="view-stack">
       <section class="panel">
         <div class="panel__header panel__header--wrap">
-          <div><h2>Caja abierta</h2><p class="muted">Turno de: <strong>${escapeHtml(c.user || "-")}</strong></p></div>
+          <div class="caja-open-heading"><h2>Caja abierta</h2><p class="muted">Turno de: <strong>${escapeHtml(c.user || "-")}</strong> · ${shiftLabel(c.shift)} · Abierta a las <strong>${openedAtLabel(c.openedAt)}</strong></p></div>
           <div class="report-actions">
             <button class="button button--secondary" type="button" data-cash-in>${icon("plus")}<span>Registrar ingreso</span></button>
             <button class="button button--secondary" type="button" data-cash-out>Registrar egreso</button>
@@ -109,17 +120,24 @@ function render() {
 function openCashModal() {
   const html = `
     <section class="modal modal--small" role="dialog" aria-modal="true" aria-labelledby="ct">
-      <div class="modal__header"><div><p class="eyebrow">Caja</p><h2 id="ct">Abrir caja</h2></div><button class="icon-button" type="button" data-close-modal aria-label="Cerrar">${closeIcon}</button></div>
+      <div class="modal__header"><div><h2 id="ct">Abrir caja</h2></div><button class="icon-button" type="button" data-close-modal aria-label="Cerrar">${closeIcon}</button></div>
       <form class="form-grid" data-cash-form style="padding:20px;">
         <label class="span-2">Cajero del turno<input value="${escapeHtml(session.name)}" disabled></label>
-        <label class="span-2">Monto inicial (S/) — se registra como ingreso<input name="opening" type="number" min="0" step="0.01" value="200" required autofocus></label>
+        <label class="span-2">Turno<select name="shift" required>
+          <option value="" disabled selected>Selecciona un turno</option>
+          <option value="manana">Turno mañana</option>
+          <option value="tarde">Turno tarde</option>
+        </select></label>
+        <label class="span-2">Monto inicial (S/)<input name="opening" type="number" min="0" step="0.01" placeholder="0.00" required autofocus></label>
         <div class="confirm-actions span-2"><button class="button" type="button" data-close-modal>Cancelar</button><button class="button button--primary" type="submit">Abrir caja</button></div>
       </form>
     </section>`;
   openModal(html).querySelector("[data-cash-form]").addEventListener("submit", (e) => {
     e.preventDefault();
-    const opening = Number(new FormData(e.target).get("opening")) || 0;
-    state.cashBox = { open: true, user: session.name, opening, openedAt: new Date().toISOString(), movements: [], voids: [] };
+    const data = new FormData(e.target);
+    const opening = Number(data.get("opening")) || 0;
+    const shift = data.get("shift");
+    state.cashBox = { open: true, user: session.name, shift, opening, openedAt: new Date().toISOString(), movements: [], voids: [] };
     saveState(state); closeModal(); showToast(`Caja abierta por ${session.name}.`); render();
   });
 }

@@ -49,11 +49,11 @@ const view = document.getElementById("view");
 const params = new URLSearchParams(location.search);
 
 const TABS = [
-  ["general", "General", "⚙"],
-  ["sucursales", "Sucursales", "⌂"],
-  ["categorias", "Categorías", "▦"],
-  ["usuarios", "Usuarios y permisos", "♙"],
-  ["operacion", "Operación", "◫"]
+  ["general", "General"],
+  ["sucursales", "Sucursales"],
+  ["categorias", "Categorías"],
+  ["usuarios", "Usuarios y permisos"],
+  ["operacion", "Operación"]
 ];
 
 const PERMISSIONS = [
@@ -89,7 +89,7 @@ function init() {
 
   renderTopbar({
     title: "Configuración",
-    eyebrow: "Sistema",
+    eyebrow: "",
     showSearch: false
   });
 
@@ -162,19 +162,17 @@ function render() {
 
 function settingsHeader() {
   const branch = getActiveBranch(state);
-  const activeCategories = state.categories.filter((category) => category.status !== "Inactiva").length;
+  const fiscalComplete = Boolean(
+    state.settings.legalName &&
+    state.settings.ruc &&
+    state.settings.fiscalAddress
+  );
 
   return `
     <section class="panel settings-module-head">
-      <div>
-        <p class="eyebrow">Configuración del sistema</p>
+      <div class="settings-module-head__top">
         <h2>Administración central</h2>
-        <p>
-          Administra los datos generales, sucursales, categorías, usuarios y operación.
-        </p>
-      </div>
 
-      <div class="settings-context">
         <label class="settings-active-branch">
           <span>Sucursal activa</span>
           <select data-active-branch>
@@ -188,17 +186,14 @@ function settingsHeader() {
             `).join("")}
           </select>
         </label>
-
-        <span class="settings-context-stat">
-          <strong>${state.branches.filter((item) => item.status === "Activa").length}</strong>
-          sucursal(es)
-        </span>
-
-        <span class="settings-context-stat">
-          <strong>${activeCategories}</strong>
-          categorías
-        </span>
       </div>
+
+      <section class="settings-kpis">
+        ${kpi("Sucursal principal", escapeHtml(mainBranch()?.shortName || mainBranch()?.name || "Sin definir"))}
+        ${kpi("Datos fiscales", fiscalComplete ? "Completos" : "Pendientes", fiscalComplete ? "ok" : "warn")}
+        ${kpi("Usuarios activos", state.users.filter((user) => user.status !== "Inactivo").length)}
+        ${kpi("Sistema", state.settings.kdsEnabled ? "Operativo" : "Revisar", state.settings.kdsEnabled ? "ok" : "warn")}
+      </section>
     </section>`;
 }
 
@@ -206,13 +201,12 @@ function settingsTabs() {
   return `
     <section class="panel settings-tabs-wrap">
       <nav class="settings-tabs" aria-label="Secciones de configuración">
-        ${TABS.map(([id, label, symbol]) => `
+        ${TABS.map(([id, label]) => `
           <button
             class="settings-tab ${ui.tab === id ? "is-active" : ""}"
             type="button"
             data-settings-tab="${id}"
           >
-            <span>${symbol}</span>
             <strong>${label}</strong>
           </button>
         `).join("")}
@@ -235,46 +229,13 @@ function renderCurrentTab() {
 function renderGeneral() {
   const branch = getActiveBranch(state);
   const billing = state.settings.billing || {};
-  const fiscalComplete = Boolean(
-    state.settings.legalName &&
-    state.settings.ruc &&
-    state.settings.fiscalAddress
-  );
 
   return `
     <div class="settings-tab-view">
-      <section class="settings-kpis">
-        ${kpi(
-          "Sucursal principal",
-          escapeHtml(mainBranch()?.shortName || mainBranch()?.name || "Sin definir"),
-          "Referencia general de la empresa",
-          "neutral"
-        )}
-        ${kpi(
-          "Datos fiscales",
-          fiscalComplete ? "Completos" : "Pendientes",
-          "Usados posteriormente en comprobantes",
-          fiscalComplete ? "ok" : "warn"
-        )}
-        ${kpi(
-          "Usuarios activos",
-          state.users.filter((user) => user.status !== "Inactivo").length,
-          "Personas con acceso",
-          "neutral"
-        )}
-        ${kpi(
-          "Sistema",
-          state.settings.kdsEnabled ? "Operativo" : "Revisar",
-          "KDS y parámetros generales",
-          state.settings.kdsEnabled ? "ok" : "warn"
-        )}
-      </section>
-
       <div class="settings-general-grid">
         <section class="panel settings-summary-card">
           <header>
             <div>
-              <p class="eyebrow">Empresa</p>
               <h2>Datos del negocio</h2>
             </div>
             <button class="mini-button" type="button" data-edit-business>Editar</button>
@@ -307,7 +268,6 @@ function renderGeneral() {
         <section class="panel settings-summary-card">
           <header>
             <div>
-              <p class="eyebrow">Comprobantes</p>
               <h2>Facturación y emisión</h2>
             </div>
             <button class="mini-button" type="button" data-edit-billing>Configurar</button>
@@ -317,9 +277,6 @@ function renderGeneral() {
             <span class="${billing.enabled ? "is-on" : "is-pending"}">
               ${billing.enabled ? "Series configuradas" : "Sin series configuradas"}
             </span>
-            <p>
-              Configura la emisión de boletas y facturas.
-            </p>
           </div>
 
           <dl class="settings-summary-list settings-summary-list--compact">
@@ -345,7 +302,6 @@ function renderGeneral() {
         <section class="panel settings-summary-card">
           <header>
             <div>
-              <p class="eyebrow">Ubicación actual</p>
               <h2>${escapeHtml(branch?.name || "Sucursal")}</h2>
             </div>
             <button class="mini-button" type="button" data-go-branches>Ver sucursales</button>
@@ -374,7 +330,6 @@ function renderGeneral() {
         <section class="panel settings-summary-card">
           <header>
             <div>
-              <p class="eyebrow">Organización</p>
               <h2>Categorías</h2>
             </div>
             <button class="mini-button" type="button" data-go-categories>Administrar</button>
@@ -382,9 +337,6 @@ function renderGeneral() {
 
           <div class="settings-feature-status">
             <strong>${state.categories.length}</strong>
-            <p>
-              Crea y organiza las categorías que utiliza el negocio.
-            </p>
           </div>
         </section>
       </div>
@@ -405,18 +357,14 @@ function renderBranches() {
   return `
     <div class="settings-tab-view">
       <section class="settings-kpis settings-kpis--3">
-        ${kpi("Sucursales", branches.length, "Registradas en el sistema", "neutral")}
-        ${kpi("Activas", branches.filter((branch) => branch.status === "Activa").length, "Disponibles para operar", "ok")}
-        ${kpi("Principal", mainBranch()?.shortName || mainBranch()?.name || "Sin definir", "Sucursal de referencia", "info")}
+        ${kpi("Sucursales", branches.length)}
+        ${kpi("Activas", branches.filter((branch) => branch.status === "Activa").length, "ok")}
+        ${kpi("Principal", escapeHtml(mainBranch()?.shortName || mainBranch()?.name || "Sin definir"), "info")}
       </section>
 
       <section class="panel settings-toolbar">
         <div>
-          <p class="eyebrow">Estructura empresarial</p>
           <h2>Sucursales</h2>
-          <p>
-            Administra los locales de Cafe Fusiones.
-          </p>
         </div>
 
         <button class="button button--primary" type="button" data-new-branch>
@@ -513,11 +461,7 @@ function renderCategories() {
     <div class="settings-tab-view">
       <section class="panel settings-toolbar settings-toolbar--categories">
         <div>
-          <p class="eyebrow">Catálogo central</p>
           <h2>Categorías</h2>
-          <p>
-            Organiza la carta, la carta pública, los insumos y los gastos.
-          </p>
         </div>
 
         <button class="button button--primary" type="button" data-new-category>
@@ -543,7 +487,6 @@ function renderCategories() {
       <section class="panel settings-category-list">
         <div class="panel__header">
           <div>
-            <p class="eyebrow">${escapeHtml(scopeLabel(ui.categoryScope))}</p>
             <h2>Categorías configuradas</h2>
           </div>
           <span class="status status--info">${categories.length} registro(s)</span>
@@ -651,18 +594,14 @@ function renderUsers() {
   return `
     <div class="settings-tab-view">
       <section class="settings-kpis settings-kpis--3">
-        ${kpi("Usuarios", state.users.length, "Registrados", "neutral")}
-        ${kpi("Activos", active, "Con acceso habilitado", "ok")}
-        ${kpi("Multi-sucursal", multiBranch, "Acceso a más de una sede", "info")}
+        ${kpi("Usuarios", state.users.length)}
+        ${kpi("Activos", active, "ok")}
+        ${kpi("Multi-sucursal", multiBranch, "info")}
       </section>
 
       <section class="panel settings-toolbar">
         <div>
-          <p class="eyebrow">Acceso al sistema</p>
           <h2>Usuarios y permisos</h2>
-          <p>
-            Administra usuarios, roles, sucursales y accesos.
-          </p>
         </div>
 
         <button class="button button--primary" type="button" data-new-user>
@@ -742,11 +681,7 @@ function renderOperation() {
     <div class="settings-tab-view">
       <section class="panel settings-operation-head">
         <div>
-          <p class="eyebrow">Operación diaria</p>
           <h2>Configuración por sucursal</h2>
-          <p>
-            Configura mesas, estaciones, impresión y servicios por sucursal.
-          </p>
         </div>
 
         <label>
@@ -2999,11 +2934,10 @@ function modalActions(label) {
     </div>`;
 }
 
-function kpi(label, value, detail, tone = "neutral") {
+function kpi(label, value, tone = "neutral") {
   return `
     <article class="panel settings-kpi settings-kpi--${tone}">
       <span>${escapeHtml(String(label))}</span>
       <strong>${value}</strong>
-      <small>${escapeHtml(String(detail))}</small>
     </article>`;
 }

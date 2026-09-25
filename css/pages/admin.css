@@ -148,6 +148,148 @@
 .recipe-add { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 14px 0; }
 .recipe-add select { flex: 1 1 200px; min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; color: var(--ink); }
 .recipe-add input { width: 110px; min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; color: var(--ink); }
+
+/* Barra de filtros de carta y recetas: buscador, selects y boton de alta */
+.admin-toolbar {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 16px 18px;
+}
+.admin-toolbar label {
+  display: grid;
+  gap: 6px;
+  color: #111111;
+  font-size: .76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.admin-toolbar__search { flex: 1 1 280px; }
+.admin-toolbar input,
+.admin-toolbar select {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  color: #111111;
+  font-size: .9rem;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.admin-toolbar select { min-width: 190px; }
+.admin-toolbar .button { margin-left: auto; }
+@media (max-width: 760px) {
+  .admin-toolbar label,
+  .admin-toolbar select,
+  .admin-toolbar .button { width: 100%; margin-left: 0; }
+}
+
+/* Tabla de recetas: anchos fijos para que Receta y Estacion no se estiren */
+.table-wrap .recipe-table { table-layout: fixed; width: 100%; min-width: 0; }
+.recipe-table th, .recipe-table td { white-space: normal; }
+.recipe-table th:nth-child(1) { width: 23%; }
+.recipe-table th:nth-child(2) { width: 9%; min-width: 0; }
+.recipe-table th:nth-child(3) { width: 13%; }
+.recipe-table th:nth-child(4) { width: 10%; }
+.recipe-table th:nth-child(5) { width: 10%; }
+.recipe-table th:nth-child(6) { width: 9%; }
+.recipe-table th:nth-child(7) { width: 9%; }
+.recipe-table th:nth-child(8) { width: 17%; }
+.recipe-table td:nth-child(2) { min-width: 0; }
+.table-group-row td {
+  padding: 10px 20px !important;
+  background: #f5f5f6;
+  color: #111111;
+  font-size: .82rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.table-group-row span {
+  margin-left: 8px;
+  font-weight: 700;
+  color: #4a4a4a;
+}
+
+/* Ventana "Editar/Nueva receta": mas ancha y con aire entre campos */
+.recipe-edit-modal { width: min(100%, 760px); }
+.recipe-edit-form { padding: 26px 28px; gap: 20px 24px; }
+.recipe-edit-form label { gap: 8px; }
+.recipe-edit-form .textarea { min-height: 110px; }
+.recipe-edit-form .confirm-actions { margin-top: 6px; }
+
+/* Ventana "Ver receta": mas ancha y tabla de insumos compacta */
+.recipe-view-modal { width: min(100%, 720px); }
+.table-wrap .recipe-view-table { table-layout: fixed; width: 100%; min-width: 0; }
+.recipe-view-table th, .recipe-view-table td { white-space: normal; padding: 10px 14px !important; color: #111111; }
+.recipe-view-table th:nth-child(1), .recipe-view-table td:nth-child(1) { width: 55%; }
+.recipe-view-table th:nth-child(2), .recipe-view-table td:nth-child(2) { width: 25%; min-width: 0; }
+.recipe-view-table th:nth-child(3), .recipe-view-table td:nth-child(3) { width: 20%; }
+
+/* Gestion de carta: tabla de platos */
+.table-wrap .carta-table { table-layout: fixed; width: 100%; min-width: 0; }
+.carta-table th, .carta-table td { white-space: normal; color: #111111; }
+.carta-table th:nth-child(1) { width: 25%; }
+.carta-table th:nth-child(2) { width: 13%; }
+.carta-table th:nth-child(3) { width: 9%; }
+.carta-table th:nth-child(4) { width: 12%; }
+.carta-table th:nth-child(5) { width: 9%; }
+.carta-table th:nth-child(6) { width: 12%; }
+.carta-table th:nth-child(7) { width: 10%; }
+.carta-table th:nth-child(8) { width: 10%; }
+.carta-table td:nth-child(2) { min-width: 0; }
+.carta-note { display: block; font-size: .74rem; font-weight: 600; color: #4a4a4a; }
+.carta-warning { color: #c62828; font-weight: 800; }
+
+/* Gestion de carta: ficha del plato en tres bloques */
+.plato-modal { width: min(100%, 820px); }
+.plato-form { display: grid; gap: 18px; padding: 24px 28px; }
+.plato-section {
+  margin: 0;
+  padding: 18px 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  gap: 16px 20px;
+}
+.plato-section legend {
+  padding: 0 8px;
+  color: #111111;
+  font-size: .82rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+/* .form-grid label pone la casilla y su texto en filas separadas */
+.plato-form .check-inline { display: flex; align-items: center; gap: 10px; color: #111111; font-size: .9rem; }
+.plato-hint { margin: -6px 0 0; color: #4a4a4a; font-size: .8rem; }
+.plato-info { display: grid; gap: 4px; padding: 12px 14px; border-radius: var(--radius); background: #f5f5f6; color: #111111; }
+.plato-info p { margin: 0; font-size: .86rem; }
+.plato-cost { display: flex; flex-wrap: wrap; gap: 24px; padding: 12px 14px; border-radius: var(--radius); background: #f5f5f6; color: #111111; font-size: .92rem; }
+.plato-photo { display: grid; gap: 8px; }
+.plato-photo__label { color: var(--muted); font-size: .86rem; font-weight: 800; }
+.plato-photo__row { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.plato-photo__preview {
+  width: 140px;
+  height: 105px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 1px dashed #d9d9dd;
+  border-radius: var(--radius);
+  background: #f5f5f6;
+  color: #4a4a4a;
+  font-size: .8rem;
+  font-weight: 600;
+}
+.plato-photo__preview img { width: 100%; height: 100%; object-fit: cover; }
+.plato-photo__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.plato-photo__actions .plato-hint { flex-basis: 100%; margin: 0; }
+.plato-photo__actions .button[hidden] { display: none; }
+.plato-form .confirm-actions { display: flex; justify-content: flex-end; gap: 10px; }
 .sale-field { display: grid; gap: 8px; margin: 8px 0 14px; font-weight: 700; }
 .sale-field select, .sale-field input { width: 100%; min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; color: var(--ink); }
 

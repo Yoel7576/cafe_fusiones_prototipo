@@ -63,16 +63,11 @@
     padding-left: 10px;
     padding-right: 10px;
   }
-  .sidebar.is-collapsed .brand-lockup {
-    justify-content: center;
-  }
-  .sidebar.is-collapsed .brand-lockup span,
   .sidebar.is-collapsed .nav-button span,
   .sidebar.is-collapsed .side-actions .nav-button span {
     display: none;
   }
-  .sidebar.is-collapsed .nav-button,
-  .sidebar.is-collapsed .brand-lockup {
+  .sidebar.is-collapsed .nav-button {
     justify-content: center;
     padding-left: 0;
     padding-right: 0;
@@ -85,28 +80,6 @@
   }
 .bottom-nav {
     display: none;
-  }
-.brand-lockup {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0 6px;
-    border-radius: var(--radius);
-  }
-.brand-lockup img {
-    width: 44px;
-    height: 44px;
-    flex-shrink: 0;
-    border-radius: 12px;
-    object-fit: contain;
-    background: rgba(255, 255, 255, .06);
-  }
-.brand-lockup strong,
-  .brand-lockup small {
-    display: block;
-  }
-.brand-lockup small {
-    color: rgba(255, 255, 255, .68);
   }
 .side-nav {
     display: grid;
@@ -128,8 +101,8 @@
   }
 .nav-button[aria-current="page"] {
     color: #fff;
-    background: rgba(255, 255, 255, .12);
-    border-color: rgba(255, 255, 255, .12);
+    background: var(--red);
+    border-color: var(--red);
   }
 .sidebar-note {
     margin-top: auto;

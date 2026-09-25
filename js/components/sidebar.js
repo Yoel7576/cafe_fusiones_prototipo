@@ -102,22 +102,6 @@ export function renderSidebar(activeId, role) {
         <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
       </button>
 
-      <a
-        class="brand-lockup"
-        href="dashboard.html"
-        aria-label="Cafe Fusiones inicio"
-      >
-        <img
-          src="../assets/img/logo_cafe_fusiones.png"
-          alt="Cafe Fusiones"
-          aria-hidden="false"
-        >
-        <span>
-          <strong>Cafe Fusiones</strong>
-          <small>Sistema integral</small>
-        </span>
-      </a>
- 
       <nav
         class="side-nav"
         aria-label="Navegacion principal"

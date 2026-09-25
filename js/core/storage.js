@@ -54,7 +54,7 @@ import { suppliersSeed } from "../data/proveedores.js";
 import { floorZonesSeed } from "../data/plano.js";
 
 const STATE_KEY = "cafeFusionesState";
-const VERSION = 11;
+const VERSION = 13;
 
 export const MAIN_BRANCH_ID = "SUC-01";
 
@@ -254,6 +254,7 @@ function emptyCashBox(branchId = MAIN_BRANCH_ID) {
     branchId,
     open: false,
     user: null,
+    shift: null,
     opening: 0,
     openedAt: null,
     closedAt: null,
@@ -345,7 +346,9 @@ function seed() {
 
       // Las categorias nunca se autogeneran a partir de los registros.
       categoryManagement: "configuration",
-      autoCreateCategories: false
+      autoCreateCategories: false,
+      // La semilla ya trae las categorias del recetario (ver migrateToV13).
+      menuCategoriesUnified: true
     },
 
     /* ==================== SECUENCIAS ==================== */
@@ -767,6 +770,37 @@ function migrateToV11(next, base, saved) {
   );
 }
 
+// Nombres de categoria de la carta antes de V13 -> nombres del recetario.
+const V13_CATEGORY_RENAME = {
+  "Café": "Cafés",
+  "Chocolate": "Chocolates",
+  "Café en método": "Métodos",
+  "Bebidas vegetales": "Bebidas Vegetales",
+  "Sándwiches": "Sandwiches",
+  "Sopas y cremas": "Sopas",
+  "Platos especiales": "Platos Especiales",
+  "Infusiones y tés": "Infusiones",
+  "Jugos y batidos": "Jugos/Batidos",
+  "Tragos y cócteles": "Tragos/Cócteles"
+};
+
+/**
+ * Migracion a V13: una sola lista de categorias para carta, recetas y landing.
+ * Se renombran las categorias de la carta a las del recetario del cliente; las
+ * categorias creadas a mano se conservan. La guarda es una marca en settings
+ * (no el numero de version) para que corra una sola vez aunque el estado haya
+ * quedado en V12 sin renombrar.
+ */
+function migrateToV13(next, saved) {
+  if (saved.settings?.menuCategoriesUnified) return;
+
+  const rename = (name) => V13_CATEGORY_RENAME[name] || name;
+
+  next.menuItems = next.menuItems.map((item) => ({ ...item, category: rename(item.category) }));
+  next.menuCategories = [...new Set(next.menuCategories.map(rename))];
+  next.settings.menuCategoriesUnified = true;
+}
+
 function hydrateState(saved = {}) {
   const base = seed();
 
@@ -828,6 +862,7 @@ function hydrateState(saved = {}) {
   migrateToV9(next, base, saved);
   migrateToV10(next, base, saved);
   migrateToV11(next, base, saved);
+  migrateToV13(next, saved);
 
   normalizeBranches(next, base);
   normalizeCategories(next);

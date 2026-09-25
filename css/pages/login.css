@@ -21,32 +21,6 @@
       linear-gradient(90deg, rgba(61, 33, 21, .86), rgba(90, 46, 27, .42)),
       url("../../assets/img/cafe-hero.webp") center / cover;
   }
-.auth-back {
-    position: absolute;
-    top: clamp(20px, 4vw, 36px);
-    left: clamp(20px, 4vw, 36px);
-    z-index: 1;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 14px 8px 10px;
-    border: 1px solid rgba(255, 255, 255, .3);
-    border-radius: 999px;
-    color: #fff;
-    font-size: .82rem;
-    font-weight: 800;
-    background: rgba(38, 28, 23, .32);
-    backdrop-filter: blur(6px);
-  }
-.auth-back svg {
-    width: 16px;
-    height: 16px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
 .auth-visual__overlay {
     position: absolute;
     inset: auto 0 0;
@@ -113,14 +87,8 @@
     padding: 30px;
     border: 1px solid rgba(231, 217, 203, .88);
     border-radius: var(--radius-lg);
-    background: rgba(255, 253, 248, .92);
+    background: #ffffff;
     box-shadow: var(--shadow-md);
-  }
-.login-card__mark {
-    width: 70px;
-    height: 70px;
-    border-radius: 18px;
-    box-shadow: var(--shadow-sm);
   }
 .login-card__copy {
     display: grid;

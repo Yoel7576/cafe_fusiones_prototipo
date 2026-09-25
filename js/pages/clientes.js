@@ -54,9 +54,9 @@ const view = document.getElementById("view");
 const params = new URLSearchParams(window.location.search);
 
 const TABS = [
-  { id: "clientes", label: "Clientes", icon: "◎" },
-  { id: "fidelizacion", label: "Fidelización", icon: "★" },
-  { id: "reservas", label: "Reservas", icon: "◷" }
+  { id: "clientes", label: "Clientes" },
+  { id: "fidelizacion", label: "Fidelización" },
+  { id: "reservas", label: "Reservas" }
 ];
 
 const SEGMENTS = ["Todos", "No especificado", "Local", "Turista"];
@@ -456,7 +456,6 @@ function moduleTabs() {
             type="button"
             data-tab="${tab.id}"
           >
-            <span>${tab.icon}</span>
             <strong>${tab.label}</strong>
           </button>
         `).join("")}

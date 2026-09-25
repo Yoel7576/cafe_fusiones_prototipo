@@ -44,12 +44,12 @@
 }
 
 .inventory-loading strong {
-  color: var(--brown);
+  color: #111111;
 }
 
 .inventory-loading p {
   margin: 4px 0 0;
-  color: var(--muted);
+  color: #111111;
   font-size: .76rem;
 }
 
@@ -59,10 +59,8 @@
 
 .inventory-module-head {
   padding: 16px 18px;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 18px;
+  display: grid;
+  gap: 16px;
   background:
     radial-gradient(circle at 88% 12%, rgba(212, 160, 23, .12), transparent 24rem),
     var(--panel);
@@ -75,44 +73,17 @@
 
 .inventory-module-head h2 {
   margin: 3px 0 5px;
-  color: var(--brown);
-  font-size: 1.28rem;
+  color: #111111;
+  font-size: 1.5rem;
   line-height: 1.15;
 }
 
 .inventory-module-head p {
   max-width: 760px;
   margin: 0;
-  color: var(--muted);
-  font-size: .72rem;
+  color: #111111;
+  font-size: .88rem;
   line-height: 1.5;
-}
-
-.inventory-head-pills {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 7px;
-  flex-wrap: wrap;
-}
-
-.inventory-head-pills span {
-  min-height: 38px;
-  border: 1px solid var(--line);
-  border-radius: 11px;
-  padding: 7px 10px;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  color: var(--muted);
-  background: #fff;
-  font-size: .61rem;
-  font-weight: 800;
-}
-
-.inventory-head-pills strong {
-  color: var(--brown);
-  font-size: .82rem;
 }
 
 /* ==========================================================================
@@ -139,47 +110,31 @@
   min-height: 42px;
   border: 1px solid transparent;
   border-radius: 10px;
-  padding: 0 11px;
+  padding: 0 14px;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  color: var(--muted);
+  color: #111111;
   background: transparent;
   cursor: pointer;
 }
 
-.inventory-tab > span {
-  width: 24px;
-  height: 24px;
-  border-radius: 7px;
-  display: grid;
-  place-items: center;
-  background: #f5eee7;
-  color: var(--brown);
-  font-size: .72rem;
-}
-
 .inventory-tab strong {
-  font-size: .66rem;
+  font-size: 1rem;
+  font-weight: 800;
   white-space: nowrap;
 }
 
 .inventory-tab:hover {
-  color: var(--brown);
+  color: #111111;
   border-color: rgba(90, 46, 27, .14);
   background: #fffaf4;
 }
 
 .inventory-tab.is-active {
   color: #fff;
-  background: var(--brown);
-  border-color: var(--brown);
-  box-shadow: 0 6px 16px rgba(90, 46, 27, .14);
-}
-
-.inventory-tab.is-active > span {
-  color: #fff;
-  background: rgba(255, 255, 255, .14);
+  background: var(--red);
+  border-color: var(--red);
+  box-shadow: 0 6px 16px rgba(184, 30, 45, .18);
 }
 
 /* ==========================================================================
@@ -213,7 +168,7 @@
 }
 
 .inventory-kpi > span {
-  color: var(--muted);
+  color: #111111;
   font-size: .61rem;
   font-weight: 900;
   text-transform: uppercase;
@@ -221,13 +176,13 @@
 }
 
 .inventory-kpi > strong {
-  color: var(--brown);
+  color: #111111;
   font-size: 1.35rem;
   line-height: 1;
 }
 
 .inventory-kpi > small {
-  color: var(--muted);
+  color: #111111;
   font-size: .59rem;
 }
 
@@ -244,7 +199,7 @@
 }
 
 .inventory-kpi--danger > strong {
-  color: var(--red);
+  color: #111111;
 }
 
 /* ==========================================================================
@@ -319,28 +274,28 @@
 }
 
 .inventory-alert-row strong {
-  color: var(--ink);
+  color: #111111;
   font-size: .68rem;
 }
 
 .inventory-alert-row small {
-  color: var(--muted);
+  color: #111111;
   font-size: .58rem;
   line-height: 1.35;
 }
 
 .inventory-alert-row > b {
-  color: var(--muted);
+  color: #111111;
   font-size: 1.1rem;
 }
 
 .inventory-alert-row--danger > span {
-  color: var(--red);
+  color: #111111;
   background: var(--danger-soft);
 }
 
 .inventory-alert-row--warn > span {
-  color: var(--warn);
+  color: #111111;
   background: var(--warn-soft);
 }
 
@@ -375,17 +330,17 @@
 }
 
 .inventory-suggestion-list strong {
-  color: var(--ink);
+  color: #111111;
   font-size: .68rem;
 }
 
 .inventory-suggestion-list small {
-  color: var(--muted);
+  color: #111111;
   font-size: .58rem;
 }
 
 .inventory-suggestion-list article > div:last-child > span {
-  color: var(--brown);
+  color: #111111;
   font-size: .66rem;
   font-weight: 900;
 }
@@ -420,7 +375,7 @@
 }
 
 .inventory-toolbar label > span {
-  color: var(--muted);
+  color: #111111;
   font-size: .58rem;
   font-weight: 900;
   text-transform: uppercase;
@@ -434,7 +389,7 @@
   border: 1px solid var(--line);
   border-radius: 9px;
   padding: 0 9px;
-  color: var(--ink);
+  color: #111111;
   background: #fff;
   font-size: .68rem;
 }
@@ -461,7 +416,7 @@
 }
 
 .inventory-v4 .data-table td strong {
-  color: var(--ink);
+  color: #111111;
 }
 
 .inventory-v4 .data-table small.muted {
@@ -516,12 +471,12 @@
 }
 
 .purchase-suggestion-card > div:first-child strong {
-  color: var(--brown);
+  color: #111111;
   font-size: .72rem;
 }
 
 .purchase-suggestion-card > div:first-child small {
-  color: var(--muted);
+  color: #111111;
   font-size: .57rem;
 }
 
@@ -535,17 +490,17 @@
 
 .purchase-suggestion-card p {
   margin: 0;
-  color: var(--muted);
+  color: #111111;
   font-size: .56rem;
 }
 
 .purchase-suggestion-card > div:nth-child(2) strong {
-  color: var(--brown);
+  color: #111111;
   font-size: .88rem;
 }
 
 .purchase-suggestion-card > div:nth-child(2) small {
-  color: var(--muted);
+  color: #111111;
   font-size: .56rem;
 }
 
@@ -553,87 +508,41 @@
    PROVEEDORES
    ========================================================================== */
 
-.supplier-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-  gap: 10px;
-}
-
-.supplier-card {
-  padding: 0;
-  overflow: hidden;
-}
-
-.supplier-card header {
-  padding: 12px;
-  border-bottom: 1px solid var(--line);
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-  background: #fffdf9;
-}
-
-.supplier-card header > div {
+.supplier-table {
   min-width: 0;
-  display: grid;
-  gap: 3px;
+  width: 100%;
+  table-layout: fixed;
 }
 
-.supplier-card h3 {
-  margin: 2px 0 0;
-  color: var(--brown);
-  font-size: .85rem;
-}
-
-.supplier-card header p {
-  margin: 0;
-  color: var(--muted);
-  font-size: .59rem;
-}
-
-.supplier-card dl {
-  margin: 0;
+.supplier-table th,
+.supplier-table td {
+  white-space: normal;
+  overflow-wrap: break-word;
   padding: 10px 12px;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px 12px;
+  font-size: .78rem;
+  line-height: 1.35;
+  color: #111111;
 }
 
-.supplier-card dl > div {
-  min-width: 0;
-  display: grid;
-  gap: 2px;
-}
+.supplier-table th:nth-child(1), .supplier-table td:nth-child(1) { width: 14%; }
+.supplier-table th:nth-child(2), .supplier-table td:nth-child(2) { width: 10%; }
+.supplier-table th:nth-child(3), .supplier-table td:nth-child(3) { width: 8%; }
+.supplier-table th:nth-child(4), .supplier-table td:nth-child(4) { width: 13%; }
+.supplier-table th:nth-child(5), .supplier-table td:nth-child(5) { width: 13%; }
+.supplier-table th:nth-child(6), .supplier-table td:nth-child(6) { width: 9%; }
+.supplier-table th:nth-child(7), .supplier-table td:nth-child(7) { width: 8%; }
+.supplier-table th:nth-child(8), .supplier-table td:nth-child(8) { width: 15%; }
+.supplier-table th:nth-child(9), .supplier-table td:nth-child(9) { width: 10%; }
 
-.supplier-card dt {
-  color: var(--muted);
-  font-size: .54rem;
-  font-weight: 900;
-  text-transform: uppercase;
-}
-
-.supplier-card dd {
-  margin: 0;
-  color: var(--ink);
-  font-size: .63rem;
-  line-height: 1.3;
-}
-
-.supplier-products {
-  padding: 0 12px 10px;
-  display: flex;
-  flex-wrap: wrap;
+.supplier-table .table-actions {
+  flex-direction: column;
+  align-items: stretch;
   gap: 5px;
 }
 
-.supplier-products span {
-  border-radius: 999px;
-  padding: 4px 7px;
-  color: var(--brown);
-  background: #f6eee5;
-  font-size: .54rem;
-  font-weight: 800;
+.supplier-table .mini-button {
+  width: 100%;
+  justify-content: center;
 }
 
 .supplier-trace-note {
@@ -647,25 +556,14 @@
 }
 
 .supplier-trace-note strong {
-  color: #7b5c11;
+  color: #111111;
   font-size: .63rem;
 }
 
 .supplier-trace-note small {
-  color: #806d40;
+  color: #111111;
   font-size: .55rem;
   line-height: 1.4;
-}
-
-.supplier-card footer {
-  min-height: 48px;
-  border-top: 1px solid var(--line);
-  padding: 8px 10px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 5px;
-  background: #fffdf9;
 }
 
 /* ==========================================================================
@@ -707,7 +605,7 @@
 }
 
 .recipe-name-cell strong {
-  color: var(--brown);
+  color: #111111;
   font-size: 1rem;
   line-height: 1.2;
   font-weight: 900;
@@ -722,7 +620,7 @@
 .recipe-ingredient-list {
   display: grid;
   gap: 4px;
-  color: var(--muted);
+  color: #111111;
   font-size: .58rem;
   line-height: 1.4;
 }
@@ -734,7 +632,7 @@
   border-radius: 999px;
   padding: 4px 7px;
   background: var(--blue-soft);
-  color: var(--blue);
+  color: #111111;
   font-size: .53rem;
   font-weight: 800;
 }
@@ -783,12 +681,12 @@
 }
 
 .production-card header > div:first-child > strong {
-  color: var(--brown);
+  color: #111111;
   font-size: .72rem;
 }
 
 .production-card header small {
-  color: var(--muted);
+  color: #111111;
   font-size: .55rem;
 }
 
@@ -800,21 +698,21 @@
 }
 
 .production-yield span {
-  color: var(--muted);
+  color: #111111;
   font-size: .5rem;
 }
 
 .production-yield strong {
-  color: var(--green);
+  color: #111111;
   font-size: .92rem;
 }
 
 .production-card--warn .production-yield strong {
-  color: var(--warn);
+  color: #111111;
 }
 
 .production-card--danger .production-yield strong {
-  color: var(--red);
+  color: #111111;
 }
 
 .production-values {
@@ -834,13 +732,13 @@
 }
 
 .production-values span {
-  color: var(--muted);
+  color: #111111;
   font-size: .48rem;
   text-transform: uppercase;
 }
 
 .production-values strong {
-  color: var(--ink);
+  color: #111111;
   font-size: .6rem;
 }
 
@@ -849,7 +747,7 @@
   padding: 8px 10px;
   display: grid;
   gap: 2px;
-  color: var(--muted);
+  color: #111111;
 }
 
 .production-card footer span,
@@ -874,15 +772,15 @@
 
 .trace-hero h2 {
   margin: 3px 0 5px;
-  color: var(--brown);
-  font-size: 1.3rem;
+  color: #111111;
+  font-size: 1.5rem;
 }
 
 .trace-hero p {
   max-width: 640px;
   margin: 0;
-  color: var(--muted);
-  font-size: .7rem;
+  color: #111111;
+  font-size: .88rem;
   line-height: 1.45;
 }
 
@@ -897,14 +795,14 @@
   border-radius: 10px;
   padding: 8px;
   background: rgba(255,255,255,.85);
-  color: var(--ink);
+  color: #111111;
   font-size: .6rem;
 }
 
 .trace-hero-data b {
   display: block;
   margin-bottom: 2px;
-  color: var(--green);
+  color: #111111;
   font-size: .52rem;
   text-transform: uppercase;
 }
@@ -953,27 +851,27 @@
 }
 
 .trace-step small {
-  color: var(--muted);
+  color: #111111;
   font-size: .5rem;
   text-transform: uppercase;
 }
 
 .trace-step strong {
-  color: var(--brown);
+  color: #111111;
   font-size: .66rem;
   line-height: 1.25;
 }
 
 .trace-step p {
   margin: 0;
-  color: var(--muted);
+  color: #111111;
   font-size: .54rem;
   line-height: 1.3;
 }
 
 .trace-step b {
   margin-top: 3px;
-  color: var(--green);
+  color: #111111;
   font-size: .5rem;
 }
 
@@ -998,7 +896,7 @@
   display: grid;
   place-items: center;
   background: #f4eee8;
-  color: var(--brown);
+  color: #111111;
 }
 
 .trace-event-list article > div {
@@ -1008,12 +906,12 @@
 }
 
 .trace-event-list strong {
-  color: var(--ink);
+  color: #111111;
   font-size: .65rem;
 }
 
 .trace-event-list small {
-  color: var(--muted);
+  color: #111111;
   font-size: .55rem;
 }
 
@@ -1029,7 +927,7 @@
   align-content: center;
   gap: 4px;
   text-align: center;
-  color: var(--muted);
+  color: #111111;
 }
 
 .inventory-empty-mini > span {
@@ -1039,12 +937,12 @@
   display: grid;
   place-items: center;
   background: #f4eee8;
-  color: var(--brown);
+  color: #111111;
   font-size: 1rem;
 }
 
 .inventory-empty-mini strong {
-  color: var(--brown);
+  color: #111111;
   font-size: .7rem;
 }
 
@@ -1084,7 +982,7 @@
 .inventory-form-modal__body label {
   display: grid;
   gap: 5px;
-  color: var(--muted);
+  color: #111111;
   font-size: .64rem;
   font-weight: 800;
 }
@@ -1097,7 +995,7 @@
   border: 1px solid var(--line);
   border-radius: 9px;
   padding: 0 9px;
-  color: var(--ink);
+  color: #111111;
   background: #fff;
 }
 
@@ -1127,7 +1025,7 @@
 
 .supplier-form-note p {
   margin: 0;
-  color: var(--muted);
+  color: #111111;
   font-size: .59rem;
   line-height: 1.4;
 }
@@ -1160,14 +1058,14 @@
 
 .inventory-detail-kpis span,
 .purchase-detail-head span {
-  color: var(--muted);
+  color: #111111;
   font-size: .5rem;
   text-transform: uppercase;
 }
 
 .inventory-detail-kpis strong,
 .purchase-detail-head strong {
-  color: var(--brown);
+  color: #111111;
   font-size: .67rem;
 }
 
@@ -1184,14 +1082,14 @@
 }
 
 .supplier-detail-list dt {
-  color: var(--muted);
+  color: #111111;
   font-size: .52rem;
   text-transform: uppercase;
 }
 
 .supplier-detail-list dd {
   margin: 2px 0 0;
-  color: var(--ink);
+  color: #111111;
   font-size: .64rem;
 }
 
@@ -1205,7 +1103,7 @@
 }
 
 .purchase-supplier-hint small {
-  color: var(--muted);
+  color: #111111;
   font-size: .56rem;
   line-height: 1.35;
 }
@@ -1214,7 +1112,7 @@
   margin: 0;
   border-radius: 9px;
   padding: 8px 9px;
-  color: var(--muted);
+  color: #111111;
   background: #faf7f2;
   font-size: .6rem;
   line-height: 1.4;
@@ -1231,7 +1129,7 @@
 
 .recipe-detail-variants h3 {
   margin: 0;
-  color: var(--brown);
+  color: #111111;
   font-size: .72rem;
 }
 
@@ -1245,12 +1143,12 @@
 }
 
 .recipe-detail-variants strong {
-  color: var(--blue);
+  color: #111111;
   font-size: .62rem;
 }
 
 .recipe-detail-variants small {
-  color: #557482;
+  color: #111111;
   font-size: .55rem;
 }
 
@@ -1262,13 +1160,13 @@
 }
 
 .recipe-form-info strong {
-  color: var(--blue);
+  color: #111111;
   font-size: .62rem;
 }
 
 .recipe-form-info p {
   margin: 3px 0 0;
-  color: #52707f;
+  color: #111111;
   font-size: .56rem;
   line-height: 1.4;
 }
@@ -1314,12 +1212,12 @@
 }
 
 .waste-type-selector strong {
-  color: var(--brown);
+  color: #111111;
   font-size: .65rem;
 }
 
 .waste-type-selector small {
-  color: var(--muted);
+  color: #111111;
   font-size: .53rem;
   line-height: 1.35;
 }
@@ -1338,12 +1236,12 @@
 }
 
 .waste-impact-note strong {
-  color: var(--red-dark);
+  color: #111111;
   font-size: .62rem;
 }
 
 .waste-impact-note small {
-  color: #7c4a51;
+  color: #111111;
   font-size: .55rem;
   line-height: 1.4;
 }
@@ -1366,13 +1264,13 @@
 
 .inventory-detail-grid h3 {
   margin: 0 0 7px;
-  color: var(--brown);
+  color: #111111;
   font-size: .68rem;
 }
 
 .inventory-detail-grid p {
   margin: 0 0 5px;
-  color: var(--muted);
+  color: #111111;
   font-size: .57rem;
 }
 
@@ -1387,7 +1285,6 @@
 .inventory-tab,
 .inventory-alert-row,
 .purchase-suggestion-card,
-.supplier-card,
 .recipe-card,
 .production-card,
 .trace-step {
@@ -1402,7 +1299,6 @@
 .inventory-alert-row:focus-visible,
 .inventory-toolbar select:focus-visible,
 .inventory-toolbar button:focus-visible,
-.supplier-card button:focus-visible,
 .recipe-card button:focus-visible {
   outline: 3px solid rgba(184, 30, 45, .16);
   outline-offset: 2px;
@@ -1444,7 +1340,6 @@
     grid-template-columns: 1fr;
   }
 
-  .supplier-grid,
   .recipe-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1478,7 +1373,6 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .supplier-grid,
   .recipe-grid,
   .production-grid {
     grid-template-columns: 1fr;
@@ -1571,11 +1465,6 @@
     width: 100%;
   }
 
-  .supplier-card dl {
-    grid-template-columns: 1fr;
-  }
-
-  .supplier-card footer,
   .recipe-card footer {
     justify-content: flex-start;
     flex-wrap: wrap;
@@ -1600,10 +1489,20 @@
   .inventory-tab,
   .inventory-alert-row,
   .purchase-suggestion-card,
-  .supplier-card,
   .recipe-card,
   .production-card,
   .trace-step {
     transition: none;
   }
+}
+
+/* ==========================================================================
+   TEXTO EN NEGRO: gana sobre la jerarquia gris de theme-min.css (que carga
+   despues de este archivo) solo dentro del modulo de Inventario.
+   ========================================================================== */
+.inventory-v4 .muted,
+.inventory-v4 .panel__muted,
+.inventory-v4 small,
+.inventory-v4 .eyebrow {
+  color: #111111 !important;
 }

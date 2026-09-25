@@ -8,21 +8,91 @@ import { renderTopbar } from "../components/topbar.js";
 import { getState, saveState, nextId, addAuditEvent } from "../core/storage.js";
 import { openModal, closeModal, closeIcon } from "../components/modal.js";
 import { showToast } from "../components/toast.js";
-import { icon, money, escapeHtml, statusClass } from "../core/utils.js";
+import { icon, money, escapeHtml, statusClass, matchesSearch } from "../core/utils.js";
 
 const session = requireAuth();
 if (session && !canAccess(session.role, "admin")) window.location.replace("dashboard.html");
 const state = getState();
 const view = document.getElementById("view");
 const adminTabs = [
-  { id: "platos", label: "Gestion de platos" },
-  { id: "categorias", label: "Categorias" },
+  { id: "carta", label: "Gestión de carta" },
   { id: "recetas", label: "Recetas" },
+  { id: "categorias", label: "Categorías" },
   { id: "trazabilidad", label: "Trazabilidad" },
   { id: "usuarios", label: "Usuarios" },
   { id: "historial", label: "Historial" }
 ];
-let activeAdminTab = "platos";
+let activeAdminTab = "carta";
+
+// Respaldo para recetas sin plato (preparaciones base): `section` viene de la semilla.
+const RECIPE_CATEGORIES = [
+  { section: "CAFÉS", label: "Cafés" },
+  { section: "CHOCOLATES", label: "Chocolates" },
+  { section: "MÉTODOS", label: "Métodos" },
+  { section: "BEBIDAS VEGETALES", label: "Bebidas Vegetales" },
+  { section: "DESAYUNOS", label: "Desayunos" },
+  { section: "SANDWICHES", label: "Sandwiches" },
+  { section: "SOPAS", label: "Sopas" },
+  { section: "ENSALADAS", label: "Ensaladas" },
+  { section: "PASTAS", label: "Pastas" },
+  { section: "PLATOS ESPECIALES", label: "Platos Especiales" },
+  { section: "BRUNCHES", label: "Brunches" },
+  { section: "POSTRES", label: "Postres" },
+  { section: "INFUSIONES", label: "Infusiones" },
+  { section: "JUGOS/BATIDOS", label: "Jugos/Batidos" },
+  { section: "TRAGOS/CÓCTELES", label: "Tragos/Cócteles" }
+];
+const NO_CATEGORY = "Sin categoría";
+const ALL = "Todas";
+const recipeFilters = { search: "", station: ALL, category: ALL };
+const PUBLISH_FILTERS = [ALL, "En landing", "Solo sistema", "No disponible"];
+const cartaFilters = { search: "", category: ALL, station: ALL, publish: ALL };
+const PHOTO_MAX_SIZE = 800;
+const MISSING_COST = {
+  "sin-receta": "Sin receta",
+  "directo-sin-costo": "Sin costo en inventario"
+};
+
+// Lista unica de categorias: la misma para carta, recetas y landing.
+function categoryList() {
+  return (state.menuCategories || []).filter((c) => c !== "Todos");
+}
+
+// Categorias en orden, mas las que usen platos o recetas y no esten en la lista.
+function categoriesInUse(names) {
+  const list = categoryList();
+  names.forEach((name) => { if (!list.includes(name)) list.push(name); });
+  return list;
+}
+
+function recipeCategoryOptions() {
+  return categoriesInUse(state.recipes.map(recipeCategory));
+}
+
+function recipePlatoIds(recipe) {
+  return [...new Set([...(recipe.productIds || []), recipe.productId].filter(Boolean))];
+}
+
+function recipeOfPlato(platoId) {
+  return state.recipes.find((recipe) => recipePlatoIds(recipe).includes(platoId)) || null;
+}
+
+function filteredRecipes() {
+  return state.recipes.filter((recipe) =>
+    (recipeFilters.station === ALL || (recipe.station || "Barra") === recipeFilters.station) &&
+    (recipeFilters.category === ALL || recipeCategory(recipe) === recipeFilters.category) &&
+    matchesSearch(recipeFilters.search, recipe.name));
+}
+
+// La categoria de una receta es la de su plato; solo las preparaciones base
+// (sin plato en la carta) usan la seccion del recetario.
+function recipeCategory(recipe) {
+  const plato = recipePlatoIds(recipe).map((id) => state.menuItems.find((item) => item.id === id)).find(Boolean);
+  if (plato?.category) return plato.category;
+  if (recipe.category) return recipe.category;
+  const match = RECIPE_CATEGORIES.find((c) => c.section === String(recipe.section || "").toUpperCase());
+  return match ? match.label : NO_CATEGORY;
+}
 
 if (session && canAccess(session.role, "admin")) {
   renderSidebar("admin", session.role);
@@ -61,12 +131,18 @@ function renderAdminTabContent(tabId) {
       `;
     case "recetas":
       return `
+        <section class="panel admin-toolbar">
+          <label class="admin-toolbar__search"><span>Buscar</span><input type="search" data-recipe-search placeholder="Buscar receta..." value="${escapeHtml(recipeFilters.search)}"></label>
+          <label><span>Estación</span><select data-recipe-station>${[ALL, "Barra", "Cocina"].map((s) => `<option ${recipeFilters.station === s ? "selected" : ""}>${s}</option>`).join("")}</select></label>
+          <label><span>Categoría</span><select data-recipe-category>${[ALL, ...recipeCategoryOptions()].map((c) => `<option ${recipeFilters.category === c ? "selected" : ""}>${escapeHtml(c)}</option>`).join("")}</select></label>
+          <button class="button button--primary" type="button" data-new-recipe>${icon("plus")}<span>Nueva receta</span></button>
+        </section>
         <section class="panel">
           <div class="panel__header panel__header--wrap">
             <div><p class="eyebrow">Recetas</p><h2>Listado de preparación</h2></div>
-            <button class="button button--primary" type="button" data-new-recipe>${icon("plus")}<span>Nueva receta</span></button>
+            <span class="status status--info" data-recipe-count>${filteredRecipes().length}</span>
           </div>
-          <div class="table-wrap"><table class="data-table recipe-table"><thead><tr><th>Receta</th><th>Estación</th><th>Costo</th><th>Venta</th><th>Margen</th><th>Tiempo</th><th>Merma</th><th>Acciones</th></tr></thead><tbody>${recipeRows()}</tbody></table></div>
+          <div class="table-wrap"><table class="data-table recipe-table"><thead><tr><th>Receta</th><th>Estación</th><th>Categoría</th><th>Costo</th><th>Venta</th><th>Margen</th><th>Merma</th><th>Acciones</th></tr></thead><tbody data-recipe-body>${recipeRows()}</tbody></table></div>
         </section>
       `;
     case "trazabilidad":
@@ -95,25 +171,306 @@ function renderAdminTabContent(tabId) {
           <div class="timeline">${auditTimeline()}</div>
         </section>
       `;
-    case "platos":
+    case "carta":
     default:
       return `
+        <section class="panel admin-toolbar">
+          <label class="admin-toolbar__search"><span>Buscar</span><input type="search" data-carta-search placeholder="Buscar plato..." value="${escapeHtml(cartaFilters.search)}"></label>
+          <label><span>Categoría</span><select data-carta-category>${[ALL, ...categoriesInUse(state.menuItems.map((item) => item.category))].map((c) => `<option ${cartaFilters.category === c ? "selected" : ""}>${escapeHtml(c)}</option>`).join("")}</select></label>
+          <label><span>Estación</span><select data-carta-station>${[ALL, "Barra", "Cocina"].map((s) => `<option ${cartaFilters.station === s ? "selected" : ""}>${s}</option>`).join("")}</select></label>
+          <label><span>Publicación</span><select data-carta-publish>${PUBLISH_FILTERS.map((p) => `<option ${cartaFilters.publish === p ? "selected" : ""}>${p}</option>`).join("")}</select></label>
+          <button class="button button--primary" type="button" data-new-plato>${icon("plus")}<span>Nuevo plato</span></button>
+        </section>
         <section class="panel">
-          <div class="panel__header"><h2>Gestion de platos</h2><span class="status">Carta</span></div>
-          <form class="form-grid" data-menu-form>
-            <label>Nombre<input name="name" required placeholder="Producto"></label>
-            <label>Categoria<select name="category">${state.menuCategories.filter((c) => c !== "Todos").map((c) => `<option value="${c}">${c}</option>`).join("")}</select></label>
-            <label>Precio<input name="price" type="number" min="0" step="0.01" required></label>
-            <label>Estado<select name="status"><option value="Activo">Activo</option><option value="Inactivo">Inactivo</option></select></label>
-            <label>Estacion<select name="station"><option value="Cocina">Cocina</option><option value="Barra">Barra</option></select></label>
-            <label class="span-2">Descripcion<textarea class="textarea" name="description" required placeholder="Descripcion visible en la carta"></textarea></label>
-            <label class="span-2">Fotografia (URL)<input name="image" placeholder="https://... (opcional)"></label>
-            <label class="span-2 check-inline"><input type="checkbox" name="publishLanding" checked> Publicar tambien en la landing page</label>
-            <button class="button button--primary" type="submit">${icon("plus")}<span>Guardar plato</span></button>
-          </form>
+          <div class="panel__header panel__header--wrap">
+            <div><p class="eyebrow">Carta</p><h2>Platos del sistema y la landing</h2></div>
+            <span class="status status--info" data-carta-count>${filteredPlatos().length}</span>
+          </div>
+          <div class="table-wrap"><table class="data-table carta-table"><thead><tr><th>Plato</th><th>Categoría</th><th>Precio</th><th>Costo</th><th>Margen</th><th>Sistema</th><th>Landing</th><th>Acciones</th></tr></thead><tbody data-carta-body>${cartaRows()}</tbody></table></div>
         </section>
       `;
   }
+}
+
+/* ==========================================================================
+   GESTION DE CARTA: el plato une venta (sistema), publicacion (landing) y receta
+   ========================================================================== */
+
+function isDirectPlato(plato) {
+  return plato.inventoryMode === "direct" && Boolean(plato.inventoryItemId);
+}
+
+// Costo del plato: de su receta, o del insumo si se despacha directo (botellas).
+function platoCost(plato) {
+  const recipe = recipeOfPlato(plato.id);
+  if (recipe) return { cost: recipeCost(recipe), source: "receta", recipe };
+  if (isDirectPlato(plato)) {
+    const supply = getInventoryItemById(plato.inventoryItemId);
+    const cost = Number(supply?.cost || 0);
+    // Costo 0 = aun no cargado en Inventario; un margen de 100% seria engañoso.
+    return cost > 0 ? { cost, source: "directo", supply } : { cost: null, source: "directo-sin-costo", supply };
+  }
+  return { cost: null, source: "sin-receta" };
+}
+
+function marginOf(price, cost) {
+  return price && cost !== null ? ((price - cost) / price) * 100 : null;
+}
+
+function isAvailable(plato) {
+  return plato.status !== "Inactivo";
+}
+
+// La landing solo muestra platos disponibles y marcados para publicar.
+function isOnLanding(plato) {
+  return isAvailable(plato) && plato.publishLanding !== false;
+}
+
+function filteredPlatos() {
+  return state.menuItems.filter((plato) => {
+    const publish =
+      cartaFilters.publish === ALL ||
+      (cartaFilters.publish === "En landing" && isOnLanding(plato)) ||
+      (cartaFilters.publish === "Solo sistema" && isAvailable(plato) && !isOnLanding(plato)) ||
+      (cartaFilters.publish === "No disponible" && !isAvailable(plato));
+    return publish &&
+      (cartaFilters.category === ALL || plato.category === cartaFilters.category) &&
+      (cartaFilters.station === ALL || plato.station === cartaFilters.station) &&
+      matchesSearch(cartaFilters.search, plato.name);
+  });
+}
+
+function cartaRow(plato) {
+  const price = Number(plato.price || 0);
+  const { cost, source } = platoCost(plato);
+  const margin = marginOf(price, cost);
+  const costCell = cost === null ? `<span class="carta-warning">${MISSING_COST[source]}</span>` :`<strong>${money(cost)}</strong>${source === "directo" ? '<span class="carta-note">Insumo directo</span>' : ""}`;
+  return `<tr>
+    <td><strong>${escapeHtml(plato.name)}</strong></td>
+    <td>${escapeHtml(plato.category || NO_CATEGORY)}</td>
+    <td>${money(price)}</td>
+    <td>${costCell}</td>
+    <td>${margin === null ? "-" : `${margin.toFixed(1)}%`}</td>
+    <td><strong>${isAvailable(plato) ? "Disponible" : "No disponible"}</strong></td>
+    <td><strong>${isOnLanding(plato) ? "Publicado" : "Oculto"}</strong></td>
+    <td><div class="table-actions"><button class="mini-button" type="button" data-plato-edit="${plato.id}">Editar</button></div></td>
+  </tr>`;
+}
+
+function cartaRows() {
+  if (!state.menuItems.length) return '<tr><td colspan="8" class="muted text-center">La carta no tiene platos.</td></tr>';
+  const platos = filteredPlatos();
+  if (!platos.length) return '<tr><td colspan="8" class="muted text-center">No hay platos que coincidan con los filtros.</td></tr>';
+  return groupedRows(platos, (plato) => plato.category || NO_CATEGORY, cartaRow, 8);
+}
+
+function recipeLabel(recipe) {
+  return `${recipe.name} · ${money(recipeCost(recipe))}`;
+}
+
+function platoRecipeSection(plato) {
+  if (plato && isDirectPlato(plato)) {
+    const supply = getInventoryItemById(plato.inventoryItemId);
+    return `<div class="plato-info span-2"><strong>Despacho directo</strong><p>Al venderse descuenta el insumo <b>${escapeHtml(supply?.item || plato.inventoryItemId)}</b>. No usa receta.</p></div>`;
+  }
+  const current = plato ? recipeOfPlato(plato.id) : null;
+  const recipes = [...state.recipes].sort((a, b) => a.name.localeCompare(b.name));
+  return `
+    <label class="span-2">Receta vinculada<select name="recipeId" data-plato-recipe>
+      <option value="">Sin receta</option>
+      ${recipes.map((r) => `<option value="${r.id}" ${current?.id === r.id ? "selected" : ""}>${escapeHtml(recipeLabel(r))}</option>`).join("")}
+    </select></label>
+    <p class="plato-hint span-2">Los insumos y cantidades se editan en la pestaña Recetas. Una receta puede cubrir varios platos (por ejemplo los métodos de café).</p>`;
+}
+
+function openPlatoEditor(id = null) {
+  const plato = id ? state.menuItems.find((item) => item.id === id) || null : null;
+  const categories = categoryList();
+  const station = plato?.station || "Cocina";
+  const modalHtml = `
+    <section class="modal plato-modal" role="dialog" aria-modal="true" aria-labelledby="plato-title">
+      <div class="modal__header"><div><p class="eyebrow">Gestión de carta</p><h2 id="plato-title">${plato ? escapeHtml(plato.name) : "Nuevo plato"}</h2></div><button class="icon-button" type="button" data-close-modal aria-label="Cerrar">${closeIcon}</button></div>
+      <form class="plato-form" data-plato-form>
+        <fieldset class="plato-section form-grid">
+          <legend>Datos de venta</legend>
+          <label>Nombre<input name="name" required value="${escapeHtml(plato?.name || "")}" placeholder="Nombre del plato"></label>
+          <label>Categoría<select name="category">${categories.map((c) => `<option ${c === (plato?.category || categories[0]) ? "selected" : ""}>${escapeHtml(c)}</option>`).join("")}</select></label>
+          <label>Precio (S/)<input name="price" type="number" min="0" step="0.01" required value="${plato ? Number(plato.price || 0).toFixed(2) : ""}" placeholder="0.00" data-plato-price></label>
+          <label>Estación<select name="station"><option ${station === "Cocina" ? "selected" : ""}>Cocina</option><option ${station === "Barra" ? "selected" : ""}>Barra</option></select></label>
+        </fieldset>
+        <fieldset class="plato-section form-grid">
+          <legend>Receta y costo</legend>
+          ${platoRecipeSection(plato)}
+          <div class="plato-cost span-2" data-plato-cost></div>
+        </fieldset>
+        <fieldset class="plato-section form-grid">
+          <legend>Publicación</legend>
+          <label class="check-inline span-2"><input type="checkbox" name="available" ${!plato || isAvailable(plato) ? "checked" : ""}> Disponible para vender en el sistema</label>
+          <label class="check-inline span-2"><input type="checkbox" name="publishLanding" ${!plato || plato.publishLanding !== false ? "checked" : ""}> Mostrar en la landing</label>
+          <p class="plato-hint span-2">La landing solo muestra los platos disponibles para vender.</p>
+          <label class="span-2">Descripción<textarea class="textarea" name="description" placeholder="Descripción visible en la carta y la landing">${escapeHtml(plato?.description || "")}</textarea></label>
+          <div class="plato-photo span-2">
+            <span class="plato-photo__label">Fotografía</span>
+            <div class="plato-photo__row">
+              <div class="plato-photo__preview" data-plato-photo-preview></div>
+              <div class="plato-photo__actions">
+                <input type="file" accept="image/jpeg,image/png" data-plato-photo hidden>
+                <button class="button button--secondary" type="button" data-plato-photo-pick>Adjuntar foto</button>
+                <button class="button" type="button" data-plato-photo-remove>Quitar foto</button>
+                <p class="plato-hint">JPG o PNG. Se reduce a ${PHOTO_MAX_SIZE} px para guardarla en el navegador.</p>
+              </div>
+            </div>
+          </div>
+        </fieldset>
+        <div class="confirm-actions"><button class="button" type="button" data-close-modal>Cancelar</button><button class="button button--primary" type="submit">Guardar plato</button></div>
+      </form>
+    </section>`;
+
+  const modal = openModal(modalHtml);
+  const form = modal.querySelector("[data-plato-form]");
+  const costBox = modal.querySelector("[data-plato-cost]");
+  const recipeSelect = modal.querySelector("[data-plato-recipe]");
+
+  const paintCost = () => {
+    const price = Number(form.elements.price.value || 0);
+    let cost = null;
+    let missing = "Sin receta: no se puede calcular el costo ni el margen.";
+    if (plato && isDirectPlato(plato)) {
+      cost = platoCost(plato).cost;
+      missing = "El insumo aún no tiene costo cargado en Inventario: no se puede calcular el margen.";
+    } else if (recipeSelect?.value) {
+      cost = recipeCost(state.recipes.find((r) => r.id === recipeSelect.value));
+    }
+    const margin = marginOf(price, cost);
+    costBox.innerHTML = cost === null
+      ? `<span class="carta-warning">${missing}</span>`
+      :`<span>Costo <strong>${money(cost)}</strong></span><span>Margen <strong>${margin === null ? "-" : `${margin.toFixed(1)}%`}</strong></span>`;
+  };
+  paintCost();
+  form.elements.price.addEventListener("input", paintCost);
+  recipeSelect?.addEventListener("change", paintCost);
+
+  let photo = plato?.image || "";
+  const photoInput = modal.querySelector("[data-plato-photo]");
+  const photoPreview = modal.querySelector("[data-plato-photo-preview]");
+  const removePhotoButton = modal.querySelector("[data-plato-photo-remove]");
+  const paintPhoto = () => {
+    photoPreview.innerHTML = photo ? `<img src="${escapeHtml(photo)}" alt="Foto del plato">` : "<span>Sin foto</span>";
+    removePhotoButton.hidden = !photo;
+  };
+  paintPhoto();
+  modal.querySelector("[data-plato-photo-pick]").addEventListener("click", () => photoInput.click());
+  removePhotoButton.addEventListener("click", () => { photo = ""; paintPhoto(); });
+  photoInput.addEventListener("change", async () => {
+    const file = photoInput.files[0];
+    photoInput.value = "";
+    if (!file) return;
+    if (!["image/jpeg", "image/png"].includes(file.type)) { showToast("La foto debe ser JPG o PNG."); return; }
+    try {
+      photo = await compressPhoto(file);
+      paintPhoto();
+    } catch {
+      showToast("No se pudo leer la imagen. Prueba con otro archivo.");
+    }
+  });
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const data = Object.fromEntries(new FormData(form));
+    const name = String(data.name || "").trim();
+    if (!name) { showToast("Escribe el nombre del plato."); return; }
+
+    const fields = {
+      name,
+      category: String(data.category || categories[0]),
+      price: Number(data.price || 0),
+      station: data.station === "Barra" ? "Barra" : "Cocina",
+      status: data.available ? "Activo" : "Inactivo",
+      publishLanding: Boolean(data.publishLanding),
+      description: String(data.description || "").trim(),
+      image: photo
+    };
+    const previousImage = plato?.image || "";
+    fields.dispatchStation = fields.station;
+
+    let target = plato;
+    if (target) {
+      Object.assign(target, fields);
+    } else {
+      target = {
+        id: nextId(state, "menuItem", "PRD", 4),
+        ...fields,
+        channel: "Local", descriptionEn: "",
+        operationType: "preparation", requiresPreparation: true,
+        inventoryMode: "none", editUntil: "Nuevo", estimatedTime: 10,
+        dietary: [], modifiers: [], branchIds: ["ALL"]
+      };
+      state.menuItems.push(target);
+    }
+
+    if (!isDirectPlato(target)) {
+      linkRecipe(target.id, String(data.recipeId || ""));
+      target.inventoryMode = recipeOfPlato(target.id) ? "recipe" : "none";
+    }
+
+    addAuditEvent(state, {
+      user: session.name,
+      action: plato ? "Plato actualizado" : "Plato creado",
+      module: "Administracion",
+      detail: `${target.name} · ${isAvailable(target) ? "Disponible" : "No disponible"} · Landing: ${isOnLanding(target) ? "publicado" : "oculto"}`
+    });
+    // localStorage lleno: se guarda el plato sin la foto nueva.
+    if (!saveState(state)) {
+      target.image = previousImage;
+      saveState(state);
+      showToast("La foto no cabe en el almacenamiento del navegador. El plato se guardó sin cambiar la foto.");
+    } else {
+      showToast(plato ? "Plato actualizado." : "Plato creado en la carta.");
+    }
+    closeModal();
+    render();
+  });
+}
+
+// Sin backend la foto se guarda como data URL en localStorage (~5 MB en total):
+// se reduce y se pasa a JPEG para que cada foto pese decenas de KB.
+function compressPhoto(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, PHOTO_MAX_SIZE / Math.max(img.width, img.height));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#ffffff"; // fondo para PNG con transparencia
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL("image/jpeg", 0.8));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("imagen invalida")); };
+    img.src = url;
+  });
+}
+
+// Un plato tiene como maximo una receta; una receta puede cubrir varios platos.
+function linkRecipe(platoId, recipeId) {
+  state.recipes.forEach((recipe) => {
+    const ids = recipePlatoIds(recipe);
+    if (!ids.includes(platoId) || recipe.id === recipeId) return;
+    const rest = ids.filter((id) => id !== platoId);
+    recipe.productIds = rest;
+    recipe.productId = rest[0] || "";
+  });
+
+  const recipe = state.recipes.find((r) => r.id === recipeId);
+  if (!recipe) return;
+  const ids = recipePlatoIds(recipe);
+  if (!ids.includes(platoId)) ids.push(platoId);
+  recipe.productIds = ids;
+  recipe.productId = recipe.productId || platoId;
 }
 
 function getInventoryItemById(id) {
@@ -146,24 +503,42 @@ function recipeMargin(recipe) {
   return price ? ((price - cost) / price) * 100 : 0;
 }
 
+function recipeRow(recipe) {
+  const product = state.menuItems.find((item) => item.id === recipe.productId) || { price: 0 };
+  const cost = recipeCost(recipe);
+  const salePrice = Number(product.price || 0);
+  const margin = salePrice ? ((salePrice - cost) / salePrice) * 100 : 0;
+  return `<tr>
+    <td><div class="recipe-name-cell"><strong>${escapeHtml(recipe.name)}</strong><span class="${statusClass(recipe.status || "Activa")}">${recipe.status || "Activa"}</span></div></td>
+    <td>${escapeHtml(recipe.station || "Barra")}</td>
+    <td>${escapeHtml(recipeCategory(recipe))}</td>
+    <td><strong>${money(cost)}</strong></td>
+    <td>${money(salePrice)}</td>
+    <td>${margin.toFixed(1)}%</td>
+    <td>${recipe.expectedWastePct || 0}%</td>
+    <td><div class="table-actions"><button class="mini-button" type="button" data-recipe-view="${recipe.id}">Ver</button><button class="mini-button" type="button" data-recipe-edit="${recipe.id}">Editar</button></div></td>
+  </tr>`;
+}
+
 function recipeRows() {
-  const rows = [...state.recipes].sort((a, b) => a.name.localeCompare(b.name));
-  return rows.map((recipe) => {
-    const product = state.menuItems.find((item) => item.id === recipe.productId) || { price: 0 };
-    const cost = recipeCost(recipe);
-    const salePrice = Number(product.price || 0);
-    const margin = salePrice ? ((salePrice - cost) / salePrice) * 100 : 0;
-    return `<tr>
-      <td><div class="recipe-name-cell"><strong>${escapeHtml(recipe.name)}</strong><span class="${statusClass(recipe.status || "Activa")}">${recipe.status || "Activa"}</span></div></td>
-      <td>${escapeHtml(recipe.station || "Barra")}</td>
-      <td><strong>${money(cost)}</strong></td>
-      <td>${money(salePrice)}</td>
-      <td>${margin.toFixed(1)}%</td>
-      <td>${recipe.targetMinutes || 0} min</td>
-      <td>${recipe.expectedWastePct || 0}%</td>
-      <td><div class="table-actions"><button class="mini-button" type="button" data-recipe-view="${recipe.id}">Ver</button><button class="mini-button" type="button" data-recipe-edit="${recipe.id}">Editar</button></div></td>
-    </tr>`;
-  }).join("") || '<tr><td colspan="8" class="muted text-center">Sin recetas registradas.</td></tr>';
+  if (!state.recipes.length) return '<tr><td colspan="8" class="muted text-center">Sin recetas registradas.</td></tr>';
+  const recipes = filteredRecipes();
+  if (!recipes.length) return '<tr><td colspan="8" class="muted text-center">No hay recetas que coincidan con los filtros.</td></tr>';
+  return groupedRows(recipes, recipeCategory, recipeRow, 8);
+}
+
+// Filas agrupadas por categoria, en el orden de la lista unica de categorias.
+function groupedRows(records, categoryOf, rowOf, columns) {
+  const groups = new Map();
+  records.forEach((record) => {
+    const category = categoryOf(record);
+    if (!groups.has(category)) groups.set(category, []);
+    groups.get(category).push(record);
+  });
+  return categoriesInUse([...groups.keys()]).filter((category) => groups.has(category)).map((category) => {
+    const items = groups.get(category).sort((a, b) => a.name.localeCompare(b.name));
+    return `<tr class="table-group-row"><td colspan="${columns}">${escapeHtml(category)} <span>${items.length}</span></td></tr>${items.map(rowOf).join("")}`;
+  }).join("");
 }
 
 function openRecipeView(id) {
@@ -176,11 +551,11 @@ function openRecipeView(id) {
   }).join("") || '<tr><td colspan="3" class="muted text-center">Sin insumos.</td></tr>';
 
   const modalHtml = `
-    <section class="modal modal--small" role="dialog" aria-modal="true">
-      <div class="modal__header"><div><p class="eyebrow">Receta / BOM</p><h2>${escapeHtml(recipe.name)}</h2></div><button class="icon-button" type="button" data-close-modal aria-label="Cerrar">${closeIcon}</button></div>
+    <section class="modal recipe-view-modal" role="dialog" aria-modal="true">
+      <div class="modal__header"><div><p class="eyebrow">Receta</p><h2>${escapeHtml(recipe.name)}</h2></div><button class="icon-button" type="button" data-close-modal aria-label="Cerrar">${closeIcon}</button></div>
       <div style="padding:20px;">
         <p class="muted">${escapeHtml(product?.name || recipe.name)} · ${escapeHtml(recipe.station || "Barra")} · ${recipe.targetMinutes || 0} min</p>
-        <div class="table-wrap"><table class="data-table"><thead><tr><th>Insumo</th><th>Cantidad</th><th>Costo</th></tr></thead><tbody>${rows}</tbody></table></div>
+        <div class="table-wrap"><table class="data-table recipe-view-table"><thead><tr><th>Insumo</th><th>Cantidad</th><th>Costo</th></tr></thead><tbody>${rows}</tbody></table></div>
         <div class="confirm-actions" style="margin-top:16px;"><button class="button button--primary" type="button" data-close-modal>Cerrar</button></div>
       </div>
     </section>`;
@@ -192,12 +567,11 @@ function openRecipeEditor(id) {
   const selectedProduct = recipe?.productId || state.menuItems[0]?.id || "";
   const selectedStation = recipe?.station || "Barra";
   const modalHtml = `
-    <section class="modal modal--small" role="dialog" aria-modal="true">
-      <div class="modal__header"><div><p class="eyebrow">Recetas / BOM</p><h2>${recipe ? "Editar receta" : "Nueva receta"}</h2></div><button class="icon-button" type="button" data-close-modal aria-label="Cerrar">${closeIcon}</button></div>
-      <form class="form-grid" data-recipe-form style="padding:20px;">
+    <section class="modal recipe-edit-modal" role="dialog" aria-modal="true">
+      <div class="modal__header"><div><p class="eyebrow">Recetas</p><h2>${recipe ? "Editar receta" : "Nueva receta"}</h2></div><button class="icon-button" type="button" data-close-modal aria-label="Cerrar">${closeIcon}</button></div>
+      <form class="form-grid recipe-edit-form" data-recipe-form>
         <label>Producto<select name="productId">${state.menuItems.map((item) => `<option value="${item.id}" ${item.id === selectedProduct ? "selected" : ""}>${escapeHtml(item.name)}</option>`).join("")}</select></label>
-        <label>Estación<select name="station"><option ${selectedStation === "Barra" ? "selected" : ""}>Barra</option><option ${selectedStation === "Cocina" ? "selected" : ""}>Cocina</option></select></label>
-        <label>Rendimiento<input name="yieldQty" type="number" min="1" step="1" value="${recipe?.yieldQty || 1}"></label>
+        <label>Estación<select name="station"><option ${selectedStation === "Barra" ? "selected" : ""}>Barra</option><option ${selectedStation === "Cocina" ? "selected" : ""}>Cocina</option></select></label>        <label>Rendimiento<input name="yieldQty" type="number" min="1" step="1" value="${recipe?.yieldQty || 1}"></label>
         <label>Unidad<select name="yieldUnit"><option ${recipe?.yieldUnit === "porción" ? "selected" : ""}>porción</option><option ${recipe?.yieldUnit === "kg" ? "selected" : ""}>kg</option></select></label>
         <label>Tiempo objetivo<input name="targetMinutes" type="number" min="1" step="1" value="${recipe?.targetMinutes || 5}"></label>
         <label>Merma técnica %<input name="expectedWastePct" type="number" min="0" step="0.1" value="${recipe?.expectedWastePct || 2}"></label>
@@ -240,6 +614,7 @@ function openRecipeEditor(id) {
     } else {
       state.recipes.push(payload);
     }
+    linkRecipe(productId, payload.id);
     saveState(state);
     closeModal();
     showToast(recipe ? "Receta actualizada." : "Receta creada.");
@@ -508,6 +883,33 @@ function openUserModal() {
   });
 }
 
+function wireRecipeRows(root) {
+  root.querySelectorAll("[data-recipe-view]").forEach((b) => b.addEventListener("click", () => openRecipeView(b.dataset.recipeView)));
+  root.querySelectorAll("[data-recipe-edit]").forEach((b) => b.addEventListener("click", () => openRecipeEditor(b.dataset.recipeEdit)));
+}
+
+function refreshRecipeTable() {
+  const body = view.querySelector("[data-recipe-body]");
+  if (!body) return;
+  body.innerHTML = recipeRows();
+  wireRecipeRows(body);
+  const count = view.querySelector("[data-recipe-count]");
+  if (count) count.textContent = filteredRecipes().length;
+}
+
+function wirePlatoRows(root) {
+  root.querySelectorAll("[data-plato-edit]").forEach((b) => b.addEventListener("click", () => openPlatoEditor(b.dataset.platoEdit)));
+}
+
+function refreshCartaTable() {
+  const body = view.querySelector("[data-carta-body]");
+  if (!body) return;
+  body.innerHTML = cartaRows();
+  wirePlatoRows(body);
+  const count = view.querySelector("[data-carta-count]");
+  if (count) count.textContent = filteredPlatos().length;
+}
+
 function wire() {
   view.querySelectorAll("[data-admin-tab]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -516,32 +918,22 @@ function wire() {
     });
   });
 
-  const menuForm = view.querySelector("[data-menu-form]");
-  menuForm?.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const d = Object.fromEntries(new FormData(event.target));
-    const station = d.station === "Barra" ? "Barra" : "Cocina";
-    state.menuItems.push({
-      id: `prd-${Date.now().toString(36)}`, name: d.name, category: d.category,
-      price: Number(d.price), channel: "Local", description: d.description,
-      descriptionEn: "", station, dispatchStation: station,
-      operationType: "preparation", requiresPreparation: true,
-      // Sin receta todavia: no descuenta insumos hasta que se le cargue una.
-      inventoryMode: "none", editUntil: "Nuevo", estimatedTime: 10,
-      dietary: [], modifiers: [], branchIds: ["ALL"],
-      status: d.status === "Inactivo" ? "Inactivo" : "Activo",
-      image: (d.image || "").trim(), publishLanding: !!d.publishLanding
-    });
-    saveState(state);
-    showToast(d.publishLanding ? "Plato guardado y publicado en la landing." : "Plato guardado en la carta.");
-    render();
-  });
+  view.querySelector("[data-new-plato]")?.addEventListener("click", () => openPlatoEditor());
+  wirePlatoRows(view);
+  view.querySelector("[data-carta-search]")?.addEventListener("input", (event) => { cartaFilters.search = event.target.value; refreshCartaTable(); });
+  view.querySelector("[data-carta-category]")?.addEventListener("change", (event) => { cartaFilters.category = event.target.value; refreshCartaTable(); });
+  view.querySelector("[data-carta-station]")?.addEventListener("change", (event) => { cartaFilters.station = event.target.value; refreshCartaTable(); });
+  view.querySelector("[data-carta-publish]")?.addEventListener("change", (event) => { cartaFilters.publish = event.target.value; refreshCartaTable(); });
 
   const newRecipeButton = view.querySelector("[data-new-recipe]");
   newRecipeButton?.addEventListener("click", () => openRecipeEditor());
 
-  view.querySelectorAll("[data-recipe-view]").forEach((b) => b.addEventListener("click", () => openRecipeView(b.dataset.recipeView)));
-  view.querySelectorAll("[data-recipe-edit]").forEach((b) => b.addEventListener("click", () => openRecipeEditor(b.dataset.recipeEdit)));
+  wireRecipeRows(view);
+
+  // Filtros en vivo: solo se repinta la tabla para no perder el foco del buscador.
+  view.querySelector("[data-recipe-search]")?.addEventListener("input", (event) => { recipeFilters.search = event.target.value; refreshRecipeTable(); });
+  view.querySelector("[data-recipe-station]")?.addEventListener("change", (event) => { recipeFilters.station = event.target.value; refreshRecipeTable(); });
+  view.querySelector("[data-recipe-category]")?.addEventListener("change", (event) => { recipeFilters.category = event.target.value; refreshRecipeTable(); });
 
   const categoryForm = view.querySelector("[data-category-form]");
   categoryForm?.addEventListener("submit", (event) => {

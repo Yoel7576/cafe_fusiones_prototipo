@@ -18,9 +18,9 @@ const view = document.getElementById("view");
 const params = new URLSearchParams(location.search);
 
 const TABS = [
-  ["resumen","Resumen","▦"],["stock","Stock","▤"],["kardex","Kardex","↕"],
-  ["lotes","Lotes","◫"],["compras","Compras","🛒"],["proveedores","Proveedores","◎"],
-  ["mermas","Mermas","△"],["produccion","Producción","⚙"]
+  ["resumen","Resumen"],["stock","Stock"],["kardex","Kardex"],
+  ["lotes","Lotes"],["compras","Compras"],["proveedores","Proveedores"],
+  ["mermas","Mermas"],["produccion","Producción"]
 ];
 
 const WASTE_REASONS = {
@@ -41,7 +41,7 @@ function init(){
   normalizeState();
   renderSidebar("inventario", session.role);
   renderTopbar({
-    title:"Inventario", eyebrow:"Operaciones",
+    title:"Inventario", eyebrow:"",
     searchPlaceholder:"Buscar en inventario...",
     onSearch:q => { ui.search=q||""; render(); }
   });
@@ -92,14 +92,13 @@ function render(){
 function header(){
   const m=metrics();
   return `<section class="panel inventory-module-head">
-    <div><p class="eyebrow">Inventario y logística</p><h2>Abastecimiento y recetas</h2>
-    <p>Stock, lotes, proveedores, compras, BOM, mermas y producción conectados a la operación.</p></div>
-    <div class="inventory-head-pills"><span><strong>${m.low}</strong> stock crítico</span><span><strong>${m.expiring}</strong> por vencer</span><span><strong>${state.purchaseSuggestions.length}</strong> sugerencias</span></div>
+    <div><h2>Gestión de inventario</h2></div>
+    <div class="inventory-kpis">${kpi("Valor inventario",money(m.value),"Costo valorizado")}${kpi("Stock crítico",m.low,"Bajo el mínimo",m.low?"danger":"ok")}${m.negative?kpi("En negativo",m.negative,"Vendido sin existencias","danger"):""}${kpi("Lotes por vencer",m.expiring,"Próximos 7 días",m.expiring?"warn":"ok")}${kpi("Mermas del mes",money(m.waste),"Costo estimado",m.waste?"danger":"ok")}</div>
   </section>`;
 }
 function tabs(){
   return `<section class="panel inventory-tabs-wrap"><nav class="inventory-tabs">
-    ${TABS.map(([id,label,symbol])=>`<button class="inventory-tab ${ui.tab===id?"is-active":""}" type="button" data-tab="${id}"><span>${symbol}</span><strong>${label}</strong></button>`).join("")}
+    ${TABS.map(([id,label])=>`<button class="inventory-tab ${ui.tab===id?"is-active":""}" type="button" data-tab="${id}"><strong>${label}</strong></button>`).join("")}
   </nav></section>`;
 }
 function currentView(){
@@ -135,9 +134,8 @@ function metrics(){
 }
 function kpi(label,value,detail,tone="neutral"){return `<article class="panel inventory-kpi inventory-kpi--${tone}"><span>${escapeHtml(label)}</span><strong>${escapeHtml(String(value))}</strong><small>${escapeHtml(detail)}</small></article>`}
 function summaryView(){
-  const m=metrics(), alerts=alertsList().slice(0,6), moves=[...state.inventoryMovements].sort((a,b)=>new Date(b.at)-new Date(a.at)).slice(0,6);
+  const alerts=alertsList().slice(0,6), moves=[...state.inventoryMovements].sort((a,b)=>new Date(b.at)-new Date(a.at)).slice(0,6);
   return `<div class="inventory-tab-view">
-    <section class="inventory-kpis">${kpi("Valor inventario",money(m.value),"Costo valorizado")}${kpi("Stock crítico",m.low,"Bajo el mínimo",m.low?"danger":"ok")}${m.negative?kpi("En negativo",m.negative,"Vendido sin existencias","danger"):""}${kpi("Lotes por vencer",m.expiring,"Próximos 7 días",m.expiring?"warn":"ok")}${kpi("Mermas del mes",money(m.waste),"Costo estimado",m.waste?"danger":"ok")}</section>
     <div class="inventory-summary-grid">
       <section class="panel inventory-summary-panel"><div class="panel__header"><div><p class="eyebrow">Atención</p><h2>Alertas prioritarias</h2></div><span class="${statusClass(alerts.length?"Atención":"Disponible")}">${alerts.length}</span></div>
         <div class="inventory-alert-list">${alerts.length?alerts.map(a=>`<button class="inventory-alert-row inventory-alert-row--${a.tone}" data-go-tab="${a.tab}"><span>${a.icon}</span><div><strong>${escapeHtml(a.title)}</strong><small>${escapeHtml(a.detail)}</small></div><b>›</b></button>`).join(""):emptyMini("✓","Sin alertas críticas","Inventario dentro de parámetros.")}</div>
@@ -224,15 +222,21 @@ function suppliersView(){
   const formal=state.suppliers.filter(s=>s.type==="Formal").length, informal=state.suppliers.filter(s=>s.type==="Informal").length;
   return `<div class="inventory-tab-view"><section class="inventory-kpis inventory-kpis--3">${kpi("Proveedores activos",state.suppliers.filter(s=>s.status==="Activo").length,"Red de abastecimiento")}${kpi("Formales",formal,"RUC / comprobante","ok")}${kpi("Locales / informales",informal,"Trazabilidad interna",informal?"warn":"neutral")}</section>
   <section class="panel inventory-toolbar"><div class="inventory-toolbar__filters"><label><span>Tipo</span><select data-supplier-type>${types.map(t=>`<option ${ui.supplierType===t?"selected":""}>${t}</option>`).join("")}</select></label></div><div class="inventory-toolbar__actions"><button class="button button--secondary" data-new-supplier="Informal">${icon("plus")}<span>Productor / informal</span></button><button class="button button--primary" data-new-supplier="Formal">${icon("plus")}<span>Proveedor formal</span></button></div></section>
-  <section class="supplier-grid">${rows.map(supplierCard).join("")||emptyMini("◎","Sin proveedores","No hay coincidencias.")}</section></div>`;
+  <div class="table-wrap"><table class="data-table supplier-table"><thead><tr><th>Proveedor</th><th>Tipo</th><th>Estado</th><th>Documento</th><th>Procedencia</th><th>Contacto</th><th>Pago</th><th>Productos</th><th>Acciones</th></tr></thead><tbody>${rows.map(supplierRow).join("")||tableEmpty(9,"No hay coincidencias.")}</tbody></table></div></div>`;
 }
-function supplierCard(s){
+function supplierRow(s){
   const doc=s.type==="Formal"?`${s.documentType}: ${s.document||"Pendiente"}`:(s.document?`${s.documentType}: ${s.document}`:"Sin documentación tributaria");
-  return `<article class="panel supplier-card"><header><div><span class="${statusClass(s.type==="Formal"?"Disponible":"Atención")}">${s.type}</span><h3>${escapeHtml(s.tradeName||s.name)}</h3><p>${escapeHtml(s.name)}</p></div><span class="${statusClass(s.status)}">${s.status}</span></header>
-  <dl><div><dt>Documento</dt><dd>${escapeHtml(doc)}</dd></div><div><dt>Procedencia</dt><dd>${escapeHtml(s.origin||"-")}</dd></div><div><dt>Contacto</dt><dd>${escapeHtml(s.phone||"Sin teléfono")}</dd></div><div><dt>Pago</dt><dd>${escapeHtml(s.paymentTerms||"-")}</dd></div></dl>
-  <div class="supplier-products">${(s.products||[]).map(p=>`<span>${escapeHtml(p)}</span>`).join("")}</div>
-  ${s.type==="Informal"?`<div class="supplier-trace-note"><strong>Trazabilidad interna</strong><small>Puede operar sin RUC/DNI. Se conserva procedencia, responsable, sustento y lote.</small></div>`:""}
-  <footer><button class="mini-button" data-supplier-view="${s.id}">Ver ficha</button><button class="mini-button" data-supplier-edit="${s.id}">Editar</button><button class="mini-button" data-purchase-supplier="${s.id}">Comprar</button></footer></article>`;
+  return `<tr>
+    <td><strong>${escapeHtml(s.tradeName||s.name)}</strong></td>
+    <td><strong>${s.type}</strong></td>
+    <td><strong>${s.status}</strong></td>
+    <td>${escapeHtml(doc)}</td>
+    <td>${escapeHtml(s.origin||"-")}</td>
+    <td>${escapeHtml(s.phone||"Sin teléfono")}</td>
+    <td>${escapeHtml(s.paymentTerms||"-")}</td>
+    <td>${escapeHtml((s.products||[]).join(", ")||"-")}</td>
+    <td><div class="table-actions"><button class="mini-button" data-supplier-view="${s.id}">Ver ficha</button><button class="mini-button" data-supplier-edit="${s.id}">Editar</button><button class="mini-button" data-purchase-supplier="${s.id}">Comprar</button></div></td>
+  </tr>`;
 }
 
 /* -------------------------- RECETAS -------------------------- */

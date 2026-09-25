@@ -44,12 +44,12 @@
 }
 
 .clients-loading strong {
-  color: var(--brown);
+  color: #111111;
 }
 
 .clients-loading p {
   margin: 4px 0 0;
-  color: var(--muted);
+  color: #111111;
   font-size: .76rem;
 }
 
@@ -75,16 +75,16 @@
 
 .clients-module-head h2 {
   margin: 3px 0 5px;
-  color: var(--brown);
-  font-size: 1.28rem;
+  color: #111111;
+  font-size: 1.5rem;
   line-height: 1.15;
 }
 
 .clients-module-head p {
   max-width: 790px;
   margin: 0;
-  color: var(--muted);
-  font-size: .72rem;
+  color: #111111;
+  font-size: .88rem;
   line-height: 1.5;
 }
 
@@ -104,14 +104,14 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  color: var(--muted);
+  color: #111111;
   background: #fff;
   font-size: .61rem;
   font-weight: 800;
 }
 
 .clients-head-pills strong {
-  color: var(--brown);
+  color: #111111;
   font-size: .82rem;
 }
 
@@ -138,11 +138,10 @@
   min-height: 42px;
   border: 1px solid transparent;
   border-radius: 10px;
-  padding: 0 12px;
+  padding: 0 14px;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  color: var(--muted);
+  color: #111111;
   background: transparent;
   cursor: pointer;
   transition:
@@ -152,38 +151,23 @@
     box-shadow .15s ease;
 }
 
-.clients-tab > span {
-  width: 24px;
-  height: 24px;
-  border-radius: 7px;
-  display: grid;
-  place-items: center;
-  background: #f5eee7;
-  color: var(--brown);
-  font-size: .72rem;
-}
-
 .clients-tab strong {
-  font-size: .66rem;
+  font-size: 1rem;
+  font-weight: 800;
   white-space: nowrap;
 }
 
 .clients-tab:hover {
-  color: var(--brown);
+  color: #111111;
   border-color: rgba(90, 46, 27, .14);
   background: #fffaf4;
 }
 
 .clients-tab.is-active {
   color: #fff;
-  background: var(--brown);
-  border-color: var(--brown);
-  box-shadow: 0 6px 16px rgba(90, 46, 27, .14);
-}
-
-.clients-tab.is-active > span {
-  color: #fff;
-  background: rgba(255, 255, 255, .14);
+  background: var(--red);
+  border-color: var(--red);
+  box-shadow: 0 6px 16px rgba(184, 30, 45, .18);
 }
 
 /* ==========================================================================
@@ -225,7 +209,7 @@
 }
 
 .clients-kpi > span {
-  color: var(--muted);
+  color: #111111;
   font-size: .59rem;
   font-weight: 900;
   text-transform: uppercase;
@@ -234,13 +218,13 @@
 
 .clients-kpi > strong {
   margin: 2px 0;
-  color: var(--brown);
+  color: #111111;
   font-size: 1.35rem;
   line-height: 1;
 }
 
 .clients-kpi > small {
-  color: var(--muted);
+  color: #111111;
   font-size: .59rem;
 }
 
@@ -287,7 +271,7 @@
 }
 
 .clients-toolbar label > span {
-  color: var(--muted);
+  color: #111111;
   font-size: .58rem;
   font-weight: 900;
   text-transform: uppercase;
@@ -301,7 +285,7 @@
   border: 1px solid var(--line);
   border-radius: 9px;
   padding: 0 9px;
-  color: var(--ink);
+  color: #111111;
   background: #fff;
   font-size: .68rem;
 }
@@ -331,7 +315,7 @@
 }
 
 .clients-v4 .data-table td strong {
-  color: var(--ink);
+  color: #111111;
 }
 
 .clients-v4 .data-table small.muted {
@@ -373,13 +357,13 @@
 }
 
 .customer-segment {
-  color: var(--blue);
+  color: #111111;
   background: var(--blue-soft);
   border: 1px solid rgba(61, 111, 142, .13);
 }
 
 .customer-segment-unknown {
-  color: var(--muted);
+  color: #111111;
   background: #f4f0eb;
   border: 1px solid var(--line);
   font-weight: 750;
@@ -403,14 +387,14 @@
 
 .loyalty-intro h2 {
   margin: 3px 0 4px;
-  color: var(--brown);
+  color: #111111;
   font-size: 1rem;
 }
 
 .loyalty-intro p {
   max-width: 740px;
   margin: 0;
-  color: var(--muted);
+  color: #111111;
   font-size: .66rem;
   line-height: 1.45;
 }
@@ -471,14 +455,14 @@
 }
 
 .loyalty-level-card header small {
-  color: var(--muted);
+  color: #111111;
   font-size: .52rem;
   text-transform: uppercase;
 }
 
 .loyalty-level-card h3 {
   margin: 0;
-  color: var(--brown);
+  color: #111111;
   font-size: .82rem;
 }
 
@@ -490,7 +474,7 @@
   display: grid;
   place-items: center;
   background: #f5eee7;
-  color: var(--brown);
+  color: #111111;
   font-size: .7rem;
 }
 
@@ -500,12 +484,12 @@
 
 .loyalty-level-card p {
   margin: 0 0 2px;
-  color: var(--ink);
+  color: #111111;
   font-size: .64rem;
 }
 
 .loyalty-level-card > div:last-child small {
-  color: var(--muted);
+  color: #111111;
   font-size: .56rem;
   line-height: 1.35;
 }
@@ -553,7 +537,7 @@
   border-radius: 9px;
   display: grid;
   place-items: center;
-  color: #9d7214;
+  color: #111111;
   background: #fff2ca;
 }
 
@@ -566,20 +550,20 @@
 
 .reward-row strong,
 .loyalty-movement-row strong {
-  color: var(--ink);
+  color: #111111;
   font-size: .66rem;
 }
 
 .reward-row small,
 .loyalty-movement-row small {
-  color: var(--muted);
+  color: #111111;
   font-size: .56rem;
   line-height: 1.35;
 }
 
 .reward-row > b {
   flex: 0 0 auto;
-  color: var(--brown);
+  color: #111111;
   font-size: .68rem;
 }
 
@@ -599,7 +583,7 @@
 }
 
 .loyalty-movement-row .is-positive {
-  color: var(--green);
+  color: #111111;
 }
 
 .loyalty-movement-row > span.is-positive {
@@ -607,7 +591,7 @@
 }
 
 .loyalty-movement-row .is-negative {
-  color: var(--red);
+  color: #111111;
 }
 
 .loyalty-movement-row > span.is-negative {
@@ -623,7 +607,7 @@
    ========================================================================== */
 
 .reservation-table td:first-child strong {
-  color: var(--brown);
+  color: #111111;
 }
 
 .reservation-table .status {
@@ -668,7 +652,7 @@
   border-radius: 11px;
   display: grid;
   place-items: center;
-  color: var(--brown);
+  color: #111111;
   background: #f6eee5;
   font-size: .82rem;
 }
@@ -680,13 +664,13 @@
 }
 
 .marketing-segment-card span {
-  color: var(--ink);
+  color: #111111;
   font-size: .64rem;
   font-weight: 850;
 }
 
 .marketing-segment-card small {
-  color: var(--muted);
+  color: #111111;
   font-size: .54rem;
   line-height: 1.35;
 }
@@ -703,7 +687,7 @@
   align-content: center;
   gap: 4px;
   text-align: center;
-  color: var(--muted);
+  color: #111111;
 }
 
 .clients-empty-mini > span {
@@ -713,12 +697,12 @@
   display: grid;
   place-items: center;
   background: #f4eee8;
-  color: var(--brown);
+  color: #111111;
   font-size: 1rem;
 }
 
 .clients-empty-mini strong {
-  color: var(--brown);
+  color: #111111;
   font-size: .7rem;
 }
 
@@ -750,7 +734,7 @@
 .loyalty-config-body label {
   display: grid;
   gap: 5px;
-  color: var(--muted);
+  color: #111111;
   font-size: .64rem;
   font-weight: 800;
 }
@@ -765,7 +749,7 @@
   border: 1px solid var(--line);
   border-radius: 9px;
   padding: 0 9px;
-  color: var(--ink);
+  color: #111111;
   background: #fff;
 }
 
@@ -782,7 +766,7 @@
 }
 
 .optional {
-  color: var(--muted);
+  color: #111111;
   font-size: .54rem;
   font-weight: 700;
   text-transform: none;
@@ -811,12 +795,12 @@
 }
 
 .customer-segment-help strong {
-  color: var(--blue);
+  color: #111111;
   font-size: .59rem;
 }
 
 .customer-segment-help small {
-  color: #567585;
+  color: #111111;
   font-size: .54rem;
   line-height: 1.4;
 }
@@ -849,12 +833,12 @@
 }
 
 .customer-consent strong {
-  color: var(--ink);
+  color: #111111;
   font-size: .62rem;
 }
 
 .customer-consent small {
-  color: var(--muted);
+  color: #111111;
   font-size: .55rem;
   line-height: 1.35;
 }
@@ -878,7 +862,7 @@
 
 .customer-360-head p {
   margin: 0;
-  color: var(--muted);
+  color: #111111;
   font-size: .61rem;
 }
 
@@ -902,13 +886,13 @@
 }
 
 .customer-360-summary span {
-  color: var(--muted);
+  color: #111111;
   font-size: .49rem;
   text-transform: uppercase;
 }
 
 .customer-360-summary strong {
-  color: var(--brown);
+  color: #111111;
   font-size: .68rem;
 }
 
@@ -929,7 +913,7 @@
   border: 1px solid transparent;
   border-radius: 8px;
   padding: 0 10px;
-  color: var(--muted);
+  color: #111111;
   background: transparent;
   font-size: .6rem;
   font-weight: 850;
@@ -937,7 +921,7 @@
 }
 
 .customer-360-tabs button:hover {
-  color: var(--brown);
+  color: #111111;
   background: #faf5ef;
 }
 
@@ -972,7 +956,7 @@
 .customer-summary-grid h3,
 .customer-points-layout h3 {
   margin: 0 0 8px;
-  color: var(--brown);
+  color: #111111;
   font-size: .7rem;
 }
 
@@ -996,13 +980,13 @@
 }
 
 .customer-summary-grid dt {
-  color: var(--muted);
+  color: #111111;
   font-size: .55rem;
 }
 
 .customer-summary-grid dd {
   margin: 0;
-  color: var(--ink);
+  color: #111111;
   font-size: .61rem;
   font-weight: 800;
   text-align: right;
@@ -1010,7 +994,7 @@
 
 .customer-summary-grid p {
   margin: 0;
-  color: var(--muted);
+  color: #111111;
   font-size: .59rem;
   line-height: 1.4;
 }
@@ -1024,7 +1008,7 @@
 .customer-preference-list span {
   border-radius: 999px;
   padding: 4px 7px;
-  color: var(--green);
+  color: #111111;
   background: var(--green-soft);
   font-size: .54rem;
   font-weight: 800;
@@ -1036,12 +1020,12 @@
 }
 
 .customer-consent-state.is-accepted {
-  color: var(--green);
+  color: #111111;
   background: var(--green-soft);
 }
 
 .customer-consent-state.is-neutral {
-  color: var(--muted);
+  color: #111111;
   background: #f5f1ed;
 }
 
@@ -1082,20 +1066,20 @@
 .customer-detail-list strong,
 .customer-reward-list strong,
 .customer-activity-list strong {
-  color: var(--ink);
+  color: #111111;
   font-size: .64rem;
 }
 
 .customer-detail-list small,
 .customer-reward-list small,
 .customer-activity-list small {
-  color: var(--muted);
+  color: #111111;
   font-size: .55rem;
   line-height: 1.35;
 }
 
 .customer-detail-list > article > b {
-  color: var(--brown);
+  color: #111111;
   font-size: .65rem;
 }
 
@@ -1123,7 +1107,7 @@
   border-radius: 9px;
   display: grid;
   place-items: center;
-  color: #9d7214;
+  color: #111111;
   background: #fff2ca;
 }
 
@@ -1134,7 +1118,7 @@
 }
 
 .customer-activity-list article > span {
-  color: var(--brown);
+  color: #111111;
   font-size: .85rem;
 }
 
@@ -1150,12 +1134,12 @@
 }
 
 .customer-360-footer > span {
-  color: var(--muted);
+  color: #111111;
   font-size: .57rem;
 }
 
 .customer-360-footer > span strong {
-  color: var(--brown);
+  color: #111111;
 }
 
 .customer-360-footer > div {
@@ -1181,13 +1165,13 @@
 
 .loyalty-config-note strong,
 .campaign-consent-note strong {
-  color: #765a19;
+  color: #111111;
   font-size: .61rem;
 }
 
 .loyalty-config-note small,
 .campaign-consent-note small {
-  color: #7e6a3d;
+  color: #111111;
   font-size: .54rem;
   line-height: 1.4;
 }
@@ -1404,4 +1388,15 @@
   .clients-tab {
     transition: none;
   }
+}
+
+/* ==========================================================================
+   TEXTO EN NEGRO: gana sobre la jerarquia gris de theme-min.css (que carga
+   despues de este archivo) solo dentro del modulo de Clientes.
+   ========================================================================== */
+.clients-v4 .muted,
+.clients-v4 .panel__muted,
+.clients-v4 small,
+.clients-v4 .eyebrow {
+  color: #111111 !important;
 }
